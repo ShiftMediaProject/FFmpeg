@@ -95,13 +95,19 @@ IF EXIST "%REPONAME%" (
     REM Clone from the origin repo
     SET REPOURL=%UPSTREAMURL%/%REPONAME%.git
     git clone !REPOURL! --quiet
-    REM Initialise autocrlf options to fix cross platform interoperation
-    REM  Once updated the repo needs to be reset to correct the local line endings
-    cd %REPONAME%
-    git config --local core.autocrlf false
-    git rm --cached -r . --quiet
-    git reset --hard --quiet
-    cd ..\
+	IF %ERRORLEVEL% NEQ 0 (
+		ECHO %REPONAME%: Git clone fail. Continue next repository.
+	
+	) ELSE (
+		REM Initialise autocrlf options to fix cross platform interoperation
+		REM  Once updated the repo needs to be reset to correct the local line endings
+		cd %REPONAME%
+		git config --local core.autocrlf false
+		git rm --cached -r . --quiet
+		git reset --hard --quiet
+		cd ..\
+	)
+    
 )
 REM Add current repo to list of already passed dependencies
 SET PASSDEPENDENCIES=%PASSDEPENDENCIES% %REPONAME%
