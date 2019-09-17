@@ -553,15 +553,14 @@ static int klv_ber_length(uint64_t len)
 static int klv_encode_ber_length(AVIOContext *pb, uint64_t len)
 {
     // Determine the best BER size
-    int size;
-    if (len < 128) {
+    int size = klv_ber_length(len);
+    if (size == 1) {
         //short form
         avio_w8(pb, len);
         return 1;
     }
 
-    size = (av_log2(len) >> 3) + 1;
-
+    size --;
     // long form
     avio_w8(pb, 0x80 + size);
     while(size) {
@@ -3148,7 +3147,8 @@ static int mxf_interleave_get_packet(AVFormatContext *s, AVPacket *out, AVPacket
     }
 }
 
-static int mxf_compare_timestamps(AVFormatContext *s, AVPacket *next, AVPacket *pkt)
+static int mxf_compare_timestamps(AVFormatContext *s, const AVPacket *next,
+                                                      const AVPacket *pkt)
 {
     MXFStreamContext *sc  = s->streams[pkt ->stream_index]->priv_data;
     MXFStreamContext *sc2 = s->streams[next->stream_index]->priv_data;

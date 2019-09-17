@@ -1503,6 +1503,9 @@
     <ClCompile Include="..\libavcodec\imm4.c">
       <Filter>Source Files\libavcodec</Filter>
     </ClCompile>
+    <ClCompile Include="..\libavcodec\imm5.c">
+      <Filter>Source Files\libavcodec</Filter>
+    </ClCompile>
     <ClCompile Include="..\libavcodec\indeo2.c">
       <Filter>Source Files\libavcodec</Filter>
     </ClCompile>
@@ -1608,6 +1611,9 @@
     <ClCompile Include="..\libavcodec\mimic.c">
       <Filter>Source Files\libavcodec</Filter>
     </ClCompile>
+    <ClCompile Include="..\libavcodec\qsvdec_other.c">
+      <Filter>Source Files\libavcodec</Filter>
+    </ClCompile>
     <ClCompile Include="..\libavcodec\mjpegbdec.c">
       <Filter>Source Files\libavcodec</Filter>
     </ClCompile>
@@ -1663,9 +1669,6 @@
       <Filter>Source Files\libavcodec</Filter>
     </ClCompile>
     <ClCompile Include="..\libavcodec\mpeg12enc.c">
-      <Filter>Source Files\libavcodec</Filter>
-    </ClCompile>
-    <ClCompile Include="..\libavcodec\qsvdec_other.c">
       <Filter>Source Files\libavcodec</Filter>
     </ClCompile>
     <ClCompile Include="..\libavcodec\qsvenc_mpeg2.c">

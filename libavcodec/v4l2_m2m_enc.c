@@ -58,10 +58,10 @@ static inline void v4l2_set_ext_ctrl(V4L2m2mContext *s, unsigned int id, signed 
 
     /* set ctrl*/
     ctrl.value = value;
-    ctrl.id = id ;
+    ctrl.id = id;
 
     if (ioctl(s->fd, VIDIOC_S_EXT_CTRLS, &ctrls) < 0)
-        av_log(s->avctx, AV_LOG_WARNING, "Failed to set %s\n", name);
+        av_log(s->avctx, AV_LOG_WARNING, "Failed to set %s: %s\n", name, strerror(errno));
     else
         av_log(s->avctx, AV_LOG_DEBUG, "Encoder: %s = %d\n", name, value);
 }
@@ -261,7 +261,7 @@ static int v4l2_receive_packet(AVCodecContext *avctx, AVPacket *avpkt)
     if (!output->streamon) {
         ret = ff_v4l2_context_set_status(output, VIDIOC_STREAMON);
         if (ret) {
-            av_log(avctx, AV_LOG_ERROR, "VIDIOC_STREAMOFF failed on output context\n");
+            av_log(avctx, AV_LOG_ERROR, "VIDIOC_STREAMON failed on output context\n");
             return ret;
         }
     }

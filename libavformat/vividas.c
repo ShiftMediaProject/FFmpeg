@@ -153,6 +153,10 @@ static void decode_block(uint8_t *src, uint8_t *dest, unsigned size,
 
     if (align) {
         uint32_t tmpkey = *key_ptr - key;
+        if (a2 > s) {
+            a2 = s;
+            avpriv_request_sample(NULL, "tiny aligned block\n");
+        }
         memcpy(tmp + align, src, a2);
         xor_block(tmp, tmp, 4, key, &tmpkey);
         memcpy(dest, tmp + align, a2);
@@ -392,8 +396,14 @@ static int track_header(VividasDemuxContext *viv, AVFormatContext *s,  uint8_t *
             p = st->codecpar->extradata;
             p[0] = 2;
 
-            for (j = 0; j < num_data - 1; j++)
-                offset += av_xiphlacing(&p[offset], data_len[j]);
+            for (j = 0; j < num_data - 1; j++) {
+                unsigned delta = av_xiphlacing(&p[offset], data_len[j]);
+                if (delta > data_len[j]) {
+                    av_free(pb);
+                    return AVERROR_INVALIDDATA;
+                }
+                offset += delta;
+            }
 
             for (j = 0; j < num_data; j++) {
                 int ret = avio_read(pb, &p[offset], data_len[j]);
@@ -546,6 +556,9 @@ static int viv_read_header(AVFormatContext *s)
             break;
 
         block_len = ffio_read_varlen(pb);
+        if (avio_feof(pb) || block_len <= 0)
+            return AVERROR_INVALIDDATA;
+
         block_type = avio_r8(pb);
 
         if (block_type == 22) {

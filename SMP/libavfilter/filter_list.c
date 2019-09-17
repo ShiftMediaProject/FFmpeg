@@ -343,6 +343,7 @@ static const AVFilter *filter_list[] = {
     &ff_vf_unpremultiply,
     &ff_vf_unsharp,
     &ff_vf_uspp,
+    &ff_vf_v360,
     &ff_vf_vaguedenoiser,
     &ff_vf_vectorscope,
     &ff_vf_vflip,

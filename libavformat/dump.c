@@ -210,7 +210,7 @@ static void dump_paramchange(void *ctx, AVPacketSideData *sd)
 
     return;
 fail:
-    av_log(ctx, AV_LOG_INFO, "unknown param");
+    av_log(ctx, AV_LOG_ERROR, "unknown param");
 }
 
 /* replaygain side data*/
@@ -239,7 +239,7 @@ static void dump_replaygain(void *ctx, AVPacketSideData *sd)
     AVReplayGain *rg;
 
     if (sd->size < sizeof(*rg)) {
-        av_log(ctx, AV_LOG_INFO, "invalid data");
+        av_log(ctx, AV_LOG_ERROR, "invalid data");
         return;
     }
     rg = (AVReplayGain*)sd->data;
@@ -255,7 +255,7 @@ static void dump_stereo3d(void *ctx, AVPacketSideData *sd)
     AVStereo3D *stereo;
 
     if (sd->size < sizeof(*stereo)) {
-        av_log(ctx, AV_LOG_INFO, "invalid data");
+        av_log(ctx, AV_LOG_ERROR, "invalid data");
         return;
     }
 
@@ -272,7 +272,7 @@ static void dump_audioservicetype(void *ctx, AVPacketSideData *sd)
     enum AVAudioServiceType *ast = (enum AVAudioServiceType *)sd->data;
 
     if (sd->size < sizeof(*ast)) {
-        av_log(ctx, AV_LOG_INFO, "invalid data");
+        av_log(ctx, AV_LOG_ERROR, "invalid data");
         return;
     }
 
@@ -315,19 +315,22 @@ static void dump_cpb(void *ctx, AVPacketSideData *sd)
     AVCPBProperties *cpb = (AVCPBProperties *)sd->data;
 
     if (sd->size < sizeof(*cpb)) {
-        av_log(ctx, AV_LOG_INFO, "invalid data");
+        av_log(ctx, AV_LOG_ERROR, "invalid data");
         return;
     }
 
     av_log(ctx, AV_LOG_INFO,
 #if FF_API_UNSANITIZED_BITRATES
-           "bitrate max/min/avg: %d/%d/%d buffer size: %d vbv_delay: %"PRIu64,
+           "bitrate max/min/avg: %d/%d/%d buffer size: %d ",
 #else
-           "bitrate max/min/avg: %"PRId64"/%"PRId64"/%"PRId64" buffer size: %d vbv_delay: %"PRIu64,
+           "bitrate max/min/avg: %"PRId64"/%"PRId64"/%"PRId64" buffer size: %d ",
 #endif
            cpb->max_bitrate, cpb->min_bitrate, cpb->avg_bitrate,
-           cpb->buffer_size,
-           cpb->vbv_delay);
+           cpb->buffer_size);
+    if (cpb->vbv_delay == UINT64_MAX)
+        av_log(ctx, AV_LOG_INFO, "vbv_delay: N/A");
+    else
+        av_log(ctx, AV_LOG_INFO, "vbv_delay: %"PRIu64"", cpb->vbv_delay);
 }
 
 static void dump_mastering_display_metadata(void *ctx, AVPacketSideData* sd) {
@@ -361,7 +364,7 @@ static void dump_spherical(void *ctx, AVCodecParameters *par, AVPacketSideData *
     double yaw, pitch, roll;
 
     if (sd->size < sizeof(*spherical)) {
-        av_log(ctx, AV_LOG_INFO, "invalid data");
+        av_log(ctx, AV_LOG_ERROR, "invalid data");
         return;
     }
 

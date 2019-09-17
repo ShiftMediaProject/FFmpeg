@@ -130,6 +130,7 @@ EXPORTS
     avio_open_dir
     avio_open_dyn_buf
     avio_pause
+    avio_print_string_array
     avio_printf
     avio_put_str
     avio_put_str16be

@@ -288,6 +288,7 @@ static const AVCodec *codec_list[] = {
     &ff_idcin_decoder,
     &ff_iff_ilbm_decoder,
     &ff_imm4_decoder,
+    &ff_imm5_decoder,
     &ff_indeo2_decoder,
     &ff_indeo3_decoder,
     &ff_indeo4_decoder,
@@ -646,6 +647,7 @@ static const AVCodec *codec_list[] = {
     &ff_h264_cuvid_decoder,
     &ff_hevc_cuvid_decoder,
     &ff_mjpeg_cuvid_decoder,
+    &ff_mjpeg_qsv_decoder,
     &ff_mpeg1_cuvid_decoder,
     &ff_mpeg2_cuvid_decoder,
     &ff_mpeg4_cuvid_decoder,
@@ -653,4 +655,5 @@ static const AVCodec *codec_list[] = {
     &ff_vp8_cuvid_decoder,
     &ff_vp8_qsv_decoder,
     &ff_vp9_cuvid_decoder,
+    &ff_vp9_qsv_decoder,
     NULL };

@@ -30,7 +30,6 @@ EXPORTS
     avfilter_free
     avfilter_get_by_name
     avfilter_get_class
-    avfilter_get_matrix
     avfilter_graph_alloc
     avfilter_graph_alloc_filter
     avfilter_graph_config

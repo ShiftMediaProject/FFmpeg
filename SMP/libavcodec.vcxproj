@@ -551,6 +551,7 @@
     <ClCompile Include="..\libavcodec\ilbcdec.c" />
     <ClCompile Include="..\libavcodec\imc.c" />
     <ClCompile Include="..\libavcodec\imm4.c" />
+    <ClCompile Include="..\libavcodec\imm5.c" />
     <ClCompile Include="..\libavcodec\indeo2.c" />
     <ClCompile Include="..\libavcodec\indeo3.c" />
     <ClCompile Include="..\libavcodec\indeo4.c" />
@@ -586,6 +587,7 @@
     <ClCompile Include="..\libavcodec\twinvq.c" />
     <ClCompile Include="..\libavcodec\microdvddec.c" />
     <ClCompile Include="..\libavcodec\mimic.c" />
+    <ClCompile Include="..\libavcodec\qsvdec_other.c" />
     <ClCompile Include="..\libavcodec\mjpegbdec.c" />
     <ClCompile Include="..\libavcodec\qsvenc_jpeg.c" />
     <ClCompile Include="..\libavcodec\mlpdec.c" />
@@ -605,7 +607,6 @@
     <ClCompile Include="..\libavcodec\mpc8.c" />
     <ClCompile Include="..\libavcodec\mpeg12dec.c" />
     <ClCompile Include="..\libavcodec\mpeg12enc.c" />
-    <ClCompile Include="..\libavcodec\qsvdec_other.c" />
     <ClCompile Include="..\libavcodec\qsvenc_mpeg2.c" />
     <ClCompile Include="..\libavcodec\mpl2dec.c" />
     <ClCompile Include="..\libavcodec\mss3.c" />

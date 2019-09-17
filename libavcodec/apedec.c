@@ -828,7 +828,7 @@ static av_always_inline int filter_fast_3320(APEPredictor *p,
         return decoded;
     }
 
-    predictionA = p->buf[delayA] * 2 - p->buf[delayA - 1];
+    predictionA = p->buf[delayA] * 2U - p->buf[delayA - 1];
     p->lastA[filter] = decoded + ((int32_t)(predictionA  * p->coeffsA[filter][0]) >> 9);
 
     if ((decoded ^ predictionA) > 0)
@@ -842,7 +842,7 @@ static av_always_inline int filter_fast_3320(APEPredictor *p,
 }
 
 static av_always_inline int filter_3800(APEPredictor *p,
-                                        const int decoded, const int filter,
+                                        const unsigned decoded, const int filter,
                                         const int delayA,  const int delayB,
                                         const int start,   const int shift)
 {
@@ -1266,7 +1266,7 @@ static void do_apply_filter(APEContext *ctx, int version, APEFilter *f,
                                                      f->delay - order,
                                                      f->adaptcoeffs - order,
                                                      order, APESIGN(*data));
-        res = (res + (1 << (fracbits - 1))) >> fracbits;
+        res = (int)(res + (1U << (fracbits - 1))) >> fracbits;
         res += *data;
         *data++ = res;
 

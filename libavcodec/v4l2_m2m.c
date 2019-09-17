@@ -67,7 +67,7 @@ static int v4l2_prepare_contexts(V4L2m2mContext* s)
 
     s->capture.done = s->output.done = 0;
     s->capture.name = "capture";
-    s->output.name = "output ";
+    s->output.name = "output";
     atomic_init(&s->refcount, 0);
     sem_init(&s->refsync, 0, 0);
 
@@ -76,7 +76,9 @@ static int v4l2_prepare_contexts(V4L2m2mContext* s)
     if (ret < 0)
         return ret;
 
-    av_log(s->avctx, AV_LOG_INFO, "driver '%s' on card '%s'\n", cap.driver, cap.card);
+    av_log(s->avctx, AV_LOG_INFO, "driver '%s' on card '%s' in %s mode\n", cap.driver, cap.card,
+                                   v4l2_mplane_video(&cap) ? "mplane" :
+                                   v4l2_splane_video(&cap) ? "splane" : "unknown");
 
     if (v4l2_mplane_video(&cap)) {
         s->capture.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
@@ -132,6 +134,7 @@ static int v4l2_configure_contexts(V4L2m2mContext* s)
 {
     void *log_ctx = s->avctx;
     int ret;
+    struct v4l2_format ofmt, cfmt;
 
     s->fd = open(s->devname, O_RDWR | O_NONBLOCK, 0);
     if (s->fd < 0)
@@ -140,6 +143,16 @@ static int v4l2_configure_contexts(V4L2m2mContext* s)
     ret = v4l2_prepare_contexts(s);
     if (ret < 0)
         goto error;
+
+    ofmt = s->output.format;
+    cfmt = s->capture.format;
+    av_log(log_ctx, AV_LOG_INFO, "requesting formats: output=%s capture=%s\n",
+                                 av_fourcc2str(V4L2_TYPE_IS_MULTIPLANAR(ofmt.type) ?
+                                               ofmt.fmt.pix_mp.pixelformat :
+                                               ofmt.fmt.pix.pixelformat),
+                                 av_fourcc2str(V4L2_TYPE_IS_MULTIPLANAR(cfmt.type) ?
+                                               cfmt.fmt.pix_mp.pixelformat :
+                                               cfmt.fmt.pix.pixelformat));
 
     ret = ff_v4l2_context_set_format(&s->output);
     if (ret) {
@@ -241,13 +254,13 @@ int ff_v4l2_m2m_codec_full_reinit(V4L2m2mContext *s)
 
     ret = ff_v4l2_context_set_status(&s->output, VIDIOC_STREAMOFF);
     if (ret) {
-        av_log(s->avctx, AV_LOG_ERROR, "output VIDIOC_STREAMOFF\n");
+        av_log(log_ctx, AV_LOG_ERROR, "output VIDIOC_STREAMOFF\n");
         goto error;
     }
 
     ret = ff_v4l2_context_set_status(&s->capture, VIDIOC_STREAMOFF);
     if (ret) {
-            av_log(s->avctx, AV_LOG_ERROR, "capture VIDIOC_STREAMOFF\n");
+            av_log(log_ctx, AV_LOG_ERROR, "capture VIDIOC_STREAMOFF\n");
             goto error;
     }
 
@@ -324,7 +337,7 @@ int ff_v4l2_m2m_codec_end(AVCodecContext *avctx)
 
     ret = ff_v4l2_context_set_status(&s->output, VIDIOC_STREAMOFF);
     if (ret)
-            av_log(avctx, AV_LOG_ERROR, "VIDIOC_STREAMOFF %s\n", s->output.name);
+        av_log(avctx, AV_LOG_ERROR, "VIDIOC_STREAMOFF %s\n", s->output.name);
 
     ret = ff_v4l2_context_set_status(&s->capture, VIDIOC_STREAMOFF);
     if (ret)
@@ -401,6 +414,7 @@ int ff_v4l2_m2m_create_context(AVCodecContext *avctx, V4L2m2mContext **s)
     priv->context->capture.num_buffers = priv->num_capture_buffers;
     priv->context->output.num_buffers  = priv->num_output_buffers;
     priv->context->self_ref = priv->context_ref;
+    priv->context->fd = -1;
 
     return 0;
 }

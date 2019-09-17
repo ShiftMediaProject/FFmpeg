@@ -87,6 +87,7 @@
     <NASM Include="..\libavfilter\x86\vf_stereo3d.asm" />
     <NASM Include="..\libavfilter\x86\vf_threshold.asm" />
     <NASM Include="..\libavfilter\x86\af_volume.asm" />
+    <NASM Include="..\libavfilter\x86\vf_v360.asm" />
     <NASM Include="..\libavfilter\x86\vf_w3fdif.asm" />
     <NASM Include="..\libavfilter\x86\vf_yadif.asm" />
     <NASM Include="..\libavfilter\x86\yadif-16.asm" />
@@ -420,6 +421,7 @@
     <ClCompile Include="..\libavfilter\x86\vf_stereo3d_init.c" />
     <ClCompile Include="..\libavfilter\x86\vf_threshold_init.c" />
     <ClCompile Include="..\libavfilter\x86\af_volume_init.c" />
+    <ClCompile Include="..\libavfilter\x86\vf_v360_init.c" />
     <ClCompile Include="..\libavfilter\x86\vf_w3fdif_init.c" />
     <ClCompile Include="..\libavfilter\x86\vf_yadif_init.c" />
     <ClCompile Include="libavfilter\log2_tab_wrap.c" />
@@ -498,6 +500,9 @@
     </ClCompile>
     <ClCompile Include="..\libavfilter\vf_threshold.c">
       <ObjectFileName>$(IntDir)\libavfilter_vf_threshold.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\libavfilter\vf_v360.c">
+      <ObjectFileName>$(IntDir)\libavfilter_vf_v360.obj</ObjectFileName>
     </ClCompile>
     <ClCompile Include="..\libavfilter\vf_w3fdif.c">
       <ObjectFileName>$(IntDir)\libavfilter_vf_w3fdif.obj</ObjectFileName>

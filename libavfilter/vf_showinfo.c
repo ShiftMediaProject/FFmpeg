@@ -160,6 +160,15 @@ static void dump_mastering_display(AVFilterContext *ctx, AVFrameSideData *sd)
            av_q2d(mastering_display->min_luminance), av_q2d(mastering_display->max_luminance));
 }
 
+static void dump_content_light_metadata(AVFilterContext *ctx, AVFrameSideData *sd)
+{
+    AVContentLightMetadata* metadata = (AVContentLightMetadata*)sd->data;
+
+    av_log(ctx, AV_LOG_INFO, "Content Light Level information: "
+           "MaxCLL=%d, MaxFALL=%d",
+           metadata->MaxCLL, metadata->MaxFALL);
+}
+
 static void dump_color_property(AVFilterContext *ctx, AVFrame *frame)
 {
     const char *color_range_str     = av_color_range_name(frame->color_range);
@@ -301,6 +310,15 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *frame)
         case AV_FRAME_DATA_MASTERING_DISPLAY_METADATA:
             dump_mastering_display(ctx, sd);
             break;
+        case AV_FRAME_DATA_CONTENT_LIGHT_LEVEL:
+            dump_content_light_metadata(ctx, sd);
+            break;
+        case AV_FRAME_DATA_GOP_TIMECODE: {
+            char tcbuf[AV_TIMECODE_STR_SIZE];
+            av_timecode_make_mpeg_tc_string(tcbuf, *(int64_t *)(sd->data));
+            av_log(ctx, AV_LOG_INFO, "GOP timecode - %s", tcbuf);
+            break;
+        }
         default:
             av_log(ctx, AV_LOG_WARNING, "unknown side data type %d (%d bytes)",
                    sd->type, sd->size);
