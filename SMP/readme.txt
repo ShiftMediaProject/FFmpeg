@@ -88,9 +88,11 @@ with them are not covered by ShiftMediaProject and so they should be used with d
 
 *** Building with ASM ***
 
-In order to build FFmpeg using msvc you must first download and install NASM.
-NASM is required to compile all assembly files.
+In order to build FFmpeg using msvc you must first download and install NASM and YASM.
+NASM and YASM are required to compile all assembly files.
 
-1) Visual Studio YASM integration can be downloaded from https://github.com/ShiftMediaProject/VSNASM/releases/latest
+1) Visual Studio NASM integration can be downloaded from https://github.com/ShiftMediaProject/VSNASM/releases/latest
 
-2) Once downloaded simply follow the install instructions included in the download.
+2) Visual Studio YASM integration can be downloaded from https://github.com/ShiftMediaProject/VSYASM/releases/latest
+
+3) Once downloaded simply follow the install instructions included in the download.
