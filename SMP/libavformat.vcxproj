@@ -136,6 +136,7 @@
     <ClCompile Include="..\libavformat\afc.c" />
     <ClCompile Include="..\libavformat\aiffdec.c" />
     <ClCompile Include="..\libavformat\mov_chan.c" />
+    <ClCompile Include="..\libavformat\replaygain.c" />
     <ClCompile Include="..\libavformat\aiffenc.c" />
     <ClCompile Include="..\libavformat\aixdec.c" />
     <ClCompile Include="..\libavformat\amr.c" />
@@ -225,7 +226,6 @@
     <ClCompile Include="..\libavformat\flacdec.c" />
     <ClCompile Include="..\libavformat\flac_picture.c" />
     <ClCompile Include="..\libavformat\oggparsevorbis.c" />
-    <ClCompile Include="..\libavformat\replaygain.c" />
     <ClCompile Include="..\libavformat\vorbiscomment.c" />
     <ClCompile Include="..\libavformat\flacenc.c" />
     <ClCompile Include="..\libavformat\flacenc_header.c" />

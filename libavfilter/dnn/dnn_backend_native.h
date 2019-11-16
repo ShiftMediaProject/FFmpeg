@@ -30,11 +30,19 @@
 #include "../dnn_interface.h"
 #include "libavformat/avio.h"
 
-typedef enum {INPUT, CONV, DEPTH_TO_SPACE, MIRROR_PAD} DNNLayerType;
-
-typedef enum {RELU, TANH, SIGMOID, NONE, LEAKY_RELU} DNNActivationFunc;
-
-typedef enum {VALID, SAME, SAME_CLAMP_TO_EDGE} DNNConvPaddingParam;
+/**
+ * the enum value of DNNLayerType should not be changed,
+ * the same values are used in convert_from_tensorflow.py
+ * and, it is used to index the layer execution/load function pointer.
+ */
+typedef enum {
+    DLT_INPUT = 0,
+    DLT_CONV2D = 1,
+    DLT_DEPTH_TO_SPACE = 2,
+    DLT_MIRROR_PAD = 3,
+    DLT_MAXIMUM = 4,
+    DLT_COUNT
+} DNNLayerType;
 
 typedef enum {DOT_INPUT = 1, DOT_OUTPUT = 2, DOT_INTERMEDIATE = DOT_INPUT | DOT_INPUT} DNNOperandType;
 
@@ -90,22 +98,9 @@ typedef struct DnnOperand{
     int32_t usedNumbersLeft;
 }DnnOperand;
 
-typedef struct ConvolutionalParams{
-    int32_t input_num, output_num, kernel_size;
-    DNNActivationFunc activation;
-    DNNConvPaddingParam padding_method;
-    int32_t dilation;
-    float *kernel;
-    float *biases;
-} ConvolutionalParams;
-
 typedef struct InputParams{
     int height, width, channels;
 } InputParams;
-
-typedef struct DepthToSpaceParams{
-    int block_size;
-} DepthToSpaceParams;
 
 // Represents simple feed-forward convolutional network.
 typedef struct ConvolutionalNetwork{
@@ -113,6 +108,8 @@ typedef struct ConvolutionalNetwork{
     int32_t layers_num;
     DnnOperand *operands;
     int32_t operands_num;
+    int32_t *output_indexes;
+    uint32_t nb_output;
 } ConvolutionalNetwork;
 
 DNNModel *ff_dnn_load_model_native(const char *model_filename);
@@ -121,6 +118,6 @@ DNNReturnType ff_dnn_execute_model_native(const DNNModel *model, DNNData *output
 
 void ff_dnn_free_model_native(DNNModel **model);
 
-int32_t calculate_operand_data_length(DnnOperand *operand);
-
+int32_t calculate_operand_data_length(const DnnOperand *oprd);
+int32_t calculate_operand_dims_count(const DnnOperand *oprd);
 #endif

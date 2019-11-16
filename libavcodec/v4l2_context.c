@@ -48,9 +48,9 @@ static inline V4L2m2mContext *ctx_to_m2mctx(V4L2Context *ctx)
         container_of(ctx, V4L2m2mContext, capture);
 }
 
-static inline AVCodecContext *logger(V4L2Context *ctx)
+static inline AVClass *logger(V4L2Context *ctx)
 {
-    return ctx_to_m2mctx(ctx)->avctx;
+    return ctx_to_m2mctx(ctx)->priv;
 }
 
 static inline unsigned int v4l2_get_width(struct v4l2_format *fmt)
@@ -61,6 +61,24 @@ static inline unsigned int v4l2_get_width(struct v4l2_format *fmt)
 static inline unsigned int v4l2_get_height(struct v4l2_format *fmt)
 {
     return V4L2_TYPE_IS_MULTIPLANAR(fmt->type) ? fmt->fmt.pix_mp.height : fmt->fmt.pix.height;
+}
+
+static AVRational v4l2_get_sar(V4L2Context *ctx)
+{
+    struct AVRational sar = { 0, 1 };
+    struct v4l2_cropcap cropcap;
+    int ret;
+
+    memset(&cropcap, 0, sizeof(cropcap));
+    cropcap.type = ctx->type;
+
+    ret = ioctl(ctx_to_m2mctx(ctx)->fd, VIDIOC_CROPCAP, &cropcap);
+    if (ret)
+        return sar;
+
+    sar.num = cropcap.pixelaspect.numerator;
+    sar.den = cropcap.pixelaspect.denominator;
+    return sar;
 }
 
 static inline unsigned int v4l2_resolution_changed(V4L2Context *ctx, struct v4l2_format *fmt2)
@@ -96,7 +114,7 @@ static inline int v4l2_get_framesize_compressed(V4L2Context* ctx, int width, int
     const int SZ_4K = 0x1000;
     int size;
 
-    if (av_codec_is_decoder(s->avctx->codec))
+    if (s->avctx && av_codec_is_decoder(s->avctx->codec))
         return ((width * height * 3 / 2) / 2) + 128;
 
     /* encoder */
@@ -172,12 +190,14 @@ static int v4l2_handle_event(V4L2Context *ctx)
     if (full_reinit) {
         s->output.height = v4l2_get_height(&out_fmt);
         s->output.width = v4l2_get_width(&out_fmt);
+        s->output.sample_aspect_ratio = v4l2_get_sar(&s->output);
     }
 
     reinit = v4l2_resolution_changed(&s->capture, &cap_fmt);
     if (reinit) {
         s->capture.height = v4l2_get_height(&cap_fmt);
         s->capture.width = v4l2_get_width(&cap_fmt);
+        s->capture.sample_aspect_ratio = v4l2_get_sar(&s->capture);
     }
 
     if (full_reinit || reinit)
@@ -193,7 +213,8 @@ static int v4l2_handle_event(V4L2Context *ctx)
     }
 
     if (reinit) {
-        ret = ff_set_dimensions(s->avctx, s->capture.width, s->capture.height);
+        if (s->avctx)
+            ret = ff_set_dimensions(s->avctx, s->capture.width, s->capture.height);
         if (ret < 0)
             av_log(logger(ctx), AV_LOG_WARNING, "update avcodec height and width\n");
 
@@ -581,16 +602,16 @@ int ff_v4l2_context_enqueue_packet(V4L2Context* ctx, const AVPacket* pkt)
     return ff_v4l2_buffer_enqueue(avbuf);
 }
 
-int ff_v4l2_context_dequeue_frame(V4L2Context* ctx, AVFrame* frame)
+int ff_v4l2_context_dequeue_frame(V4L2Context* ctx, AVFrame* frame, int timeout)
 {
     V4L2Buffer* avbuf = NULL;
 
     /*
-     * blocks until:
+     * timeout=-1 blocks until:
      *  1. decoded frame available
      *  2. an input buffer is ready to be dequeued
      */
-    avbuf = v4l2_dequeue_v4l2buf(ctx, -1);
+    avbuf = v4l2_dequeue_v4l2buf(ctx, timeout);
     if (!avbuf) {
         if (ctx->done)
             return AVERROR_EOF;
@@ -621,7 +642,7 @@ int ff_v4l2_context_dequeue_packet(V4L2Context* ctx, AVPacket* pkt)
     return ff_v4l2_buffer_buf_to_avpkt(pkt, avbuf);
 }
 
-int ff_v4l2_context_get_format(V4L2Context* ctx)
+int ff_v4l2_context_get_format(V4L2Context* ctx, int probe)
 {
     struct v4l2_format_update fmt = { 0 };
     int ret;
@@ -631,7 +652,7 @@ int ff_v4l2_context_get_format(V4L2Context* ctx)
         if (ret)
             return ret;
 
-        fmt.update_avfmt = 1;
+        fmt.update_avfmt = !probe;
         v4l2_save_to_context(ctx, &fmt);
 
         /* format has been tried already */

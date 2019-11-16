@@ -25,6 +25,18 @@
 #include "libavfilter/vf_nlmeans.h"
 
 #if !(ARCH_X86_64)
+void ff_atadenoise_filter_row8_serial_sse4(const uint8_t *src, uint8_t *dst,
+                                           const uint8_t **srcf,
+                                           int w, int mid, int size,
+                                           int thra, int thrb) {return;}
+#endif
+#if !(ARCH_X86_64)
+void ff_atadenoise_filter_row8_sse4(const uint8_t *src, uint8_t *dst,
+                                    const uint8_t **srcf,
+                                    int w, int mid, int size,
+                                    int thra, int thrb) {return;}
+#endif
+#if !(ARCH_X86_64)
 void ff_multiply3x3_sse2(int16_t *data[3], ptrdiff_t stride, int w, int h,
                          const int16_t coeff[3][3][8]) {return;}
 #endif

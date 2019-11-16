@@ -22,6 +22,13 @@
 #define AVFILTER_V360_H
 #include "avfilter.h"
 
+enum StereoFormats {
+    STEREO_2D,
+    STEREO_SBS,
+    STEREO_TB,
+    NB_STEREO_FMTS,
+};
+
 enum Projections {
     EQUIRECTANGULAR,
     CUBEMAP_3_2,
@@ -31,6 +38,11 @@ enum Projections {
     DUAL_FISHEYE,
     BARREL,
     CUBEMAP_1_6,
+    STEREOGRAPHIC,
+    MERCATOR,
+    BALL,
+    HAMMER,
+    SINUSOIDAL,
     NB_PROJECTIONS,
 };
 
@@ -77,6 +89,12 @@ enum RotationOrder {
     NB_RORDERS,
 };
 
+typedef struct XYRemap {
+    uint16_t u[4][4];
+    uint16_t v[4][4];
+    float ker[4][4];
+} XYRemap;
+
 typedef struct V360Context {
     const AVClass *class;
     int in, out;
@@ -94,23 +112,54 @@ typedef struct V360Context {
     int out_cubemap_face_rotation[6];
     int rotation_order[3];
 
+    int in_stereo, out_stereo;
+
     float in_pad, out_pad;
+    int fin_pad, fout_pad;
 
     float yaw, pitch, roll;
 
+    int ih_flip, iv_flip;
     int h_flip, v_flip, d_flip;
+    int in_transpose, out_transpose;
 
-    float h_fov, v_fov;
-    float flat_range[3];
+    float h_fov, v_fov, d_fov;
+    float flat_range[2];
+
+    float rot_mat[3][3];
+
+    float input_mirror_modifier[2];
+    float output_mirror_modifier[3];
+
+    int in_width, in_height;
+    int out_width, out_height;
+
+    int pr_width[4], pr_height[4];
+
+    int in_offset_w[4], in_offset_h[4];
+    int out_offset_w[4], out_offset_h[4];
 
     int planewidth[4], planeheight[4];
     int inplanewidth[4], inplaneheight[4];
+    int uv_linesize[4];
     int nb_planes;
     int nb_allocated;
+    int elements;
 
-    uint16_t *u[4], *v[4];
-    int16_t *ker[4];
+    uint16_t *u[2], *v[2];
+    int16_t *ker[2];
     unsigned map[4];
+
+    void (*in_transform)(const struct V360Context *s,
+                         const float *vec, int width, int height,
+                         uint16_t us[4][4], uint16_t vs[4][4], float *du, float *dv);
+
+    void (*out_transform)(const struct V360Context *s,
+                          int i, int j, int width, int height,
+                          float *vec);
+
+    void (*calculate_kernel)(float du, float dv, const XYRemap *rmap,
+                             uint16_t *u, uint16_t *v, int16_t *ker);
 
     int (*remap_slice)(AVFilterContext *ctx, void *arg, int jobnr, int nb_jobs);
 

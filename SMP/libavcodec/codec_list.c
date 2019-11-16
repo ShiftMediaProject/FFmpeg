@@ -445,6 +445,7 @@ static const AVCodec *codec_list[] = {
     &ff_aac_latm_decoder,
     &ff_ac3_decoder,
     &ff_ac3_fixed_decoder,
+    &ff_acelp_kelvin_decoder,
     &ff_alac_decoder,
     &ff_als_decoder,
     &ff_amrnb_decoder,

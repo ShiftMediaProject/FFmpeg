@@ -1240,6 +1240,11 @@ static int tiff_decode_tag(TiffContext *s, AVFrame *frame)
         case TIFF_RATIONAL:
             value  = ff_tget(&s->gb, TIFF_LONG, s->le);
             value2 = ff_tget(&s->gb, TIFF_LONG, s->le);
+            if (!value2) {
+                av_log(s->avctx, AV_LOG_ERROR, "Invalid denominator in rational\n");
+                return AVERROR_INVALIDDATA;
+            }
+
             break;
         case TIFF_STRING:
             if (count <= 4) {
@@ -1413,6 +1418,10 @@ static int tiff_decode_tag(TiffContext *s, AVFrame *frame)
             if (type == TIFF_RATIONAL) {
                 value  = ff_tget(&s->gb, TIFF_LONG, s->le);
                 value2 = ff_tget(&s->gb, TIFF_LONG, s->le);
+                if (!value2) {
+                    av_log(s->avctx, AV_LOG_ERROR, "Invalid black level denominator\n");
+                    return AVERROR_INVALIDDATA;
+                }
 
                 s->black_level = value / value2;
             } else
@@ -2090,8 +2099,6 @@ static av_cold int tiff_init(AVCodecContext *avctx)
     s->avctx_mjpeg->idct_algo = avctx->idct_algo;
     ret = ff_codec_open2_recursive(s->avctx_mjpeg, codec, NULL);
     if (ret < 0) {
-        av_frame_free(&s->jpgframe);
-        avcodec_free_context(&s->avctx_mjpeg);
         return ret;
     }
 
@@ -2142,5 +2149,6 @@ AVCodec ff_tiff_decoder = {
     .decode         = decode_frame,
     .init_thread_copy = ONLY_IF_THREADS_ENABLED(tiff_init),
     .capabilities   = AV_CODEC_CAP_DR1 | AV_CODEC_CAP_FRAME_THREADS,
+    .caps_internal  = FF_CODEC_CAP_INIT_CLEANUP,
     .priv_class     = &tiff_decoder_class,
 };

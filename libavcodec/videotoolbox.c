@@ -91,6 +91,11 @@ static int videotoolbox_postproc_frame(void *avctx, AVFrame *frame)
         return AVERROR_EXTERNAL;
     }
 
+    frame->crop_right = 0;
+    frame->crop_left = 0;
+    frame->crop_top = 0;
+    frame->crop_bottom = 0;
+
     frame->data[3] = (uint8_t*)ref->pixbuf;
 
     if (ref->hw_frames_ctx) {
@@ -612,7 +617,7 @@ static void videotoolbox_decoder_callback(void *opaque,
     }
 
     if (!image_buffer) {
-        av_log(NULL, AV_LOG_DEBUG, "vt decoder cb: output image buffer is null\n");
+        av_log(avctx, AV_LOG_DEBUG, "vt decoder cb: output image buffer is null\n");
         return;
     }
 
@@ -897,11 +902,6 @@ static int videotoolbox_common_end_frame(AVCodecContext *avctx, AVFrame *frame)
     OSStatus status;
     AVVideotoolboxContext *videotoolbox = videotoolbox_get_context(avctx);
     VTContext *vtctx = avctx->internal->hwaccel_priv_data;
-
-    frame->crop_right = 0;
-    frame->crop_left = 0;
-    frame->crop_top = 0;
-    frame->crop_bottom = 0;
 
     if (vtctx->reconfig_needed == true) {
         vtctx->reconfig_needed = false;

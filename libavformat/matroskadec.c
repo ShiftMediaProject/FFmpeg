@@ -798,7 +798,7 @@ static int matroska_resync(MatroskaDemuxContext *matroska, int64_t last_pos)
             id == MATROSKA_ID_CLUSTER  || id == MATROSKA_ID_CHAPTERS) {
             /* Prepare the context for parsing of a level 1 element. */
             matroska_reset_status(matroska, id, -1);
-            /* Given that we are here means that an error has occured,
+            /* Given that we are here means that an error has occurred,
              * so treat the segment as unknown length in order not to
              * discard valid data that happens to be beyond the designated
              * end of the segment. */
@@ -1331,7 +1331,7 @@ static int ebml_parse(MatroskaDemuxContext *matroska,
             // current element (i.e. how much would be skipped); if there were
             // more than a few skipped elements in a row and skipping the current
             // element would lead us more than SKIP_THRESHOLD away from the last
-            // known good position, then it is inferred that an error occured.
+            // known good position, then it is inferred that an error occurred.
             // The dependency on the number of unknown elements in a row exists
             // because the distance to the last known good position is
             // automatically big if the last parsed element was big.
@@ -2116,9 +2116,6 @@ static int mkv_parse_video_color(AVStream *st, const MatroskaTrack *track) {
     }
 
     if (has_mastering_primaries || has_mastering_luminance) {
-        // Use similar rationals as other standards.
-        const int chroma_den = 50000;
-        const int luma_den = 10000;
         AVMasteringDisplayMetadata *metadata =
             (AVMasteringDisplayMetadata*) av_stream_new_side_data(
                 st, AV_PKT_DATA_MASTERING_DISPLAY_METADATA,
@@ -2128,29 +2125,19 @@ static int mkv_parse_video_color(AVStream *st, const MatroskaTrack *track) {
         }
         memset(metadata, 0, sizeof(AVMasteringDisplayMetadata));
         if (has_mastering_primaries) {
-            metadata->display_primaries[0][0] = av_make_q(
-                round(mastering_meta->r_x * chroma_den), chroma_den);
-            metadata->display_primaries[0][1] = av_make_q(
-                round(mastering_meta->r_y * chroma_den), chroma_den);
-            metadata->display_primaries[1][0] = av_make_q(
-                round(mastering_meta->g_x * chroma_den), chroma_den);
-            metadata->display_primaries[1][1] = av_make_q(
-                round(mastering_meta->g_y * chroma_den), chroma_den);
-            metadata->display_primaries[2][0] = av_make_q(
-                round(mastering_meta->b_x * chroma_den), chroma_den);
-            metadata->display_primaries[2][1] = av_make_q(
-                round(mastering_meta->b_y * chroma_den), chroma_den);
-            metadata->white_point[0] = av_make_q(
-                round(mastering_meta->white_x * chroma_den), chroma_den);
-            metadata->white_point[1] = av_make_q(
-                round(mastering_meta->white_y * chroma_den), chroma_den);
+            metadata->display_primaries[0][0] = av_d2q(mastering_meta->r_x, INT_MAX);
+            metadata->display_primaries[0][1] = av_d2q(mastering_meta->r_y, INT_MAX);
+            metadata->display_primaries[1][0] = av_d2q(mastering_meta->g_x, INT_MAX);
+            metadata->display_primaries[1][1] = av_d2q(mastering_meta->g_y, INT_MAX);
+            metadata->display_primaries[2][0] = av_d2q(mastering_meta->b_x, INT_MAX);
+            metadata->display_primaries[2][1] = av_d2q(mastering_meta->b_y, INT_MAX);
+            metadata->white_point[0] = av_d2q(mastering_meta->white_x, INT_MAX);
+            metadata->white_point[1] = av_d2q(mastering_meta->white_y, INT_MAX);
             metadata->has_primaries = 1;
         }
         if (has_mastering_luminance) {
-            metadata->max_luminance = av_make_q(
-                round(mastering_meta->max_luminance * luma_den), luma_den);
-            metadata->min_luminance = av_make_q(
-                round(mastering_meta->min_luminance * luma_den), luma_den);
+            metadata->max_luminance = av_d2q(mastering_meta->max_luminance, INT_MAX);
+            metadata->min_luminance = av_d2q(mastering_meta->min_luminance, INT_MAX);
             metadata->has_luminance = 1;
         }
     }
@@ -3280,15 +3267,16 @@ static int matroska_parse_prores(MatroskaTrack *track, uint8_t *src,
     int dstlen = *size;
 
     if (AV_RB32(&src[4]) != MKBETAG('i', 'c', 'p', 'f')) {
-        dst = av_malloc(dstlen + 8 + AV_INPUT_BUFFER_PADDING_SIZE);
+        dstlen += 8;
+
+        dst = av_malloc(dstlen + AV_INPUT_BUFFER_PADDING_SIZE);
         if (!dst)
             return AVERROR(ENOMEM);
 
         AV_WB32(dst, dstlen);
         AV_WB32(dst + 4, MKBETAG('i', 'c', 'p', 'f'));
-        memcpy(dst + 8, src, dstlen);
-        memset(dst + 8 + dstlen, 0, AV_INPUT_BUFFER_PADDING_SIZE);
-        dstlen += 8;
+        memcpy(dst + 8, src, dstlen - 8);
+        memset(dst + dstlen, 0, AV_INPUT_BUFFER_PADDING_SIZE);
     }
 
     *pdst = dst;

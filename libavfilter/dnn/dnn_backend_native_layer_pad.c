@@ -22,6 +22,29 @@
 #include "libavutil/avassert.h"
 #include "dnn_backend_native_layer_pad.h"
 
+int dnn_load_layer_pad(Layer *layer, AVIOContext *model_file_context, int file_size)
+{
+    LayerPadParams *params;
+    int dnn_size = 0;
+    params = av_malloc(sizeof(*params));
+    if (!params)
+        return 0;
+
+    params->mode = (int32_t)avio_rl32(model_file_context);
+    dnn_size += 4;
+    for (int i = 0; i < 4; ++i) {
+        params->paddings[i][0] = avio_rl32(model_file_context);
+        params->paddings[i][1] = avio_rl32(model_file_context);
+        dnn_size += 8;
+    }
+    layer->input_operand_indexes[0] = (int32_t)avio_rl32(model_file_context);
+    layer->output_operand_index = (int32_t)avio_rl32(model_file_context);
+    dnn_size += 8;
+    layer->params = params;
+
+    return dnn_size;
+}
+
 static int before_get_buddy(int given, int paddings, LayerPadModeParam mode)
 {
     if (mode == LPMP_SYMMETRIC) {
@@ -48,12 +71,13 @@ static int after_get_buddy(int given, int border, LayerPadModeParam mode)
     }
 }
 
-int dnn_execute_layer_pad(DnnOperand *operands, const int32_t *input_operand_indexes, int32_t output_operand_index,
-                           const LayerPadParams *params)
+int dnn_execute_layer_pad(DnnOperand *operands, const int32_t *input_operand_indexes,
+                          int32_t output_operand_index, const void *parameters)
 {
     int32_t before_paddings;
     int32_t after_paddings;
     float* output;
+    const LayerPadParams *params = (const LayerPadParams *)parameters;
 
     // suppose format is <N, H, W, C>
     int32_t input_operand_index = input_operand_indexes[0];
@@ -81,6 +105,7 @@ int dnn_execute_layer_pad(DnnOperand *operands, const int32_t *input_operand_ind
     output_operand->dims[1] = new_height;
     output_operand->dims[2] = new_width;
     output_operand->dims[3] = new_channel;
+    output_operand->data_type = operands[input_operand_index].data_type;
     output_operand->length = calculate_operand_data_length(output_operand);
     output_operand->data = av_realloc(output_operand->data, output_operand->length);
     if (!output_operand->data)

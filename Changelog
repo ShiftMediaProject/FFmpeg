@@ -9,6 +9,17 @@ version <next>:
 - Supoort AMD AMF encoder on Linux (via Vulkan)
 - IMM5 video decoder
 - ZeroMQ protocol
+- support Sipro ACELP.KELVIN decoding
+- streamhash muxer
+- sierpinski video source
+- scroll video filter
+- photosensitivity filter
+- anlms filter
+- arnndn filter
+- bilateral filter
+- maskedmin and maskedmax filters
+- VDPAU VP9 hwaccel
+- median filter
 
 
 version 4.2:

@@ -216,6 +216,7 @@ EXPORTS
     avpriv_h264_has_num_reorder_frames
     avpriv_init_elbg
     avpriv_mpeg4audio_get_config
+    avpriv_mpeg4audio_get_config2
     avpriv_mpegaudio_decode_header
     avpriv_put_string
     avpriv_split_xiph_headers

@@ -159,6 +159,7 @@ static const AVOutputFormat *muxer_list[] = {
     &ff_spx_muxer,
     &ff_spdif_muxer,
     &ff_srt_muxer,
+    &ff_streamhash_muxer,
     &ff_sup_muxer,
     &ff_swf_muxer,
     &ff_tee_muxer,
