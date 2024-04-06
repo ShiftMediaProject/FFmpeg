@@ -12,6 +12,8 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
+    <NASM Include="..\libavcodec\x86\vvc\vvc_mc.asm" />
+    <NASM Include="..\libavcodec\x86\h26x\h2656_inter.asm" />
     <NASM Include="..\libavcodec\x86\ac3dsp.asm" />
     <NASM Include="..\libavcodec\x86\ac3dsp_downmix.asm" />
     <NASM Include="..\libavcodec\x86\audiodsp.asm" />
@@ -197,6 +199,7 @@
     <ClCompile Include="..\libavcodec\hevc_data.c" />
     <ClCompile Include="..\libavcodec\hevc_sei.c" />
     <ClCompile Include="..\libavcodec\dynamic_hdr_vivid.c" />
+    <ClCompile Include="..\libavcodec\aom_film_grain.c" />
     <ClCompile Include="..\libavcodec\huffman.c" />
     <ClCompile Include="..\libavcodec\jrevdct.c" />
     <ClCompile Include="..\libavcodec\iirfilter.c" />
@@ -338,14 +341,13 @@
     <ClCompile Include="..\libavcodec\cyuv.c" />
     <ClCompile Include="..\libavcodec\aura.c" />
     <ClCompile Include="..\libavcodec\av1dec.c" />
+    <ClCompile Include="..\libavcodec\av1_parse.c" />
     <ClCompile Include="..\libavcodec\avrndec.c" />
     <ClCompile Include="..\libavcodec\r210dec.c" />
     <ClCompile Include="..\libavcodec\r210enc.c" />
     <ClCompile Include="..\libavcodec\avs.c" />
     <ClCompile Include="..\libavcodec\avuidec.c" />
     <ClCompile Include="..\libavcodec\avuienc.c" />
-    <ClCompile Include="..\libavcodec\v408dec.c" />
-    <ClCompile Include="..\libavcodec\v408enc.c" />
     <ClCompile Include="..\libavcodec\bethsoftvideo.c" />
     <ClCompile Include="..\libavcodec\bfi.c" />
     <ClCompile Include="..\libavcodec\bink.c" />
@@ -431,6 +433,7 @@
     <ClCompile Include="..\libavcodec\dxa.c" />
     <ClCompile Include="..\libavcodec\dxtory.c" />
     <ClCompile Include="..\libavcodec\dxv.c" />
+    <ClCompile Include="..\libavcodec\dxvenc.c" />
     <ClCompile Include="..\libavcodec\eac3_data.c" />
     <ClCompile Include="..\libavcodec\eac3enc.c" />
     <ClCompile Include="..\libavcodec\eacmv.c" />
@@ -527,7 +530,6 @@
     <ClCompile Include="..\libavcodec\hevc_filter.c" />
     <ClCompile Include="..\libavcodec\hnm4video.c" />
     <ClCompile Include="..\libavcodec\hq_hqa.c" />
-    <ClCompile Include="..\libavcodec\hq_hqadata.c" />
     <ClCompile Include="..\libavcodec\hq_hqadsp.c" />
     <ClCompile Include="..\libavcodec\hqx.c" />
     <ClCompile Include="..\libavcodec\hqxvlc.c" />
@@ -775,6 +777,8 @@
     <ClCompile Include="..\libavcodec\v210x.c" />
     <ClCompile Include="..\libavcodec\v308dec.c" />
     <ClCompile Include="..\libavcodec\v308enc.c" />
+    <ClCompile Include="..\libavcodec\v408dec.c" />
+    <ClCompile Include="..\libavcodec\v408enc.c" />
     <ClCompile Include="..\libavcodec\v410dec.c" />
     <ClCompile Include="..\libavcodec\v410enc.c" />
     <ClCompile Include="..\libavcodec\vb.c" />
@@ -900,7 +904,6 @@
     <ClCompile Include="..\libavcodec\adx_parser.c" />
     <ClCompile Include="..\libavcodec\amr_parser.c" />
     <ClCompile Include="..\libavcodec\av1_parser.c" />
-    <ClCompile Include="..\libavcodec\av1_parse.c" />
     <ClCompile Include="..\libavcodec\avs2.c" />
     <ClCompile Include="..\libavcodec\avs2_parser.c" />
     <ClCompile Include="..\libavcodec\avs3_parser.c" />
@@ -957,56 +960,70 @@
     <ClCompile Include="..\libavcodec\xbm_parser.c" />
     <ClCompile Include="..\libavcodec\xma_parser.c" />
     <ClCompile Include="..\libavcodec\xwd_parser.c" />
-    <ClCompile Include="..\libavcodec\aac_adtstoasc_bsf.c" />
-    <ClCompile Include="..\libavcodec\av1_metadata_bsf.c" />
-    <ClCompile Include="..\libavcodec\av1_frame_merge_bsf.c" />
-    <ClCompile Include="..\libavcodec\av1_frame_split_bsf.c" />
-    <ClCompile Include="..\libavcodec\chomp_bsf.c" />
-    <ClCompile Include="..\libavcodec\dump_extradata_bsf.c" />
-    <ClCompile Include="..\libavcodec\dca_core_bsf.c" />
-    <ClCompile Include="..\libavcodec\dts2pts_bsf.c" />
-    <ClCompile Include="..\libavcodec\dv_error_marker_bsf.c" />
-    <ClCompile Include="..\libavcodec\eac3_core_bsf.c" />
-    <ClCompile Include="..\libavcodec\extract_extradata_bsf.c" />
-    <ClCompile Include="..\libavcodec\filter_units_bsf.c" />
-    <ClCompile Include="..\libavcodec\h264_metadata_bsf.c" />
     <ClCompile Include="..\libavcodec\h264_levels.c" />
-    <ClCompile Include="..\libavcodec\h264_mp4toannexb_bsf.c" />
-    <ClCompile Include="..\libavcodec\h264_redundant_pps_bsf.c" />
-    <ClCompile Include="..\libavcodec\hapqa_extract_bsf.c" />
-    <ClCompile Include="..\libavcodec\h265_metadata_bsf.c" />
     <ClCompile Include="..\libavcodec\h265_profile_level.c" />
-    <ClCompile Include="..\libavcodec\hevc_mp4toannexb_bsf.c" />
-    <ClCompile Include="..\libavcodec\imx_dump_header_bsf.c" />
-    <ClCompile Include="..\libavcodec\media100_to_mjpegb_bsf.c" />
-    <ClCompile Include="..\libavcodec\mjpeg2jpeg_bsf.c" />
-    <ClCompile Include="..\libavcodec\mjpega_dump_header_bsf.c" />
-    <ClCompile Include="..\libavcodec\mpeg4_unpack_bframes_bsf.c" />
-    <ClCompile Include="..\libavcodec\movsub_bsf.c" />
-    <ClCompile Include="..\libavcodec\mp3_header_decompress_bsf.c" />
-    <ClCompile Include="..\libavcodec\mpeg2_metadata_bsf.c" />
-    <ClCompile Include="..\libavcodec\noise_bsf.c" />
-    <ClCompile Include="..\libavcodec\null_bsf.c" />
-    <ClCompile Include="..\libavcodec\opus_metadata_bsf.c" />
-    <ClCompile Include="..\libavcodec\pcm_rechunk_bsf.c" />
-    <ClCompile Include="..\libavcodec\pgs_frame_merge_bsf.c" />
-    <ClCompile Include="..\libavcodec\prores_metadata_bsf.c" />
-    <ClCompile Include="..\libavcodec\remove_extradata_bsf.c" />
-    <ClCompile Include="..\libavcodec\setts_bsf.c" />
-    <ClCompile Include="..\libavcodec\trace_headers_bsf.c" />
-    <ClCompile Include="..\libavcodec\truehd_core_bsf.c" />
-    <ClCompile Include="..\libavcodec\vp9_metadata_bsf.c" />
-    <ClCompile Include="..\libavcodec\vp9_raw_reorder_bsf.c" />
-    <ClCompile Include="..\libavcodec\vp9_superframe_bsf.c" />
-    <ClCompile Include="..\libavcodec\vp9_superframe_split_bsf.c" />
-    <ClCompile Include="..\libavcodec\h266_metadata_bsf.c" />
-    <ClCompile Include="..\libavcodec\vvc_mp4toannexb_bsf.c" />
-    <ClCompile Include="..\libavcodec\evc_frame_merge_bsf.c" />
     <ClCompile Include="..\libavcodec\file_open.c" />
     <ClCompile Include="..\libavcodec\pthread.c" />
     <ClCompile Include="..\libavcodec\pthread_slice.c" />
     <ClCompile Include="..\libavcodec\pthread_frame.c" />
     <ClCompile Include="..\libavcodec\frame_thread_encoder.c" />
+    <ClCompile Include="..\libavcodec\bsf\aac_adtstoasc.c" />
+    <ClCompile Include="..\libavcodec\bsf\av1_frame_merge.c" />
+    <ClCompile Include="..\libavcodec\bsf\av1_frame_split.c" />
+    <ClCompile Include="..\libavcodec\bsf\av1_metadata.c" />
+    <ClCompile Include="..\libavcodec\bsf\chomp.c" />
+    <ClCompile Include="..\libavcodec\bsf\dts2pts.c" />
+    <ClCompile Include="..\libavcodec\bsf\dump_extradata.c" />
+    <ClCompile Include="..\libavcodec\bsf\dv_error_marker.c" />
+    <ClCompile Include="..\libavcodec\bsf\eac3_core.c" />
+    <ClCompile Include="..\libavcodec\bsf\evc_frame_merge.c" />
+    <ClCompile Include="..\libavcodec\bsf\extract_extradata.c" />
+    <ClCompile Include="..\libavcodec\bsf\filter_units.c" />
+    <ClCompile Include="..\libavcodec\bsf\h264_metadata.c" />
+    <ClCompile Include="..\libavcodec\bsf\h264_mp4toannexb.c" />
+    <ClCompile Include="..\libavcodec\bsf\h264_redundant_pps.c" />
+    <ClCompile Include="..\libavcodec\bsf\hapqa_extract.c" />
+    <ClCompile Include="..\libavcodec\bsf\h265_metadata.c" />
+    <ClCompile Include="..\libavcodec\bsf\hevc_mp4toannexb.c" />
+    <ClCompile Include="..\libavcodec\bsf\imx_dump_header.c" />
+    <ClCompile Include="..\libavcodec\bsf\media100_to_mjpegb.c" />
+    <ClCompile Include="..\libavcodec\bsf\mjpeg2jpeg.c" />
+    <ClCompile Include="..\libavcodec\bsf\mjpega_dump_header.c" />
+    <ClCompile Include="..\libavcodec\bsf\movsub.c" />
+    <ClCompile Include="..\libavcodec\bsf\mpeg2_metadata.c" />
+    <ClCompile Include="..\libavcodec\bsf\mpeg4_unpack_bframes.c" />
+    <ClCompile Include="..\libavcodec\bsf\noise.c" />
+    <ClCompile Include="..\libavcodec\bsf\opus_metadata.c" />
+    <ClCompile Include="..\libavcodec\bsf\pcm_rechunk.c" />
+    <ClCompile Include="..\libavcodec\bsf\pgs_frame_merge.c" />
+    <ClCompile Include="..\libavcodec\bsf\prores_metadata.c" />
+    <ClCompile Include="..\libavcodec\bsf\remove_extradata.c" />
+    <ClCompile Include="..\libavcodec\bsf\setts.c" />
+    <ClCompile Include="..\libavcodec\bsf\showinfo.c" />
+    <ClCompile Include="..\libavcodec\bsf\trace_headers.c" />
+    <ClCompile Include="..\libavcodec\bsf\truehd_core.c" />
+    <ClCompile Include="..\libavcodec\bsf\vp9_metadata.c" />
+    <ClCompile Include="..\libavcodec\bsf\vp9_raw_reorder.c" />
+    <ClCompile Include="..\libavcodec\bsf\vp9_superframe.c" />
+    <ClCompile Include="..\libavcodec\bsf\vp9_superframe_split.c" />
+    <ClCompile Include="..\libavcodec\bsf\h266_metadata.c" />
+    <ClCompile Include="..\libavcodec\bsf\vvc_mp4toannexb.c" />
+    <ClCompile Include="..\libavcodec\x86\vvc\vvcdsp_init.c" />
+    <ClCompile Include="..\libavcodec\x86\h26x\h2656dsp.c" />
+    <ClCompile Include="..\libavcodec\vvc\vvcdec.c" />
+    <ClCompile Include="..\libavcodec\vvc\vvcdsp.c" />
+    <ClCompile Include="..\libavcodec\vvc\vvc_cabac.c" />
+    <ClCompile Include="..\libavcodec\vvc\vvc_ctu.c" />
+    <ClCompile Include="..\libavcodec\vvc\vvc_data.c" />
+    <ClCompile Include="..\libavcodec\vvc\vvc_filter.c" />
+    <ClCompile Include="..\libavcodec\vvc\vvc_inter.c" />
+    <ClCompile Include="..\libavcodec\vvc\vvc_intra.c" />
+    <ClCompile Include="..\libavcodec\vvc\vvc_intra_utils.c" />
+    <ClCompile Include="..\libavcodec\vvc\vvc_itx_1d.c" />
+    <ClCompile Include="..\libavcodec\vvc\vvc_mvs.c" />
+    <ClCompile Include="..\libavcodec\vvc\vvc_ps.c" />
+    <ClCompile Include="..\libavcodec\vvc\vvc_refs.c" />
+    <ClCompile Include="..\libavcodec\vvc\vvc_thread.c" />
     <ClCompile Include="..\libavcodec\x86\constants.c" />
     <ClCompile Include="..\libavcodec\x86\ac3dsp_init.c" />
     <ClCompile Include="..\libavcodec\x86\audiodsp_init.c" />
@@ -1274,6 +1291,12 @@
     <ClCompile Include="..\libavcodec\g722dsp.c">
       <ObjectFileName>$(IntDir)\libavcodec_g722dsp.obj</ObjectFileName>
     </ClCompile>
+    <ClCompile Include="..\libavcodec\bsf\dca_core.c">
+      <ObjectFileName>$(IntDir)\libavcodec_bsf_dca_core.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\libavcodec\bsf\null.c">
+      <ObjectFileName>$(IntDir)\libavcodec_bsf_null.obj</ObjectFileName>
+    </ClCompile>
     <ClCompile Include="..\libavcodec\x86\mpegaudiodsp.c">
       <ObjectFileName>$(IntDir)\libavcodec_x86_mpegaudiodsp.obj</ObjectFileName>
     </ClCompile>
@@ -1328,6 +1351,5 @@
     <ClInclude Include="..\libavcodec\version_major.h" />
     <ClInclude Include="..\libavcodec\videotoolbox.h" />
     <ClInclude Include="..\libavcodec\vorbis_parser.h" />
-    <ClInclude Include="..\libavcodec\xvmc.h" />
   </ItemGroup>
 </Project>

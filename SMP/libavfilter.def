@@ -1,7 +1,8 @@
 EXPORTS
     av_buffersink_get_ch_layout
-    av_buffersink_get_channel_layout
     av_buffersink_get_channels
+    av_buffersink_get_color_range
+    av_buffersink_get_colorspace
     av_buffersink_get_format
     av_buffersink_get_frame
     av_buffersink_get_frame_flags
@@ -23,7 +24,6 @@ EXPORTS
     av_buffersrc_parameters_set
     av_buffersrc_write_frame
     av_filter_iterate
-    av_fopen_utf8
     avfilter_config_links
     avfilter_configuration
     avfilter_filter_pad_count

@@ -41,7 +41,6 @@ EXPORTS
     av_blowfish_init
     av_bmg_get
     av_bprint_append_data
-    av_bprint_channel_layout
     av_bprint_chars
     av_bprint_clear
     av_bprint_escape
@@ -84,14 +83,15 @@ EXPORTS
     av_channel_layout_check
     av_channel_layout_compare
     av_channel_layout_copy
+    av_channel_layout_custom_init
     av_channel_layout_default
     av_channel_layout_describe
     av_channel_layout_describe_bprint
-    av_channel_layout_extract_channel
     av_channel_layout_from_mask
     av_channel_layout_from_string
     av_channel_layout_index_from_channel
     av_channel_layout_index_from_string
+    av_channel_layout_retype
     av_channel_layout_standard
     av_channel_layout_subset
     av_channel_layout_uninit
@@ -183,43 +183,29 @@ EXPORTS
     av_fast_malloc
     av_fast_mallocz
     av_fast_realloc
-    av_fifo_alloc
     av_fifo_alloc2
-    av_fifo_alloc_array
     av_fifo_auto_grow_limit
     av_fifo_can_read
     av_fifo_can_write
-    av_fifo_drain
     av_fifo_drain2
     av_fifo_elem_size
-    av_fifo_free
-    av_fifo_freep
     av_fifo_freep2
-    av_fifo_generic_peek
-    av_fifo_generic_peek_at
-    av_fifo_generic_read
-    av_fifo_generic_write
-    av_fifo_grow
     av_fifo_grow2
     av_fifo_peek
     av_fifo_peek_to_cb
     av_fifo_read
     av_fifo_read_to_cb
-    av_fifo_realloc2
-    av_fifo_reset
     av_fifo_reset2
-    av_fifo_size
-    av_fifo_space
     av_fifo_write
     av_fifo_write_from_cb
     av_file_map
     av_file_unmap
     av_film_grain_params_alloc
     av_film_grain_params_create_side_data
+    av_film_grain_params_select
     av_find_best_pix_fmt_of_2
     av_find_info_tag
     av_find_nearest_q_idx
-    av_fopen_utf8
     av_force_cpu_flags
     av_fourcc_make_string
     av_frame_alloc
@@ -239,7 +225,11 @@ EXPORTS
     av_frame_ref
     av_frame_remove_side_data
     av_frame_replace
+    av_frame_side_data_clone
+    av_frame_side_data_free
+    av_frame_side_data_get_c
     av_frame_side_data_name
+    av_frame_side_data_new
     av_frame_unref
     av_free
     av_freep
@@ -248,15 +238,7 @@ EXPORTS
     av_get_alt_sample_fmt
     av_get_bits_per_pixel
     av_get_bytes_per_sample
-    av_get_channel_description
-    av_get_channel_layout
-    av_get_channel_layout_channel_index
-    av_get_channel_layout_nb_channels
-    av_get_channel_layout_string
-    av_get_channel_name
     av_get_cpu_flags
-    av_get_default_channel_layout
-    av_get_extended_channel_layout
     av_get_known_color_name
     av_get_media_type_string
     av_get_packed_sample_fmt
@@ -271,7 +253,6 @@ EXPORTS
     av_get_sample_fmt
     av_get_sample_fmt_name
     av_get_sample_fmt_string
-    av_get_standard_channel_layout
     av_get_time_base_q
     av_get_token
     av_gettime
@@ -400,7 +381,6 @@ EXPORTS
     av_opt_free
     av_opt_freep_ranges
     av_opt_get
-    av_opt_get_channel_layout
     av_opt_get_chlayout
     av_opt_get_dict_val
     av_opt_get_double
@@ -420,7 +400,6 @@ EXPORTS
     av_opt_serialize
     av_opt_set
     av_opt_set_bin
-    av_opt_set_channel_layout
     av_opt_set_chlayout
     av_opt_set_defaults
     av_opt_set_defaults2
@@ -519,7 +498,6 @@ EXPORTS
     av_tea_alloc
     av_tea_crypt
     av_tea_init
-    av_tempfile
     av_thread_message_flush
     av_thread_message_queue_alloc
     av_thread_message_queue_free
@@ -546,6 +524,7 @@ EXPORTS
     av_tree_find
     av_tree_insert
     av_tree_node_alloc
+    av_ts_make_time_string2
     av_twofish_alloc
     av_twofish_crypt
     av_twofish_init

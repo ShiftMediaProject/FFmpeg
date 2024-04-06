@@ -20,7 +20,7 @@
  */
 #include "config.h"
 #include "config_components.h"
-static const AVInputFormat *indev_list[] = {
+static const FFInputFormat *indev_list[] = {
 #if CONFIG_DSHOW_INDEV
     &ff_dshow_demuxer,
 #endif

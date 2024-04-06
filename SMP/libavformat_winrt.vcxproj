@@ -17,7 +17,7 @@
       <DisableSpecificWarnings>4244;4267;4018;4146;4028;4996;4090;4114;4308;4305;4005;4101;4554;4307;4273;4133;4544;4334;4293;4047;4703;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Lib>
-      <AdditionalDependencies>libbz2d_winrt.lib;libiconvd_winrt.lib;libzlibd_winrt.lib;libgcryptd_winrt.lib;libgnutlsd_winrt.lib;libblurayd_winrt.lib;libgmed_winrt.lib;libmodplugd_winrt.lib;libsshd_winrt.lib;libxml2d_winrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libbz2d_winrt.lib;libiconvd_winrt.lib;libzlibd_winrt.lib;libgcryptd_winrt.lib;libgnutlsd_winrt.lib;libgmed_winrt.lib;libmodplugd_winrt.lib;libsshd_winrt.lib;libxml2d_winrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/IGNORE:4006,4221,4049,4217,4197,4099,4264 %(AdditionalOptions)</AdditionalOptions>
     </Lib>
     <PostBuildEvent>
@@ -69,7 +69,7 @@ cd $(ProjectDir)
       <DisableSpecificWarnings>4244;4267;4018;4146;4028;4996;4090;4114;4308;4305;4005;4101;4554;4307;4273;4133;4544;4334;4293;4047;4703;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Lib>
-      <AdditionalDependencies>libbz2d_winrt.lib;libiconvd_winrt.lib;libzlibd_winrt.lib;libgcryptd_winrt.lib;libgnutlsd_winrt.lib;libblurayd_winrt.lib;libgmed_winrt.lib;libmodplugd_winrt.lib;libsshd_winrt.lib;libxml2d_winrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libbz2d_winrt.lib;libiconvd_winrt.lib;libzlibd_winrt.lib;libgcryptd_winrt.lib;libgnutlsd_winrt.lib;libgmed_winrt.lib;libmodplugd_winrt.lib;libsshd_winrt.lib;libxml2d_winrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/IGNORE:4006,4221,4049,4217,4197,4099,4264 %(AdditionalOptions)</AdditionalOptions>
     </Lib>
     <PostBuildEvent>
@@ -121,7 +121,7 @@ cd $(ProjectDir)
       <DisableSpecificWarnings>4244;4267;4018;4146;4028;4996;4090;4114;4308;4305;4005;4101;4554;4307;4273;4133;4544;4334;4293;4047;4703;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>avcodecd_winrt.lib;avutild_winrt.lib;bz2d_winrt.lib;iconvd_winrt.lib;zlibd_winrt.lib;gcryptd_winrt.lib;gnutlsd_winrt.lib;blurayd_winrt.lib;gmed_winrt.lib;modplugd_winrt.lib;sshd_winrt.lib;xml2d_winrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>avcodecd_winrt.lib;avutild_winrt.lib;bz2d_winrt.lib;iconvd_winrt.lib;zlibd_winrt.lib;gcryptd_winrt.lib;gnutlsd_winrt.lib;gmed_winrt.lib;modplugd_winrt.lib;sshd_winrt.lib;xml2d_winrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>.\libavformat.def</ModuleDefinitionFile>
       <AdditionalOptions>/IGNORE:4006,4221,4049,4217,4197,4099,4264 %(AdditionalOptions)</AdditionalOptions>
     </Link>
@@ -174,7 +174,7 @@ cd $(ProjectDir)
       <DisableSpecificWarnings>4244;4267;4018;4146;4028;4996;4090;4114;4308;4305;4005;4101;4554;4307;4273;4133;4544;4334;4293;4047;4703;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>avcodecd_winrt.lib;avutild_winrt.lib;bz2d_winrt.lib;iconvd_winrt.lib;zlibd_winrt.lib;gcryptd_winrt.lib;gnutlsd_winrt.lib;blurayd_winrt.lib;gmed_winrt.lib;modplugd_winrt.lib;sshd_winrt.lib;xml2d_winrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>avcodecd_winrt.lib;avutild_winrt.lib;bz2d_winrt.lib;iconvd_winrt.lib;zlibd_winrt.lib;gcryptd_winrt.lib;gnutlsd_winrt.lib;gmed_winrt.lib;modplugd_winrt.lib;sshd_winrt.lib;xml2d_winrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>.\libavformat.def</ModuleDefinitionFile>
       <AdditionalOptions>/IGNORE:4006,4221,4049,4217,4197,4099,4264 %(AdditionalOptions)</AdditionalOptions>
     </Link>
@@ -227,7 +227,7 @@ cd $(ProjectDir)
       <DisableSpecificWarnings>4244;4267;4018;4146;4028;4996;4090;4114;4308;4305;4005;4101;4554;4307;4273;4133;4544;4334;4293;4047;4703;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Lib>
-      <AdditionalDependencies>libbz2_winrt.lib;libiconv_winrt.lib;libzlib_winrt.lib;libgcrypt_winrt.lib;libgnutls_winrt.lib;libbluray_winrt.lib;libgme_winrt.lib;libmodplug_winrt.lib;libssh_winrt.lib;libxml2_winrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libbz2_winrt.lib;libiconv_winrt.lib;libzlib_winrt.lib;libgcrypt_winrt.lib;libgnutls_winrt.lib;libgme_winrt.lib;libmodplug_winrt.lib;libssh_winrt.lib;libxml2_winrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/IGNORE:4006,4221,4049,4217,4197,4099,4264 %(AdditionalOptions)</AdditionalOptions>
     </Lib>
     <PostBuildEvent>
@@ -279,7 +279,7 @@ cd $(ProjectDir)
       <DisableSpecificWarnings>4244;4267;4018;4146;4028;4996;4090;4114;4308;4305;4005;4101;4554;4307;4273;4133;4544;4334;4293;4047;4703;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Lib>
-      <AdditionalDependencies>libbz2_winrt.lib;libiconv_winrt.lib;libzlib_winrt.lib;libgcrypt_winrt.lib;libgnutls_winrt.lib;libbluray_winrt.lib;libgme_winrt.lib;libmodplug_winrt.lib;libssh_winrt.lib;libxml2_winrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libbz2_winrt.lib;libiconv_winrt.lib;libzlib_winrt.lib;libgcrypt_winrt.lib;libgnutls_winrt.lib;libgme_winrt.lib;libmodplug_winrt.lib;libssh_winrt.lib;libxml2_winrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/IGNORE:4006,4221,4049,4217,4197,4099,4264 %(AdditionalOptions)</AdditionalOptions>
     </Lib>
     <PostBuildEvent>
@@ -331,7 +331,7 @@ cd $(ProjectDir)
       <DisableSpecificWarnings>4244;4267;4018;4146;4028;4996;4090;4114;4308;4305;4005;4101;4554;4307;4273;4133;4544;4334;4293;4047;4703;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>avcodec_winrt.lib;avutil_winrt.lib;bz2_winrt.lib;iconv_winrt.lib;zlib_winrt.lib;gcrypt_winrt.lib;gnutls_winrt.lib;bluray_winrt.lib;gme_winrt.lib;modplug_winrt.lib;ssh_winrt.lib;xml2_winrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>avcodec_winrt.lib;avutil_winrt.lib;bz2_winrt.lib;iconv_winrt.lib;zlib_winrt.lib;gcrypt_winrt.lib;gnutls_winrt.lib;gme_winrt.lib;modplug_winrt.lib;ssh_winrt.lib;xml2_winrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>.\libavformat.def</ModuleDefinitionFile>
       <AdditionalOptions>/IGNORE:4006,4221,4049,4217,4197,4099,4264 %(AdditionalOptions)</AdditionalOptions>
     </Link>
@@ -384,7 +384,7 @@ cd $(ProjectDir)
       <DisableSpecificWarnings>4244;4267;4018;4146;4028;4996;4090;4114;4308;4305;4005;4101;4554;4307;4273;4133;4544;4334;4293;4047;4703;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>avcodec_winrt.lib;avutil_winrt.lib;bz2_winrt.lib;iconv_winrt.lib;zlib_winrt.lib;gcrypt_winrt.lib;gnutls_winrt.lib;bluray_winrt.lib;gme_winrt.lib;modplug_winrt.lib;ssh_winrt.lib;xml2_winrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>avcodec_winrt.lib;avutil_winrt.lib;bz2_winrt.lib;iconv_winrt.lib;zlib_winrt.lib;gcrypt_winrt.lib;gnutls_winrt.lib;gme_winrt.lib;modplug_winrt.lib;ssh_winrt.lib;xml2_winrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>.\libavformat.def</ModuleDefinitionFile>
       <AdditionalOptions>/IGNORE:4006,4221,4049,4217,4197,4099,4264 %(AdditionalOptions)</AdditionalOptions>
     </Link>
@@ -437,7 +437,7 @@ cd $(ProjectDir)
       <DisableSpecificWarnings>4244;4267;4018;4146;4028;4996;4090;4114;4308;4305;4005;4101;4554;4307;4273;4133;4544;4334;4293;4047;4703;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>avcodec_winrt.lib;avutil_winrt.lib;libbz2_winrt.lib;libiconv_winrt.lib;libzlib_winrt.lib;libgcrypt_winrt.lib;libgnutls_winrt.lib;libbluray_winrt.lib;libgme_winrt.lib;libmodplug_winrt.lib;libssh_winrt.lib;libxml2_winrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>avcodec_winrt.lib;avutil_winrt.lib;libbz2_winrt.lib;libiconv_winrt.lib;libzlib_winrt.lib;libgcrypt_winrt.lib;libgnutls_winrt.lib;libgme_winrt.lib;libmodplug_winrt.lib;libssh_winrt.lib;libxml2_winrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>.\libavformat.def</ModuleDefinitionFile>
       <AdditionalOptions>/IGNORE:4006,4221,4049,4217,4197,4099,4264 %(AdditionalOptions)</AdditionalOptions>
     </Link>
@@ -490,7 +490,7 @@ cd $(ProjectDir)
       <DisableSpecificWarnings>4244;4267;4018;4146;4028;4996;4090;4114;4308;4305;4005;4101;4554;4307;4273;4133;4544;4334;4293;4047;4703;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>avcodec_winrt.lib;avutil_winrt.lib;libbz2_winrt.lib;libiconv_winrt.lib;libzlib_winrt.lib;libgcrypt_winrt.lib;libgnutls_winrt.lib;libbluray_winrt.lib;libgme_winrt.lib;libmodplug_winrt.lib;libssh_winrt.lib;libxml2_winrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>avcodec_winrt.lib;avutil_winrt.lib;libbz2_winrt.lib;libiconv_winrt.lib;libzlib_winrt.lib;libgcrypt_winrt.lib;libgnutls_winrt.lib;libgme_winrt.lib;libmodplug_winrt.lib;libssh_winrt.lib;libxml2_winrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>.\libavformat.def</ModuleDefinitionFile>
       <AdditionalOptions>/IGNORE:4006,4221,4049,4217,4197,4099,4264 %(AdditionalOptions)</AdditionalOptions>
     </Link>

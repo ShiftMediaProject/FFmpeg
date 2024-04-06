@@ -61,7 +61,6 @@
     <ClCompile Include="..\libavfilter\colorspace.c" />
     <ClCompile Include="..\libavfilter\ccfifo.c" />
     <ClCompile Include="..\libavfilter\drawutils.c" />
-    <ClCompile Include="..\libavfilter\fifo.c" />
     <ClCompile Include="..\libavfilter\formats.c" />
     <ClCompile Include="..\libavfilter\framepool.c" />
     <ClCompile Include="..\libavfilter\framequeue.c" />
@@ -262,6 +261,7 @@
     <ClCompile Include="..\libavfilter\vf_drawbox.c" />
     <ClCompile Include="..\libavfilter\f_drawgraph.c" />
     <ClCompile Include="..\libavfilter\vf_drawtext.c" />
+    <ClCompile Include="..\libavfilter\textutils.c" />
     <ClCompile Include="..\libavfilter\vf_edgedetect.c" />
     <ClCompile Include="..\libavfilter\vf_elbg.c" />
     <ClCompile Include="..\libavfilter\vf_entropy.c" />
@@ -285,6 +285,7 @@
     <ClCompile Include="..\libavfilter\vf_framestep.c" />
     <ClCompile Include="..\libavfilter\vf_freezedetect.c" />
     <ClCompile Include="..\libavfilter\vf_freezeframes.c" />
+    <ClCompile Include="..\libavfilter\vf_fsync.c" />
     <ClCompile Include="..\libavfilter\vf_geq.c" />
     <ClCompile Include="..\libavfilter\f_graphmonitor.c" />
     <ClCompile Include="..\libavfilter\vf_grayworld.c" />

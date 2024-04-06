@@ -1,5 +1,4 @@
 EXPORTS
-    av_fopen_utf8
     av_input_audio_device_next
     av_input_video_device_next
     av_output_audio_device_next

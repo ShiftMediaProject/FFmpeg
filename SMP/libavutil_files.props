@@ -87,6 +87,7 @@
     <ClCompile Include="..\libavutil\threadmessage.c" />
     <ClCompile Include="..\libavutil\time.c" />
     <ClCompile Include="..\libavutil\timecode.c" />
+    <ClCompile Include="..\libavutil\timestamp.c" />
     <ClCompile Include="..\libavutil\tree.c" />
     <ClCompile Include="..\libavutil\twofish.c" />
     <ClCompile Include="..\libavutil\utils.c" />

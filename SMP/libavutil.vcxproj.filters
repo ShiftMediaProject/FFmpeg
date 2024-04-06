@@ -261,6 +261,9 @@
     <ClCompile Include="..\libavutil\timecode.c">
       <Filter>Source Files\libavutil</Filter>
     </ClCompile>
+    <ClCompile Include="..\libavutil\timestamp.c">
+      <Filter>Source Files\libavutil</Filter>
+    </ClCompile>
     <ClCompile Include="..\libavutil\tree.c">
       <Filter>Source Files\libavutil</Filter>
     </ClCompile>

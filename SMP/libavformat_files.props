@@ -38,6 +38,10 @@
     <ClCompile Include="..\libavformat\version.c" />
     <ClCompile Include="..\libavformat\file_open.c" />
     <ClCompile Include="..\libavformat\isom.c" />
+    <ClCompile Include="..\libavformat\iamf_reader.c" />
+    <ClCompile Include="..\libavformat\iamf_parse.c" />
+    <ClCompile Include="..\libavformat\iamf.c" />
+    <ClCompile Include="..\libavformat\iamf_writer.c" />
     <ClCompile Include="..\libavformat\network.c" />
     <ClCompile Include="..\libavformat\riffdec.c" />
     <ClCompile Include="..\libavformat\riffenc.c" />
@@ -93,8 +97,9 @@
     <ClCompile Include="..\libavformat\adtsenc.c" />
     <ClCompile Include="..\libavformat\id3v2enc.c" />
     <ClCompile Include="..\libavformat\adxdec.c" />
-    <ClCompile Include="..\libavformat\aea.c" />
+    <ClCompile Include="..\libavformat\aeadec.c" />
     <ClCompile Include="..\libavformat\pcm.c" />
+    <ClCompile Include="..\libavformat\aeaenc.c" />
     <ClCompile Include="..\libavformat\afc.c" />
     <ClCompile Include="..\libavformat\aiffdec.c" />
     <ClCompile Include="..\libavformat\aiff.c" />
@@ -193,7 +198,6 @@
     <ClCompile Include="..\libavformat\ffmetadec.c" />
     <ClCompile Include="..\libavformat\ffmetaenc.c" />
     <ClCompile Include="..\libavformat\fifo.c" />
-    <ClCompile Include="..\libavformat\fifo_test.c" />
     <ClCompile Include="..\libavformat\filmstripdec.c" />
     <ClCompile Include="..\libavformat\filmstripenc.c" />
     <ClCompile Include="..\libavformat\fitsdec.c" />
@@ -242,10 +246,7 @@
     <ClCompile Include="..\libavformat\hlsenc.c" />
     <ClCompile Include="..\libavformat\hnm.c" />
     <ClCompile Include="..\libavformat\iamfdec.c" />
-    <ClCompile Include="..\libavformat\iamf_parse.c" />
-    <ClCompile Include="..\libavformat\iamf.c" />
     <ClCompile Include="..\libavformat\iamfenc.c" />
-    <ClCompile Include="..\libavformat\iamf_writer.c" />
     <ClCompile Include="..\libavformat\icodec.c" />
     <ClCompile Include="..\libavformat\icoenc.c" />
     <ClCompile Include="..\libavformat\idcin.c" />
@@ -292,6 +293,7 @@
     <ClCompile Include="..\libavformat\qtpalette.c" />
     <ClCompile Include="..\libavformat\dovi_isom.c" />
     <ClCompile Include="..\libavformat\matroskaenc.c" />
+    <ClCompile Include="..\libavformat\vvc.c" />
     <ClCompile Include="..\libavformat\wv.c" />
     <ClCompile Include="..\libavformat\mca.c" />
     <ClCompile Include="..\libavformat\mccdec.c" />
@@ -372,6 +374,7 @@
     <ClCompile Include="..\libavformat\qcp.c" />
     <ClCompile Include="..\libavformat\qoadec.c" />
     <ClCompile Include="..\libavformat\r3d.c" />
+    <ClCompile Include="..\libavformat\rcwtenc.c" />
     <ClCompile Include="..\libavformat\realtextdec.c" />
     <ClCompile Include="..\libavformat\redspark.c" />
     <ClCompile Include="..\libavformat\rka.c" />
@@ -511,7 +514,6 @@
     <ClCompile Include="..\libavformat\libgme.c" />
     <ClCompile Include="..\libavformat\libmodplug.c" />
     <ClCompile Include="..\libavformat\async.c" />
-    <ClCompile Include="..\libavformat\bluray.c" />
     <ClCompile Include="..\libavformat\cache.c" />
     <ClCompile Include="..\libavformat\concat.c" />
     <ClCompile Include="..\libavformat\crypto.c" />

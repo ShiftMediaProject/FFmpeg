@@ -14,7 +14,6 @@ EXPORTS
     av_find_input_format
     av_find_program_from_stream
     av_fmt_ctx_get_duration_estimation_method
-    av_fopen_utf8
     av_format_inject_global_side_data
     av_get_frame_filename
     av_get_frame_filename2
@@ -48,7 +47,6 @@ EXPORTS
     av_stream_add_side_data
     av_stream_get_class
     av_stream_get_codec_timebase
-    av_stream_get_end_pts
     av_stream_get_parser
     av_stream_get_side_data
     av_stream_group_get_class
@@ -85,6 +83,7 @@ EXPORTS
     avformat_seek_file
     avformat_stream_group_add_stream
     avformat_stream_group_create
+    avformat_stream_group_name
     avformat_transfer_internal_stream_timing_info
     avformat_version
     avformat_write_header

@@ -20,7 +20,7 @@
  */
 #include "config.h"
 #include "config_components.h"
-static const AVInputFormat *demuxer_list[] = {
+static const FFInputFormat *demuxer_list[] = {
     &ff_aa_demuxer,
     &ff_aac_demuxer,
     &ff_aax_demuxer,

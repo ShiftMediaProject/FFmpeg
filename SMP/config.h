@@ -26,9 +26,9 @@
 #   include <sdkddkver.h>
 #   include <winapifamily.h>
 #endif
-#define FFMPEG_CONFIGURATION "--enable-gpl --enable-version3 --enable-bzlib --enable-iconv --enable-lzma --enable-sdl2 --enable-zlib --enable-libmp3lame --enable-libvorbis --enable-libspeex --enable-libopus --enable-libilbc --enable-libtheora --enable-libx264 --enable-libx265 --enable-libxvid --enable-libvpx --enable-libgme --enable-libmodplug --enable-libsoxr --enable-libfreetype --enable-fontconfig --enable-libfribidi --enable-libharfbuzz --enable-libass --enable-libxml2 --enable-gnutls --disable-schannel --enable-gcrypt --enable-libssh --enable-libcdio --enable-libbluray --enable-opengl --enable-libmfx --enable-ffnvcodec --enable-cuda --enable-amf"
+#define FFMPEG_CONFIGURATION "--enable-gpl --enable-version3 --enable-bzlib --enable-iconv --enable-lzma --enable-sdl2 --enable-zlib --enable-libmp3lame --enable-libvorbis --enable-libspeex --enable-libopus --enable-libilbc --enable-libtheora --enable-libx264 --enable-libx265 --enable-libxvid --enable-libvpx --enable-libgme --enable-libmodplug --enable-libsoxr --enable-libfreetype --enable-fontconfig --enable-libfribidi --enable-libharfbuzz --enable-libass --enable-libxml2 --enable-gnutls --disable-schannel --enable-gcrypt --enable-libssh --enable-libcdio --enable-opengl --enable-libmfx --enable-ffnvcodec --enable-cuda --enable-amf"
 #define FFMPEG_LICENSE "GPL version 3 or later"
-#define CONFIG_THIS_YEAR 2023
+#define CONFIG_THIS_YEAR 2024
 #define FFMPEG_DATADIR "."
 #define AVCONV_DATADIR "."
 #if defined(__INTEL_COMPILER)
@@ -37,7 +37,6 @@
 #   define CC_IDENT "msvc"
 #endif
 #define OS_NAME Windows
-#define av_restrict __restrict
 #if defined(__x86_64) || defined(_M_X64)
 #   define EXTERN_PREFIX ""
 #else
@@ -54,7 +53,6 @@
 #else
 #   define SLIBSUF ".lib"
 #endif
-#define HAVE_MMX2 HAVE_MMXEXT
 #define SWS_MAX_FILTER_SIZE 256
 #define ARCH_AARCH64 0
 #define ARCH_ALPHA 0
@@ -127,7 +125,6 @@
 #define HAVE_SSE42 1
 #define HAVE_SSSE3 1
 #define HAVE_XOP 1
-#define HAVE_CPUNOP 0
 #define HAVE_I686 1
 #define HAVE_MIPSFPU 0
 #define HAVE_MIPS32R2 0
@@ -179,7 +176,6 @@
 #define HAVE_SSE42_EXTERNAL 1
 #define HAVE_SSSE3_EXTERNAL 1
 #define HAVE_XOP_EXTERNAL 1
-#define HAVE_CPUNOP_EXTERNAL 0
 #define HAVE_I686_EXTERNAL 1
 #define HAVE_MIPSFPU_EXTERNAL 0
 #define HAVE_MIPS32R2_EXTERNAL 0
@@ -231,7 +227,6 @@
 #define HAVE_SSE42_INLINE ARCH_X86 && HAVE_INLINE_ASM
 #define HAVE_SSSE3_INLINE ARCH_X86 && HAVE_INLINE_ASM
 #define HAVE_XOP_INLINE ARCH_X86 && HAVE_INLINE_ASM
-#define HAVE_CPUNOP_INLINE ARCH_X86 && HAVE_INLINE_ASM
 #define HAVE_I686_INLINE ARCH_X86 && HAVE_INLINE_ASM
 #define HAVE_MIPSFPU_INLINE 0
 #define HAVE_MIPS32R2_INLINE 0
@@ -310,6 +305,7 @@
 #define HAVE_OPENCV2_CORE_CORE_C_H 0
 #define HAVE_OPENGL_GL3_H 0
 #define HAVE_POLL_H 0
+#define HAVE_PTHREAD_NP_H 0
 #define HAVE_SYS_PARAM_H 0
 #define HAVE_SYS_RESOURCE_H 0
 #define HAVE_SYS_SELECT_H 0
@@ -420,6 +416,8 @@
 #define HAVE_POSIX_MEMALIGN 0
 #define HAVE_PRCTL 0
 #define HAVE_PTHREAD_CANCEL 0
+#define HAVE_PTHREAD_SET_NAME_NP 0
+#define HAVE_PTHREAD_SETNAME_NP 0
 #define HAVE_SCHED_GETAFFINITY 0
 #define HAVE_SECITEMIMPORT 0
 #if !HAVE_WINRT && !HAVE_UWP
@@ -547,6 +545,7 @@
 #define HAVE_OPENCL_DXVA2 0
 #define HAVE_OPENCL_VAAPI_BEIGNET 0
 #define HAVE_OPENCL_VAAPI_INTEL_MEDIA 0
+#define HAVE_OPENCL_VIDEOTOOLBOX 0
 #define HAVE_PERL 0
 #define HAVE_POD2MAN 0
 #define HAVE_TEXI2HTML 0
@@ -586,6 +585,8 @@
 #define CONFIG_FREI0R 0
 #define CONFIG_LIBCDIO 1
 #define CONFIG_LIBDAVS2 0
+#define CONFIG_LIBDVDNAV 0
+#define CONFIG_LIBDVDREAD 0
 #define CONFIG_LIBRUBBERBAND 0
 #define CONFIG_LIBVIDSTAB 0
 #define CONFIG_LIBX264 1
@@ -614,14 +615,13 @@
 #define CONFIG_LIBAOM 0
 #define CONFIG_LIBARIBCAPTION 0
 #define CONFIG_LIBASS 1
-#define CONFIG_LIBBLURAY 1
+#define CONFIG_LIBBLURAY 0
 #define CONFIG_LIBBS2B 0
 #define CONFIG_LIBCACA 0
 #define CONFIG_LIBCELT 0
 #define CONFIG_LIBCODEC2 0
 #define CONFIG_LIBDAV1D 0
 #define CONFIG_LIBDC1394 0
-#define CONFIG_LIBDRM 0
 #define CONFIG_LIBFLITE 0
 #define CONFIG_LIBFONTCONFIG 1
 #define CONFIG_LIBFREETYPE 1
@@ -647,6 +647,8 @@
 #define CONFIG_LIBOPUS 1
 #define CONFIG_LIBPLACEBO 0
 #define CONFIG_LIBPULSE 0
+#define CONFIG_LIBQRENCODE 0
+#define CONFIG_LIBQUIRC 0
 #define CONFIG_LIBRABBITMQ 0
 #define CONFIG_LIBRAV1E 0
 #define CONFIG_LIBRIST 0
@@ -664,6 +666,7 @@
 #define CONFIG_LIBTENSORFLOW 0
 #define CONFIG_LIBTESSERACT 0
 #define CONFIG_LIBTHEORA 1
+#define CONFIG_LIBTORCH 0
 #define CONFIG_LIBTWOLAME 0
 #define CONFIG_LIBUAVS3D 0
 #define CONFIG_LIBV4L2 0
@@ -725,7 +728,6 @@
 #   define CONFIG_AMF 0
 #endif
 #define CONFIG_AUDIOTOOLBOX 0
-#define CONFIG_CRYSTALHD 0
 #if !HAVE_WINRT && !HAVE_UWP
 #   define CONFIG_CUDA 1
 #else
@@ -757,6 +759,7 @@
 #else
 #   define CONFIG_FFNVCODEC 0
 #endif
+#define CONFIG_LIBDRM 0
 #if !HAVE_WINRT && !HAVE_UWP
 #   define CONFIG_NVDEC 1
 #else
@@ -881,6 +884,8 @@
 #define CONFIG_HUFFMAN 1
 #define CONFIG_HUFFYUVDSP 1
 #define CONFIG_HUFFYUVENCDSP 1
+#define CONFIG_IAMFDEC 1
+#define CONFIG_IAMFENC 1
 #define CONFIG_IDCTDSP 1
 #define CONFIG_IIRFILTER 1
 #define CONFIG_INFLATE_WRAPPER 1
@@ -890,6 +895,7 @@
 #define CONFIG_JPEGTABLES 1
 #define CONFIG_LGPLV3 0
 #define CONFIG_LIBX262 0
+#define CONFIG_LIBX264_HDR10 0
 #define CONFIG_LLAUDDSP 1
 #define CONFIG_LLVIDDSP 1
 #define CONFIG_LLVIDENCDSP 1

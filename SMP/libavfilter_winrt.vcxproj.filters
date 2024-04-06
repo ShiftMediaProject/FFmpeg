@@ -180,9 +180,6 @@
     <ClCompile Include="..\libavfilter\drawutils.c">
       <Filter>Source Files\libavfilter</Filter>
     </ClCompile>
-    <ClCompile Include="..\libavfilter\fifo.c">
-      <Filter>Source Files\libavfilter</Filter>
-    </ClCompile>
     <ClCompile Include="..\libavfilter\formats.c">
       <Filter>Source Files\libavfilter</Filter>
     </ClCompile>
@@ -783,6 +780,9 @@
     <ClCompile Include="..\libavfilter\vf_drawtext.c">
       <Filter>Source Files\libavfilter</Filter>
     </ClCompile>
+    <ClCompile Include="..\libavfilter\textutils.c">
+      <Filter>Source Files\libavfilter</Filter>
+    </ClCompile>
     <ClCompile Include="..\libavfilter\vf_edgedetect.c">
       <Filter>Source Files\libavfilter</Filter>
     </ClCompile>
@@ -850,6 +850,9 @@
       <Filter>Source Files\libavfilter</Filter>
     </ClCompile>
     <ClCompile Include="..\libavfilter\vf_freezeframes.c">
+      <Filter>Source Files\libavfilter</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libavfilter\vf_fsync.c">
       <Filter>Source Files\libavfilter</Filter>
     </ClCompile>
     <ClCompile Include="..\libavfilter\vf_geq.c">
