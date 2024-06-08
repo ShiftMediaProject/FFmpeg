@@ -790,6 +790,21 @@ static int FUNC(vps) (CodedBitstreamContext *ctx, RWContext *rw,
         infer(vps_each_layer_is_an_ols_flag, 1);
         infer(vps_num_ptls_minus1, 0);
     }
+
+    for (i = 0; i <= current->vps_num_ptls_minus1; i++) {
+        if (i > 0)
+            flags(vps_pt_present_flag[i], 1, i);
+        else
+            infer(vps_pt_present_flag[i], 1);
+
+        if (!current->vps_default_ptl_dpb_hrd_max_tid_flag)
+            us(3, vps_ptl_max_tid[i], 0, current->vps_max_sublayers_minus1, 1, i);
+        else
+            infer(vps_ptl_max_tid[i], current->vps_max_sublayers_minus1);
+    }
+    while (byte_alignment(rw) != 0)
+        fixed(1, vps_ptl_alignment_zero_bit, 0);
+
     {
         //calc NumMultiLayerOlss
         int m;
@@ -915,19 +930,6 @@ static int FUNC(vps) (CodedBitstreamContext *ctx, RWContext *rw,
             return AVERROR_INVALIDDATA;
     }
 
-    for (i = 0; i <= current->vps_num_ptls_minus1; i++) {
-        if (i > 0)
-            flags(vps_pt_present_flag[i], 1, i);
-        else
-            infer(vps_pt_present_flag[i], 1);
-
-        if (!current->vps_default_ptl_dpb_hrd_max_tid_flag)
-            us(3, vps_ptl_max_tid[i], 0, current->vps_max_sublayers_minus1, 1, i);
-        else
-            infer(vps_ptl_max_tid[i], current->vps_max_sublayers_minus1);
-    }
-    while (byte_alignment(rw) != 0)
-        fixed(1, vps_ptl_alignment_zero_bit, 0);
     for (i = 0; i <= current->vps_num_ptls_minus1; i++) {
         CHECK(FUNC(profile_tier_level) (ctx, rw,
                                         current->vps_profile_tier_level + i,
@@ -3221,19 +3223,27 @@ static int FUNC(slice_header) (CodedBitstreamContext *ctx, RWContext *rw,
             flag(sh_cabac_init_flag);
         else
             infer(sh_cabac_init_flag, 0);
-        if (ph->ph_temporal_mvp_enabled_flag && !pps->pps_rpl_info_in_ph_flag) {
-            if (current->sh_slice_type == VVC_SLICE_TYPE_B)
-                flag(sh_collocated_from_l0_flag);
-            else
-                infer(sh_collocated_from_l0_flag, 1);
-            if ((current->sh_collocated_from_l0_flag &&
-                 current->num_ref_idx_active[0] > 1) ||
-                (!current->sh_collocated_from_l0_flag &&
-                 current->num_ref_idx_active[1] > 1)) {
-                unsigned int idx = current->sh_collocated_from_l0_flag ? 0 : 1;
-                ue(sh_collocated_ref_idx, 0, current->num_ref_idx_active[idx] - 1);
+        if (ph->ph_temporal_mvp_enabled_flag) {
+            if (!pps->pps_rpl_info_in_ph_flag) {
+                if (current->sh_slice_type == VVC_SLICE_TYPE_B)
+                    flag(sh_collocated_from_l0_flag);
+                else
+                    infer(sh_collocated_from_l0_flag, 1);
+                if ((current->sh_collocated_from_l0_flag &&
+                    current->num_ref_idx_active[0] > 1) ||
+                    (!current->sh_collocated_from_l0_flag &&
+                    current->num_ref_idx_active[1] > 1)) {
+                    unsigned int idx = current->sh_collocated_from_l0_flag ? 0 : 1;
+                    ue(sh_collocated_ref_idx, 0, current->num_ref_idx_active[idx] - 1);
+                } else {
+                    infer(sh_collocated_ref_idx, 0);
+                }
             } else {
-                infer(sh_collocated_ref_idx, 0);
+                if (current->sh_slice_type == VVC_SLICE_TYPE_B)
+                    infer(sh_collocated_from_l0_flag, ph->ph_collocated_from_l0_flag);
+                else
+                    infer(sh_collocated_from_l0_flag, 1);
+                infer(sh_collocated_ref_idx, ph->ph_collocated_ref_idx);
             }
         }
         if (!pps->pps_wp_info_in_ph_flag &&

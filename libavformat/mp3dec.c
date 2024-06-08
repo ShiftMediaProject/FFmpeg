@@ -32,6 +32,7 @@
 #include "replaygain.h"
 
 #include "libavcodec/codec_id.h"
+#include "libavcodec/mpegaudio.h"
 #include "libavcodec/mpegaudiodecheader.h"
 
 #define XING_FLAG_FRAMES 0x01
@@ -400,27 +401,22 @@ static int mp3_read_header(AVFormatContext *s)
     if (ret < 0)
         return ret;
 
+    ret = ffio_ensure_seekback(s->pb, 64 * 1024 + MPA_MAX_CODED_FRAME_SIZE + 4);
+    if (ret < 0)
+        return ret;
+
     off = avio_tell(s->pb);
     for (i = 0; i < 64 * 1024; i++) {
         uint32_t header, header2;
         int frame_size;
-        if (!(i&1023))
-            ffio_ensure_seekback(s->pb, i + 1024 + 4);
         frame_size = check(s->pb, off + i, &header);
         if (frame_size > 0) {
-            ffio_ensure_seekback(s->pb, i + 1024 + frame_size + 4);
             ret = check(s->pb, off + i + frame_size, &header2);
-            if (ret >= 0 &&
-                (header & MP3_MASK) == (header2 & MP3_MASK))
-            {
+            if (ret >= 0 && (header & MP3_MASK) == (header2 & MP3_MASK))
                 break;
-            } else if (ret == CHECK_SEEK_FAILED) {
-                av_log(s, AV_LOG_ERROR, "Invalid frame size (%d): Could not seek to %"PRId64".\n", frame_size, off + i + frame_size);
-                return AVERROR(EINVAL);
-            }
         } else if (frame_size == CHECK_SEEK_FAILED) {
-            av_log(s, AV_LOG_ERROR, "Failed to read frame size: Could not seek to %"PRId64".\n", (int64_t) (i + 1024 + frame_size + 4));
-            return AVERROR(EINVAL);
+            av_log(s, AV_LOG_ERROR, "Failed to find two consecutive MPEG audio frames.\n");
+            return AVERROR_INVALIDDATA;
         }
     }
     if (i == 64 * 1024) {

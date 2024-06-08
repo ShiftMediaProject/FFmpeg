@@ -83,6 +83,7 @@ typedef struct MOVParseTableEntry {
 
 static int mov_read_default(MOVContext *c, AVIOContext *pb, MOVAtom atom);
 static int mov_read_mfra(MOVContext *c, AVIOContext *f);
+static void mov_free_stream_context(AVFormatContext *s, AVStream *st);
 static int64_t add_ctts_entry(MOVCtts** ctts_data, unsigned int* ctts_count, unsigned int* allocated_size,
                               int count, int duration);
 
@@ -3304,9 +3305,9 @@ static int mov_read_stsz(MOVContext *c, AVIOContext *pb, MOVAtom atom)
 
     for (i = 0; i < entries; i++) {
         sc->sample_sizes[i] = get_bits_long(&gb, field_size);
-        if (sc->sample_sizes[i] < 0) {
+        if (sc->sample_sizes[i] > INT64_MAX - sc->data_size) {
             av_free(buf);
-            av_log(c->fc, AV_LOG_ERROR, "Invalid sample size %d\n", sc->sample_sizes[i]);
+            av_log(c->fc, AV_LOG_ERROR, "Sample size overflow in STSZ\n");
             return AVERROR_INVALIDDATA;
         }
         sc->data_size += sc->sample_sizes[i];
@@ -5023,6 +5024,7 @@ static int mov_read_keys(MOVContext *c, AVIOContext *pb, MOVAtom atom)
 
     avio_skip(pb, 4);
     count = avio_rb32(pb);
+    atom.size -= 8;
     if (count > UINT_MAX / sizeof(*c->meta_keys) - 1) {
         av_log(c->fc, AV_LOG_ERROR,
                "The 'keys' atom with the invalid key count: %"PRIu32"\n", count);
@@ -5047,6 +5049,7 @@ static int mov_read_keys(MOVContext *c, AVIOContext *pb, MOVAtom atom)
         key_size -= 8;
         if (type != MKTAG('m','d','t','a')) {
             avio_skip(pb, key_size);
+            continue;
         }
         c->meta_keys[i] = av_mallocz(key_size + 1);
         if (!c->meta_keys[i])
@@ -8128,8 +8131,9 @@ static int mov_read_infe(MOVContext *c, AVIOContext *pb, MOVAtom atom, int idx)
     size -= 4;
 
     if (version < 2) {
-        av_log(c->fc, AV_LOG_ERROR, "infe: version < 2 not supported\n");
-        return AVERROR_PATCHWELCOME;
+        avpriv_report_missing_feature(c->fc, "infe version < 2");
+        avio_skip(pb, size);
+        return 1;
     }
 
     item_id = version > 2 ? avio_rb32(pb) : avio_rb16(pb);
@@ -8172,7 +8176,7 @@ static int mov_read_iinf(MOVContext *c, AVIOContext *pb, MOVAtom atom)
 {
     HEIFItem *heif_item;
     int entry_count;
-    int version, ret;
+    int version, got_stream = 0, ret, i;
 
     if (c->found_iinf) {
         av_log(c->fc, AV_LOG_WARNING, "Duplicate iinf box found\n");
@@ -8192,18 +8196,33 @@ static int mov_read_iinf(MOVContext *c, AVIOContext *pb, MOVAtom atom)
                sizeof(*c->heif_item) * (entry_count - c->nb_heif_item));
     c->nb_heif_item = FFMAX(c->nb_heif_item, entry_count);
 
-    for (int i = 0; i < entry_count; i++) {
+    for (i = 0; i < entry_count; i++) {
         MOVAtom infe;
 
         infe.size = avio_rb32(pb) - 8;
         infe.type = avio_rl32(pb);
         ret = mov_read_infe(c, pb, infe, i);
         if (ret < 0)
-            return ret;
+            goto fail;
+        if (!ret)
+            got_stream = 1;
     }
 
-    c->found_iinf = 1;
+    c->found_iinf = got_stream;
     return 0;
+fail:
+    for (; i >= 0; i--) {
+        HEIFItem *item = &c->heif_item[i];
+
+        av_freep(&item->name);
+        if (!item->st)
+            continue;
+
+        mov_free_stream_context(c->fc, item->st);
+        ff_remove_stream(c->fc, item->st);
+        item->st = NULL;
+    }
+    return ret;
 }
 
 static int mov_read_iref_dimg(MOVContext *c, AVIOContext *pb, int version)
@@ -9425,7 +9444,8 @@ static int mov_parse_tiles(AVFormatContext *s)
                 break;
             }
 
-            if (k == grid->nb_tiles) {
+            if (k == mov->nb_heif_item) {
+                av_assert0(loop);
                 av_log(s, AV_LOG_WARNING, "HEIF item id %d referenced by grid id %d doesn't "
                                           "exist\n",
                        tile_id, grid->item->item_id);
@@ -9495,14 +9515,15 @@ static int mov_read_header(AVFormatContext *s)
             av_log(s, AV_LOG_ERROR, "error reading header\n");
             return err;
         }
-    } while ((pb->seekable & AVIO_SEEKABLE_NORMAL) && !mov->found_moov && !mov->found_iloc && !mov->moov_retry++);
-    if (!mov->found_moov && !mov->found_iloc) {
+    } while ((pb->seekable & AVIO_SEEKABLE_NORMAL) &&
+             !mov->found_moov && (!mov->found_iloc || !mov->found_iinf) && !mov->moov_retry++);
+    if (!mov->found_moov && !mov->found_iloc && !mov->found_iinf) {
         av_log(s, AV_LOG_ERROR, "moov atom not found\n");
         return AVERROR_INVALIDDATA;
     }
     av_log(mov->fc, AV_LOG_TRACE, "on_parse_exit_offset=%"PRId64"\n", avio_tell(pb));
 
-    if (mov->found_iloc) {
+    if (mov->found_iloc && mov->found_iinf) {
         for (i = 0; i < mov->nb_heif_item; i++) {
             HEIFItem *item = &mov->heif_item[i];
             MOVStreamContext *sc;
@@ -9544,6 +9565,10 @@ static int mov_read_header(AVFormatContext *s)
                 return err;
         }
     }
+    // prevent iloc and iinf boxes from being parsed while reading packets.
+    // this is needed because an iinf box may have been parsed but ignored
+    // for having old infe boxes which create no streams.
+    mov->found_iloc = mov->found_iinf = 1;
 
     if (pb->seekable & AVIO_SEEKABLE_NORMAL) {
         if (mov->nb_chapter_tracks > 0 && !mov->ignore_chapters)

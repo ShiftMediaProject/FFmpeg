@@ -511,6 +511,7 @@ static int slice_init_entry_points(SliceContext *sc,
     int nb_eps                = sh->r->num_entry_points + 1;
     int ctu_addr              = 0;
     GetBitContext gb;
+    int ret;
 
     if (sc->nb_eps != nb_eps) {
         eps_free(sc);
@@ -520,7 +521,9 @@ static int slice_init_entry_points(SliceContext *sc,
         sc->nb_eps = nb_eps;
     }
 
-    init_get_bits8(&gb, slice->data, slice->data_size);
+    ret = init_get_bits8(&gb, slice->data, slice->data_size);
+    if (ret < 0)
+        return ret;
     for (int i = 0; i < sc->nb_eps; i++)
     {
         EntryPoint *ep = sc->eps + i;
@@ -781,6 +784,12 @@ static int decode_nal_unit(VVCContext *s, VVCFrameContext *fc, const H2645NAL *n
     int  ret;
 
     s->temporal_id = nal->temporal_id;
+
+    if (nal->nuh_layer_id > 0) {
+        avpriv_report_missing_feature(fc->log_ctx,
+                "Decoding of multilayer bitstreams");
+        return AVERROR_PATCHWELCOME;
+    }
 
     switch (unit->type) {
     case VVC_VPS_NUT:

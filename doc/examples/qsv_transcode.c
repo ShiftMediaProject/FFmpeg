@@ -75,8 +75,7 @@ static int str_to_dict(char* optstr, AVDictionary **opt)
         if (value == NULL)
             return AVERROR(EINVAL);
         av_dict_set(opt, key, value, 0);
-    } while(key != NULL);
-    return 0;
+    } while(1);
 }
 
 static int dynamic_set_parameter(AVCodecContext *avctx)
@@ -334,17 +333,15 @@ static int dec_enc(AVPacket *pkt, const AVCodec *enc_codec, char *optstr)
 
 fail:
         av_frame_free(&frame);
-        if (ret < 0)
-            return ret;
     }
-    return 0;
+    return ret;
 }
 
 int main(int argc, char **argv)
 {
     const AVCodec *enc_codec;
     int ret = 0;
-    AVPacket *dec_pkt;
+    AVPacket *dec_pkt = NULL;
 
     if (argc < 5 || (argc - 5) % 2) {
         av_log(NULL, AV_LOG_ERROR, "Usage: %s <input file> <encoder> <output file>"

@@ -1968,13 +1968,13 @@ static void hls_prediction_unit(HEVCLocalContext *lc, int x0, int y0,
 
     if (current_mv.pred_flag & PF_L0) {
         ref0 = refPicList[0].ref[current_mv.ref_idx[0]];
-        if (!ref0 || !ref0->frame->data[0])
+        if (!ref0 || !ref0->frame)
             return;
         hevc_await_progress(s, ref0, &current_mv.mv[0], y0, nPbH);
     }
     if (current_mv.pred_flag & PF_L1) {
         ref1 = refPicList[1].ref[current_mv.ref_idx[1]];
-        if (!ref1 || !ref1->frame->data[0])
+        if (!ref1 || !ref1->frame)
             return;
         hevc_await_progress(s, ref1, &current_mv.mv[1], y0, nPbH);
     }
@@ -2892,10 +2892,15 @@ static int hevc_frame_start(HEVCContext *s)
         !(s->avctx->export_side_data & AV_CODEC_EXPORT_DATA_FILM_GRAIN) &&
         !s->avctx->hwaccel;
 
+    ret = set_side_data(s);
+    if (ret < 0)
+        goto fail;
+
     if (s->ref->needs_fg &&
-        s->sei.common.film_grain_characteristics.present &&
-        !ff_h274_film_grain_params_supported(s->sei.common.film_grain_characteristics.model_id,
-                                             s->ref->frame->format)) {
+        (s->sei.common.film_grain_characteristics.present &&
+         !ff_h274_film_grain_params_supported(s->sei.common.film_grain_characteristics.model_id,
+                                              s->ref->frame->format)
+         || !av_film_grain_params_select(s->ref->frame))) {
         av_log_once(s->avctx, AV_LOG_WARNING, AV_LOG_DEBUG, &s->film_grain_warning_shown,
                     "Unsupported film grain parameters. Ignoring film grain.\n");
         s->ref->needs_fg = 0;
@@ -2908,10 +2913,6 @@ static int hevc_frame_start(HEVCContext *s)
         if ((ret = ff_thread_get_buffer(s->avctx, s->ref->frame_grain, 0)) < 0)
             goto fail;
     }
-
-    ret = set_side_data(s);
-    if (ret < 0)
-        goto fail;
 
     s->frame->pict_type = 3 - s->sh.slice_type;
 
