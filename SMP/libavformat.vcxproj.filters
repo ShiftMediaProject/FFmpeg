@@ -1640,6 +1640,11 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\libavformat\bitstream.c">
+      <Filter>Source Files\libavformat</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
     <ClCompile Include="..\libavformat\dca_sample_rate_tab.c">
       <Filter>Source Files\libavformat</Filter>
     </ClCompile>
