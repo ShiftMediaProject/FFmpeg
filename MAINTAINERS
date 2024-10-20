@@ -34,8 +34,8 @@ Miscellaneous Areas
 ===================
 
 documentation                           Stefano Sabatini, Mike Melanson, Timothy Gu, Gyan Doshi
-project server day to day operations    Árpád Gereöffy, Michael Niedermayer, Reimar Doeffinger, Alexander Strasser, Nikolay Aleksandrov
-project server emergencies              Árpád Gereöffy, Reimar Doeffinger, Alexander Strasser, Nikolay Aleksandrov
+project server day to day operations    Árpád Gereöffy, Michael Niedermayer, Reimar Doeffinger, Alexander Strasser, Nikolay Aleksandrov, Timo Rothenpieler
+project server emergencies              Árpád Gereöffy, Reimar Doeffinger, Alexander Strasser, Nikolay Aleksandrov, Timo Rothenpieler
 presets                                 Robert Swain
 metadata subsystem                      Aurelien Jacobs
 release management                      Michael Niedermayer
@@ -535,10 +535,12 @@ wm4
 Releases
 ========
 
+7.0                                     Michael Niedermayer
+6.1                                     Michael Niedermayer
+5.1                                     Michael Niedermayer
+4.4                                     Michael Niedermayer
+3.4                                     Michael Niedermayer
 2.8                                     Michael Niedermayer
-2.7                                     Michael Niedermayer
-2.6                                     Michael Niedermayer
-2.5                                     Michael Niedermayer
 
 If you want to maintain an older release, please contact us
 

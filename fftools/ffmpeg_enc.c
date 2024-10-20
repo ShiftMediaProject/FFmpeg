@@ -171,7 +171,7 @@ int enc_open(void *opaque, const AVFrame *frame)
     InputStream *ist = ost->ist;
     Encoder              *e = ost->enc;
     AVCodecContext *enc_ctx = ost->enc_ctx;
-    Decoder            *dec;
+    Decoder            *dec = NULL;
     const AVCodec      *enc = enc_ctx->codec;
     OutputFile          *of = ost->file;
     FrameData *fd;
@@ -504,9 +504,9 @@ void enc_stats_write(OutputStream *ost, EncStats *es,
     AVRational  tbi = (AVRational){ 0, 1};
     int64_t    ptsi = INT64_MAX;
 
-    const FrameData *fd;
+    const FrameData *fd = NULL;
 
-    if ((frame && frame->opaque_ref) || (pkt && pkt->opaque_ref)) {
+    if (frame ? frame->opaque_ref : pkt->opaque_ref) {
         fd   = (const FrameData*)(frame ? frame->opaque_ref->data : pkt->opaque_ref->data);
         tbi  = fd->dec.tb;
         ptsi = fd->dec.pts;

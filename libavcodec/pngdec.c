@@ -85,11 +85,12 @@ typedef struct PNGDecContext {
     int have_clli;
     uint32_t clli_max;
     uint32_t clli_avg;
-    int have_mdvc;
-    uint16_t mdvc_primaries[3][2];
-    uint16_t mdvc_white_point[2];
-    uint32_t mdvc_max_lum;
-    uint32_t mdvc_min_lum;
+    /* Mastering Display Color Volume */
+    int have_mdcv;
+    uint16_t mdcv_primaries[3][2];
+    uint16_t mdcv_white_point[2];
+    uint32_t mdcv_max_lum;
+    uint32_t mdcv_min_lum;
 
     enum PNGHeaderState hdr_state;
     enum PNGImageState pic_state;
@@ -762,24 +763,24 @@ static int populate_avctx_color_fields(AVCodecContext *avctx, AVFrame *frame)
         }
     }
 
-    if (s->have_mdvc) {
-        AVMasteringDisplayMetadata *mdvc;
+    if (s->have_mdcv) {
+        AVMasteringDisplayMetadata *mdcv;
 
-        ret = ff_decode_mastering_display_new(avctx, frame, &mdvc);
+        ret = ff_decode_mastering_display_new(avctx, frame, &mdcv);
         if (ret < 0)
             return ret;
 
-        if (mdvc) {
-            mdvc->has_primaries = 1;
+        if (mdcv) {
+            mdcv->has_primaries = 1;
             for (int i = 0; i < 3; i++) {
-                mdvc->display_primaries[i][0] = av_make_q(s->mdvc_primaries[i][0], 50000);
-                mdvc->display_primaries[i][1] = av_make_q(s->mdvc_primaries[i][1], 50000);
+                mdcv->display_primaries[i][0] = av_make_q(s->mdcv_primaries[i][0], 50000);
+                mdcv->display_primaries[i][1] = av_make_q(s->mdcv_primaries[i][1], 50000);
             }
-            mdvc->white_point[0] = av_make_q(s->mdvc_white_point[0], 50000);
-            mdvc->white_point[1] = av_make_q(s->mdvc_white_point[1], 50000);
-            mdvc->has_luminance = 1;
-            mdvc->max_luminance = av_make_q(s->mdvc_max_lum, 10000);
-            mdvc->min_luminance = av_make_q(s->mdvc_min_lum, 10000);
+            mdcv->white_point[0] = av_make_q(s->mdcv_white_point[0], 50000);
+            mdcv->white_point[1] = av_make_q(s->mdcv_white_point[1], 50000);
+            mdcv->has_luminance = 1;
+            mdcv->max_luminance = av_make_q(s->mdcv_max_lum, 10000);
+            mdcv->min_luminance = av_make_q(s->mdcv_min_lum, 10000);
         }
     }
 
@@ -1081,17 +1082,20 @@ static int decode_sbit_chunk(AVCodecContext *avctx, PNGDecContext *s,
         return AVERROR_INVALIDDATA;
     }
 
-    channels = ff_png_get_nb_channels(s->color_type);
+    channels = s->color_type & PNG_COLOR_MASK_PALETTE ? 3 : ff_png_get_nb_channels(s->color_type);
 
-    if (bytestream2_get_bytes_left(gb) != channels)
+    if (bytestream2_get_bytes_left(gb) != channels) {
+        av_log(avctx, AV_LOG_ERROR, "Invalid sBIT size: %d, expected: %d\n",
+            bytestream2_get_bytes_left(gb), channels);
         return AVERROR_INVALIDDATA;
+    }
 
     for (int i = 0; i < channels; i++) {
         int b = bytestream2_get_byteu(gb);
         bits = FFMAX(b, bits);
     }
 
-    if (bits < 0 || bits > s->bit_depth) {
+    if (bits <= 0 || bits > (s->color_type & PNG_COLOR_MASK_PALETTE ? 8 : s->bit_depth)) {
         av_log(avctx, AV_LOG_ERROR, "Invalid significant bits: %d\n", bits);
         return AVERROR_INVALIDDATA;
     }
@@ -1569,20 +1573,20 @@ static int decode_frame_common(AVCodecContext *avctx, PNGDecContext *s,
             s->clli_max = bytestream2_get_be32u(&gb_chunk);
             s->clli_avg = bytestream2_get_be32u(&gb_chunk);
             break;
-        case MKTAG('m', 'D', 'V', 'c'):
+        case MKTAG('m', 'D', 'C', 'v'):
             if (bytestream2_get_bytes_left(&gb_chunk) != 24) {
-                av_log(avctx, AV_LOG_WARNING, "Invalid mDVc chunk size: %d\n", bytestream2_get_bytes_left(&gb_chunk));
+                av_log(avctx, AV_LOG_WARNING, "Invalid mDCv chunk size: %d\n", bytestream2_get_bytes_left(&gb_chunk));
                 break;
             }
-            s->have_mdvc = 1;
+            s->have_mdcv = 1;
             for (int i = 0; i < 3; i++) {
-                s->mdvc_primaries[i][0] = bytestream2_get_be16u(&gb_chunk);
-                s->mdvc_primaries[i][1] = bytestream2_get_be16u(&gb_chunk);
+                s->mdcv_primaries[i][0] = bytestream2_get_be16u(&gb_chunk);
+                s->mdcv_primaries[i][1] = bytestream2_get_be16u(&gb_chunk);
             }
-            s->mdvc_white_point[0] = bytestream2_get_be16u(&gb_chunk);
-            s->mdvc_white_point[1] = bytestream2_get_be16u(&gb_chunk);
-            s->mdvc_max_lum = bytestream2_get_be32u(&gb_chunk);
-            s->mdvc_min_lum = bytestream2_get_be32u(&gb_chunk);
+            s->mdcv_white_point[0] = bytestream2_get_be16u(&gb_chunk);
+            s->mdcv_white_point[1] = bytestream2_get_be16u(&gb_chunk);
+            s->mdcv_max_lum = bytestream2_get_be32u(&gb_chunk);
+            s->mdcv_min_lum = bytestream2_get_be32u(&gb_chunk);
             break;
         case MKTAG('I', 'E', 'N', 'D'):
             if (!(s->pic_state & PNG_ALLIMAGE))

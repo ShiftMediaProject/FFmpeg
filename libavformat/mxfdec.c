@@ -3030,6 +3030,7 @@ static int mxf_parse_structural_metadata(MXFContext *mxf)
             if (container_ul->desc)
                 av_dict_set(&st->metadata, "data_type", container_ul->desc, 0);
             if (mxf->eia608_extract &&
+                container_ul->desc &&
                 !strcmp(container_ul->desc, "vbi_vanc_smpte_436M")) {
                 st->codecpar->codec_type = AVMEDIA_TYPE_SUBTITLE;
                 st->codecpar->codec_id = AV_CODEC_ID_EIA_608;
@@ -3818,8 +3819,7 @@ static int mxf_get_next_track_edit_unit(MXFContext *mxf, MXFTrack *track, int64_
 
     a = -1;
     b = track->original_duration;
-
-    while (b - a > 1) {
+    while (b - 1 > a) {
         m = (a + b) >> 1;
         if (mxf_edit_unit_absolute_offset(mxf, t, m, track->edit_rate, NULL, &offset, NULL, 0) < 0)
             return -1;
