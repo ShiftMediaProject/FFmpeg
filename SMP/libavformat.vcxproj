@@ -11,10 +11,11 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <PreprocessorDefinitions>LIBXML_STATIC;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;DEBUG;BUILDING_avformat;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\;$(OutDir)\include\libxml2\;$(ProjectDir)\..\..\prebuilt\include\libxml2\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(OutDir)\include\libxml2\;$(ProjectDir)\..\..\prebuilt\include\libxml2\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="$([System.String]::Copy($(PlatformToolset)).Contains('Intel'))">/Qvec- /Qsimd- %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(AdditionalOptions)' == '' and '$(VisualStudioVersion)' != '12.0'">/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>4244;4267;4018;4146;4028;4996;4090;4114;4308;4305;4005;4101;4554;4307;4273;4133;4544;4334;4293;4047;4703;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+	  <LanguageStandard_C Condition="'$(VisualStudioVersion)' > '15.0'">stdc11</LanguageStandard_C>
     </ClCompile>
     <Lib>
       <AdditionalDependencies>libbz2d.lib;libiconvd.lib;libzlibd.lib;libgcryptd.lib;libgnutlsd.lib;libblurayd.lib;libgmed.lib;libmodplugd.lib;libsshd.lib;libxml2d.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -56,17 +57,18 @@ cd $(ProjectDir)
 )</Command>
     </PreBuildEvent>
     <ResourceCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\;$(OutDir)\include\libxml2\;$(ProjectDir)\..\..\prebuilt\include\libxml2\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(OutDir)\include\libxml2\;$(ProjectDir)\..\..\prebuilt\include\libxml2\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>LIBXML_STATIC;_MSC_VER;BUILDING_avformat;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <PreprocessorDefinitions>LIBXML_STATIC;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;DEBUG;BUILDING_avformat;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\;$(OutDir)\include\libxml2\;$(ProjectDir)\..\..\prebuilt\include\libxml2\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(OutDir)\include\libxml2\;$(ProjectDir)\..\..\prebuilt\include\libxml2\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="$([System.String]::Copy($(PlatformToolset)).Contains('Intel'))">/Qvec- /Qsimd- %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(AdditionalOptions)' == '' and '$(VisualStudioVersion)' != '12.0'">/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>4244;4267;4018;4146;4028;4996;4090;4114;4308;4305;4005;4101;4554;4307;4273;4133;4544;4334;4293;4047;4703;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+	  <LanguageStandard_C Condition="'$(VisualStudioVersion)' > '15.0'">stdc11</LanguageStandard_C>
     </ClCompile>
     <Lib>
       <AdditionalDependencies>libbz2d.lib;libiconvd.lib;libzlibd.lib;libgcryptd.lib;libgnutlsd.lib;libblurayd.lib;libgmed.lib;libmodplugd.lib;libsshd.lib;libxml2d.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -108,17 +110,18 @@ cd $(ProjectDir)
 )</Command>
     </PreBuildEvent>
     <ResourceCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\;$(OutDir)\include\libxml2\;$(ProjectDir)\..\..\prebuilt\include\libxml2\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(OutDir)\include\libxml2\;$(ProjectDir)\..\..\prebuilt\include\libxml2\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>LIBXML_STATIC;_MSC_VER;BUILDING_avformat;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugDLL|Win32'">
     <ClCompile>
       <PreprocessorDefinitions>_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;DEBUG;BUILDING_avformat;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\;$(OutDir)\include\libxml2\;$(ProjectDir)\..\..\prebuilt\include\libxml2\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(OutDir)\include\libxml2\;$(ProjectDir)\..\..\prebuilt\include\libxml2\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="$([System.String]::Copy($(PlatformToolset)).Contains('Intel'))">/Qvec- /Qsimd- %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(AdditionalOptions)' == '' and '$(VisualStudioVersion)' != '12.0'">/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>4244;4267;4018;4146;4028;4996;4090;4114;4308;4305;4005;4101;4554;4307;4273;4133;4544;4334;4293;4047;4703;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+	  <LanguageStandard_C Condition="'$(VisualStudioVersion)' > '15.0'">stdc11</LanguageStandard_C>
     </ClCompile>
     <Link>
       <AdditionalDependencies>avcodecd.lib;avutild.lib;bz2d.lib;iconvd.lib;zlibd.lib;gcryptd.lib;gnutlsd.lib;blurayd.lib;gmed.lib;modplugd.lib;sshd.lib;xml2d.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -161,17 +164,18 @@ cd $(ProjectDir)
 )</Command>
     </PreBuildEvent>
     <ResourceCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\;$(OutDir)\include\libxml2\;$(ProjectDir)\..\..\prebuilt\include\libxml2\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(OutDir)\include\libxml2\;$(ProjectDir)\..\..\prebuilt\include\libxml2\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_MSC_VER;BUILDING_avformat;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugDLL|x64'">
     <ClCompile>
       <PreprocessorDefinitions>_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;DEBUG;BUILDING_avformat;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\;$(OutDir)\include\libxml2\;$(ProjectDir)\..\..\prebuilt\include\libxml2\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(OutDir)\include\libxml2\;$(ProjectDir)\..\..\prebuilt\include\libxml2\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="$([System.String]::Copy($(PlatformToolset)).Contains('Intel'))">/Qvec- /Qsimd- %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(AdditionalOptions)' == '' and '$(VisualStudioVersion)' != '12.0'">/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>4244;4267;4018;4146;4028;4996;4090;4114;4308;4305;4005;4101;4554;4307;4273;4133;4544;4334;4293;4047;4703;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+	  <LanguageStandard_C Condition="'$(VisualStudioVersion)' > '15.0'">stdc11</LanguageStandard_C>
     </ClCompile>
     <Link>
       <AdditionalDependencies>avcodecd.lib;avutild.lib;bz2d.lib;iconvd.lib;zlibd.lib;gcryptd.lib;gnutlsd.lib;blurayd.lib;gmed.lib;modplugd.lib;sshd.lib;xml2d.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -214,17 +218,18 @@ cd $(ProjectDir)
 )</Command>
     </PreBuildEvent>
     <ResourceCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\;$(OutDir)\include\libxml2\;$(ProjectDir)\..\..\prebuilt\include\libxml2\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(OutDir)\include\libxml2\;$(ProjectDir)\..\..\prebuilt\include\libxml2\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_MSC_VER;BUILDING_avformat;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <PreprocessorDefinitions>LIBXML_STATIC;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;BUILDING_avformat;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\;$(OutDir)\include\libxml2\;$(ProjectDir)\..\..\prebuilt\include\libxml2\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(OutDir)\include\libxml2\;$(ProjectDir)\..\..\prebuilt\include\libxml2\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="$([System.String]::Copy($(PlatformToolset)).Contains('Intel'))">/Qvec- /Qsimd- %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(AdditionalOptions)' == '' and '$(VisualStudioVersion)' != '12.0'">/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>4244;4267;4018;4146;4028;4996;4090;4114;4308;4305;4005;4101;4554;4307;4273;4133;4544;4334;4293;4047;4703;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+	  <LanguageStandard_C Condition="'$(VisualStudioVersion)' > '15.0'">stdc11</LanguageStandard_C>
     </ClCompile>
     <Lib>
       <AdditionalDependencies>libbz2.lib;libiconv.lib;libzlib.lib;libgcrypt.lib;libgnutls.lib;libbluray.lib;libgme.lib;libmodplug.lib;libssh.lib;libxml2.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -266,17 +271,18 @@ cd $(ProjectDir)
 )</Command>
     </PreBuildEvent>
     <ResourceCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\;$(OutDir)\include\libxml2\;$(ProjectDir)\..\..\prebuilt\include\libxml2\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(OutDir)\include\libxml2\;$(ProjectDir)\..\..\prebuilt\include\libxml2\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>LIBXML_STATIC;_MSC_VER;BUILDING_avformat;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <PreprocessorDefinitions>LIBXML_STATIC;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;BUILDING_avformat;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\;$(OutDir)\include\libxml2\;$(ProjectDir)\..\..\prebuilt\include\libxml2\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(OutDir)\include\libxml2\;$(ProjectDir)\..\..\prebuilt\include\libxml2\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="$([System.String]::Copy($(PlatformToolset)).Contains('Intel'))">/Qvec- /Qsimd- %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(AdditionalOptions)' == '' and '$(VisualStudioVersion)' != '12.0'">/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>4244;4267;4018;4146;4028;4996;4090;4114;4308;4305;4005;4101;4554;4307;4273;4133;4544;4334;4293;4047;4703;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+	  <LanguageStandard_C Condition="'$(VisualStudioVersion)' > '15.0'">stdc11</LanguageStandard_C>
     </ClCompile>
     <Lib>
       <AdditionalDependencies>libbz2.lib;libiconv.lib;libzlib.lib;libgcrypt.lib;libgnutls.lib;libbluray.lib;libgme.lib;libmodplug.lib;libssh.lib;libxml2.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -318,17 +324,18 @@ cd $(ProjectDir)
 )</Command>
     </PreBuildEvent>
     <ResourceCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\;$(OutDir)\include\libxml2\;$(ProjectDir)\..\..\prebuilt\include\libxml2\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(OutDir)\include\libxml2\;$(ProjectDir)\..\..\prebuilt\include\libxml2\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>LIBXML_STATIC;_MSC_VER;BUILDING_avformat;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseDLL|Win32'">
     <ClCompile>
       <PreprocessorDefinitions>_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;BUILDING_avformat;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\;$(OutDir)\include\libxml2\;$(ProjectDir)\..\..\prebuilt\include\libxml2\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(OutDir)\include\libxml2\;$(ProjectDir)\..\..\prebuilt\include\libxml2\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="$([System.String]::Copy($(PlatformToolset)).Contains('Intel'))">/Qvec- /Qsimd- %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(AdditionalOptions)' == '' and '$(VisualStudioVersion)' != '12.0'">/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>4244;4267;4018;4146;4028;4996;4090;4114;4308;4305;4005;4101;4554;4307;4273;4133;4544;4334;4293;4047;4703;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+	  <LanguageStandard_C Condition="'$(VisualStudioVersion)' > '15.0'">stdc11</LanguageStandard_C>
     </ClCompile>
     <Link>
       <AdditionalDependencies>avcodec.lib;avutil.lib;bz2.lib;iconv.lib;zlib.lib;gcrypt.lib;gnutls.lib;bluray.lib;gme.lib;modplug.lib;ssh.lib;xml2.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -371,17 +378,18 @@ cd $(ProjectDir)
 )</Command>
     </PreBuildEvent>
     <ResourceCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\;$(OutDir)\include\libxml2\;$(ProjectDir)\..\..\prebuilt\include\libxml2\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(OutDir)\include\libxml2\;$(ProjectDir)\..\..\prebuilt\include\libxml2\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_MSC_VER;BUILDING_avformat;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseDLL|x64'">
     <ClCompile>
       <PreprocessorDefinitions>_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;BUILDING_avformat;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\;$(OutDir)\include\libxml2\;$(ProjectDir)\..\..\prebuilt\include\libxml2\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(OutDir)\include\libxml2\;$(ProjectDir)\..\..\prebuilt\include\libxml2\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="$([System.String]::Copy($(PlatformToolset)).Contains('Intel'))">/Qvec- /Qsimd- %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(AdditionalOptions)' == '' and '$(VisualStudioVersion)' != '12.0'">/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>4244;4267;4018;4146;4028;4996;4090;4114;4308;4305;4005;4101;4554;4307;4273;4133;4544;4334;4293;4047;4703;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+	  <LanguageStandard_C Condition="'$(VisualStudioVersion)' > '15.0'">stdc11</LanguageStandard_C>
     </ClCompile>
     <Link>
       <AdditionalDependencies>avcodec.lib;avutil.lib;bz2.lib;iconv.lib;zlib.lib;gcrypt.lib;gnutls.lib;bluray.lib;gme.lib;modplug.lib;ssh.lib;xml2.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -424,17 +432,18 @@ cd $(ProjectDir)
 )</Command>
     </PreBuildEvent>
     <ResourceCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\;$(OutDir)\include\libxml2\;$(ProjectDir)\..\..\prebuilt\include\libxml2\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(OutDir)\include\libxml2\;$(ProjectDir)\..\..\prebuilt\include\libxml2\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_MSC_VER;BUILDING_avformat;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseDLLStaticDeps|Win32'">
     <ClCompile>
       <PreprocessorDefinitions>LIBXML_STATIC;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;BUILDING_avformat;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\;$(OutDir)\include\libxml2\;$(ProjectDir)\..\..\prebuilt\include\libxml2\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(OutDir)\include\libxml2\;$(ProjectDir)\..\..\prebuilt\include\libxml2\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="$([System.String]::Copy($(PlatformToolset)).Contains('Intel'))">/Qvec- /Qsimd- %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(AdditionalOptions)' == '' and '$(VisualStudioVersion)' != '12.0'">/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>4244;4267;4018;4146;4028;4996;4090;4114;4308;4305;4005;4101;4554;4307;4273;4133;4544;4334;4293;4047;4703;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+	  <LanguageStandard_C Condition="'$(VisualStudioVersion)' > '15.0'">stdc11</LanguageStandard_C>
     </ClCompile>
     <Link>
       <AdditionalDependencies>avcodec.lib;avutil.lib;libbz2.lib;libiconv.lib;libzlib.lib;libgcrypt.lib;libgnutls.lib;libbluray.lib;libgme.lib;libmodplug.lib;libssh.lib;libxml2.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -477,17 +486,18 @@ cd $(ProjectDir)
 )</Command>
     </PreBuildEvent>
     <ResourceCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\;$(OutDir)\include\libxml2\;$(ProjectDir)\..\..\prebuilt\include\libxml2\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(OutDir)\include\libxml2\;$(ProjectDir)\..\..\prebuilt\include\libxml2\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>LIBXML_STATIC;_MSC_VER;BUILDING_avformat;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseDLLStaticDeps|x64'">
     <ClCompile>
       <PreprocessorDefinitions>LIBXML_STATIC;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;BUILDING_avformat;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\;$(OutDir)\include\libxml2\;$(ProjectDir)\..\..\prebuilt\include\libxml2\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(OutDir)\include\libxml2\;$(ProjectDir)\..\..\prebuilt\include\libxml2\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="$([System.String]::Copy($(PlatformToolset)).Contains('Intel'))">/Qvec- /Qsimd- %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(AdditionalOptions)' == '' and '$(VisualStudioVersion)' != '12.0'">/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>4244;4267;4018;4146;4028;4996;4090;4114;4308;4305;4005;4101;4554;4307;4273;4133;4544;4334;4293;4047;4703;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+	  <LanguageStandard_C Condition="'$(VisualStudioVersion)' > '15.0'">stdc11</LanguageStandard_C>
     </ClCompile>
     <Link>
       <AdditionalDependencies>avcodec.lib;avutil.lib;libbz2.lib;libiconv.lib;libzlib.lib;libgcrypt.lib;libgnutls.lib;libbluray.lib;libgme.lib;libmodplug.lib;libssh.lib;libxml2.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -530,7 +540,7 @@ cd $(ProjectDir)
 )</Command>
     </PreBuildEvent>
     <ResourceCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\;$(OutDir)\include\libxml2\;$(ProjectDir)\..\..\prebuilt\include\libxml2\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(OutDir)\include\libxml2\;$(ProjectDir)\..\..\prebuilt\include\libxml2\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>LIBXML_STATIC;_MSC_VER;BUILDING_avformat;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
   </ItemDefinitionGroup>

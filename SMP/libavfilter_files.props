@@ -25,12 +25,12 @@
     <NASM Include="..\libavfilter\x86\vf_fspp.asm" />
     <NASM Include="..\libavfilter\x86\vf_gblur.asm" />
     <NASM Include="..\libavfilter\x86\vf_gradfun.asm" />
+    <NASM Include="..\libavfilter\x86\vf_lut3d.asm" />
     <NASM Include="..\libavfilter\x86\vf_hflip.asm" />
     <NASM Include="..\libavfilter\x86\vf_hqdn3d.asm" />
     <NASM Include="..\libavfilter\x86\vf_idet.asm" />
     <NASM Include="..\libavfilter\x86\vf_interlace.asm" />
     <NASM Include="..\libavfilter\x86\vf_limiter.asm" />
-    <NASM Include="..\libavfilter\x86\vf_lut3d.asm" />
     <NASM Include="..\libavfilter\x86\vf_maskedclamp.asm" />
     <NASM Include="..\libavfilter\x86\vf_maskedmerge.asm" />
     <NASM Include="..\libavfilter\x86\vf_nlmeans.asm" />
@@ -70,7 +70,6 @@
     <ClCompile Include="..\libavfilter\video.c" />
     <ClCompile Include="..\libavfilter\file_open.c" />
     <ClCompile Include="..\libavfilter\pthread.c" />
-    <ClCompile Include="..\libavfilter\dnn_filter_common.c" />
     <ClCompile Include="..\libavfilter\af_aap.c" />
     <ClCompile Include="..\libavfilter\f_bench.c" />
     <ClCompile Include="..\libavfilter\af_sidechaincompress.c" />
@@ -243,7 +242,6 @@
     <ClCompile Include="..\libavfilter\vf_deband.c" />
     <ClCompile Include="..\libavfilter\vf_deblock.c" />
     <ClCompile Include="..\libavfilter\vf_decimate.c" />
-    <ClCompile Include="..\libavfilter\vf_derain.c" />
     <ClCompile Include="..\libavfilter\vf_dedot.c" />
     <ClCompile Include="..\libavfilter\vf_neighbor.c" />
     <ClCompile Include="..\libavfilter\vf_deflicker.c" />
@@ -254,9 +252,6 @@
     <ClCompile Include="..\libavfilter\vf_despill.c" />
     <ClCompile Include="..\libavfilter\vf_detelecine.c" />
     <ClCompile Include="..\libavfilter\vf_displace.c" />
-    <ClCompile Include="..\libavfilter\vf_dnn_classify.c" />
-    <ClCompile Include="..\libavfilter\vf_dnn_detect.c" />
-    <ClCompile Include="..\libavfilter\vf_dnn_processing.c" />
     <ClCompile Include="..\libavfilter\vf_weave.c" />
     <ClCompile Include="..\libavfilter\vf_drawbox.c" />
     <ClCompile Include="..\libavfilter\f_drawgraph.c" />
@@ -374,7 +369,6 @@
     <ClCompile Include="..\libavfilter\vf_smartblur.c" />
     <ClCompile Include="..\libavfilter\vf_siti.c" />
     <ClCompile Include="..\libavfilter\vf_spp.c" />
-    <ClCompile Include="..\libavfilter\vf_sr.c" />
     <ClCompile Include="..\libavfilter\vf_ssim360.c" />
     <ClCompile Include="..\libavfilter\vf_super2xsai.c" />
     <ClCompile Include="..\libavfilter\vf_swaprect.c" />
@@ -402,6 +396,7 @@
     <ClCompile Include="..\libavfilter\vf_waveform.c" />
     <ClCompile Include="..\libavfilter\vf_xbr.c" />
     <ClCompile Include="..\libavfilter\vf_xfade.c" />
+    <ClCompile Include="..\libavfilter\vf_xpsnr.c" />
     <ClCompile Include="..\libavfilter\vf_yaepblur.c" />
     <ClCompile Include="..\libavfilter\vf_zoompan.c" />
     <ClCompile Include="..\libavfilter\vsrc_testsrc.c" />
@@ -410,6 +405,8 @@
     <ClCompile Include="..\libavfilter\vsrc_life.c" />
     <ClCompile Include="..\libavfilter\vsrc_mandelbrot.c" />
     <ClCompile Include="..\libavfilter\vsrc_mptestsrc.c" />
+    <ClCompile Include="..\libavfilter\vsrc_perlin.c" />
+    <ClCompile Include="..\libavfilter\perlin.c" />
     <ClCompile Include="..\libavfilter\vsrc_sierpinski.c" />
     <ClCompile Include="..\libavfilter\vsink_nullsink.c" />
     <ClCompile Include="..\libavfilter\avf_a3dscope.c" />
@@ -427,11 +424,6 @@
     <ClCompile Include="..\libavfilter\vaf_spectrumsynth.c" />
     <ClCompile Include="..\libavfilter\src_avsynctest.c" />
     <ClCompile Include="..\libavfilter\src_movie.c" />
-    <ClCompile Include="..\libavfilter\dnn\dnn_interface.c" />
-    <ClCompile Include="..\libavfilter\dnn\dnn_io_proc.c" />
-    <ClCompile Include="..\libavfilter\dnn\queue.c" />
-    <ClCompile Include="..\libavfilter\dnn\safe_queue.c" />
-    <ClCompile Include="..\libavfilter\dnn\dnn_backend_common.c" />
     <ClCompile Include="..\libavfilter\x86\scene_sad_init.c" />
     <ClCompile Include="..\libavfilter\x86\af_afir_init.c" />
     <ClCompile Include="..\libavfilter\x86\af_anlmdn_init.c" />
@@ -445,12 +437,12 @@
     <ClCompile Include="..\libavfilter\x86\vf_gblur_init.c" />
     <ClCompile Include="..\libavfilter\x86\vf_gradfun_init.c" />
     <ClCompile Include="..\libavfilter\x86\vf_framerate_init.c" />
+    <ClCompile Include="..\libavfilter\x86\vf_lut3d_init.c" />
     <ClCompile Include="..\libavfilter\x86\vf_hflip_init.c" />
     <ClCompile Include="..\libavfilter\x86\vf_hqdn3d_init.c" />
     <ClCompile Include="..\libavfilter\x86\vf_idet_init.c" />
     <ClCompile Include="..\libavfilter\x86\vf_tinterlace_init.c" />
     <ClCompile Include="..\libavfilter\x86\vf_limiter_init.c" />
-    <ClCompile Include="..\libavfilter\x86\vf_lut3d_init.c" />
     <ClCompile Include="..\libavfilter\x86\vf_maskedclamp_init.c" />
     <ClCompile Include="..\libavfilter\x86\vf_maskedmerge_init.c" />
     <ClCompile Include="..\libavfilter\x86\vf_nlmeans_init.c" />
@@ -467,6 +459,7 @@
     <ClCompile Include="..\libavfilter\x86\af_volume_init.c" />
     <ClCompile Include="..\libavfilter\x86\vf_v360_init.c" />
     <ClCompile Include="..\libavfilter\x86\vf_w3fdif_init.c" />
+    <ClCompile Include="..\libavfilter\x86\vf_xpsnr_init.c" />
     <ClCompile Include="..\libavfilter\x86\vf_yadif_init.c" />
     <ClCompile Include="libavfilter\qsvvpp_wrap.c" />
     <ClCompile Include="libavfilter\vf_hwupload_cuda_wrap.c" />

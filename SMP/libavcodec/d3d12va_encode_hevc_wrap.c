@@ -1,4 +1,4 @@
-/** Automatically generated configuration values
+/** d3d12va_encode_hevc.c file wrapper for libavcodec
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -19,7 +19,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef SMP_LIBAVUTIL_FFVERSION_H
-#define SMP_LIBAVUTIL_FFVERSION_H
-#define FFMPEG_VERSION "7.1"
-#endif /* SMP_LIBAVUTIL_FFVERSION_H */
+#include "config.h"
+#include "config_components.h"
+#if CONFIG_HEVC_D3D12VA_ENCODER
+#   include "../../libavcodec/d3d12va_encode_hevc.c"
+#endif

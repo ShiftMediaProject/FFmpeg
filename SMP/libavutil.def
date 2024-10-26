@@ -78,6 +78,7 @@ EXPORTS
     av_channel_description
     av_channel_description_bprint
     av_channel_from_string
+    av_channel_layout_ambisonic_order
     av_channel_layout_channel_from_index
     av_channel_layout_channel_from_string
     av_channel_layout_check
@@ -150,6 +151,7 @@ EXPORTS
     av_div_i
     av_div_q
     av_dovi_alloc
+    av_dovi_find_level
     av_dovi_metadata_alloc
     av_downmix_info_update_side_data
     av_dynamic_hdr_plus_alloc
@@ -225,11 +227,14 @@ EXPORTS
     av_frame_ref
     av_frame_remove_side_data
     av_frame_replace
+    av_frame_side_data_add
     av_frame_side_data_clone
+    av_frame_side_data_desc
     av_frame_side_data_free
     av_frame_side_data_get_c
     av_frame_side_data_name
     av_frame_side_data_new
+    av_frame_side_data_remove
     av_frame_unref
     av_free
     av_freep
@@ -346,6 +351,7 @@ EXPORTS
     av_malloc_array
     av_mallocz
     av_mastering_display_metadata_alloc
+    av_mastering_display_metadata_alloc_size
     av_mastering_display_metadata_create_side_data
     av_match_list
     av_match_name
@@ -375,12 +381,15 @@ EXPORTS
     av_opt_eval_int
     av_opt_eval_int64
     av_opt_eval_q
+    av_opt_eval_uint
     av_opt_find
     av_opt_find2
     av_opt_flag_is_set
     av_opt_free
     av_opt_freep_ranges
     av_opt_get
+    av_opt_get_array
+    av_opt_get_array_size
     av_opt_get_chlayout
     av_opt_get_dict_val
     av_opt_get_double
@@ -399,6 +408,7 @@ EXPORTS
     av_opt_query_ranges_default
     av_opt_serialize
     av_opt_set
+    av_opt_set_array
     av_opt_set_bin
     av_opt_set_chlayout
     av_opt_set_defaults
@@ -475,9 +485,14 @@ EXPORTS
     av_spherical_tile_bounds
     av_sscanf
     av_stereo3d_alloc
+    av_stereo3d_alloc_size
     av_stereo3d_create_side_data
     av_stereo3d_from_name
+    av_stereo3d_primary_eye_from_name
+    av_stereo3d_primary_eye_name
     av_stereo3d_type_name
+    av_stereo3d_view_from_name
+    av_stereo3d_view_name
     av_strcasecmp
     av_strdup
     av_strerror

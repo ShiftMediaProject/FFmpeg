@@ -14,10 +14,11 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugWinRT|Win32'">
     <ClCompile>
       <PreprocessorDefinitions>FRIBIDI_LIB_STATIC;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;DEBUG;BUILDING_avfilter;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\;$(ProjectDir)\..\libavfilter\dnn\;$(ProjectDir)\..\libavfilter\;$(OutDir)\include\freetype2\;$(ProjectDir)\..\..\prebuilt\include\freetype2\;$(OutDir)\include\fribidi\;$(ProjectDir)\..\..\prebuilt\include\fribidi\;$(OutDir)\include\harfbuzz\;$(ProjectDir)\..\..\prebuilt\include\harfbuzz\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(ProjectDir)\..\libavfilter\;$(OutDir)\include\freetype2\;$(ProjectDir)\..\..\prebuilt\include\freetype2\;$(OutDir)\include\fribidi\;$(ProjectDir)\..\..\prebuilt\include\fribidi\;$(OutDir)\include\harfbuzz\;$(ProjectDir)\..\..\prebuilt\include\harfbuzz\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="$([System.String]::Copy($(PlatformToolset)).Contains('Intel'))">/Qvec- /Qsimd- %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(AdditionalOptions)' == '' and '$(VisualStudioVersion)' != '12.0'">/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>4244;4267;4018;4146;4028;4996;4090;4114;4308;4305;4005;4101;4554;4307;4273;4133;4544;4334;4293;4047;4703;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+	  <LanguageStandard_C Condition="'$(VisualStudioVersion)' > '15.0'">stdc11</LanguageStandard_C>
     </ClCompile>
     <Lib>
       <AdditionalDependencies>libassd_winrt.lib;libfontconfigd_winrt.lib;libfreetyped_winrt.lib;libfribidid_winrt.lib;libharfbuzzd_winrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -65,17 +66,18 @@ cd $(ProjectDir)
       <GenerateDebugInformation>false</GenerateDebugInformation>
     </NASM>
     <ResourceCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\;$(ProjectDir)\..\libavfilter\dnn\;$(ProjectDir)\..\libavfilter\;$(OutDir)\include\freetype2\;$(ProjectDir)\..\..\prebuilt\include\freetype2\;$(OutDir)\include\fribidi\;$(ProjectDir)\..\..\prebuilt\include\fribidi\;$(OutDir)\include\harfbuzz\;$(ProjectDir)\..\..\prebuilt\include\harfbuzz\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(ProjectDir)\..\libavfilter\;$(OutDir)\include\freetype2\;$(ProjectDir)\..\..\prebuilt\include\freetype2\;$(OutDir)\include\fribidi\;$(ProjectDir)\..\..\prebuilt\include\fribidi\;$(OutDir)\include\harfbuzz\;$(ProjectDir)\..\..\prebuilt\include\harfbuzz\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>FRIBIDI_LIB_STATIC;_MSC_VER;BUILDING_avfilter;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugWinRT|x64'">
     <ClCompile>
       <PreprocessorDefinitions>FRIBIDI_LIB_STATIC;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;DEBUG;BUILDING_avfilter;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\;$(ProjectDir)\..\libavfilter\dnn\;$(ProjectDir)\..\libavfilter\;$(OutDir)\include\freetype2\;$(ProjectDir)\..\..\prebuilt\include\freetype2\;$(OutDir)\include\fribidi\;$(ProjectDir)\..\..\prebuilt\include\fribidi\;$(OutDir)\include\harfbuzz\;$(ProjectDir)\..\..\prebuilt\include\harfbuzz\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(ProjectDir)\..\libavfilter\;$(OutDir)\include\freetype2\;$(ProjectDir)\..\..\prebuilt\include\freetype2\;$(OutDir)\include\fribidi\;$(ProjectDir)\..\..\prebuilt\include\fribidi\;$(OutDir)\include\harfbuzz\;$(ProjectDir)\..\..\prebuilt\include\harfbuzz\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="$([System.String]::Copy($(PlatformToolset)).Contains('Intel'))">/Qvec- /Qsimd- %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(AdditionalOptions)' == '' and '$(VisualStudioVersion)' != '12.0'">/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>4244;4267;4018;4146;4028;4996;4090;4114;4308;4305;4005;4101;4554;4307;4273;4133;4544;4334;4293;4047;4703;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+	  <LanguageStandard_C Condition="'$(VisualStudioVersion)' > '15.0'">stdc11</LanguageStandard_C>
     </ClCompile>
     <Lib>
       <AdditionalDependencies>libassd_winrt.lib;libfontconfigd_winrt.lib;libfreetyped_winrt.lib;libfribidid_winrt.lib;libharfbuzzd_winrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -123,17 +125,18 @@ cd $(ProjectDir)
       <GenerateDebugInformation>false</GenerateDebugInformation>
     </NASM>
     <ResourceCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\;$(ProjectDir)\..\libavfilter\dnn\;$(ProjectDir)\..\libavfilter\;$(OutDir)\include\freetype2\;$(ProjectDir)\..\..\prebuilt\include\freetype2\;$(OutDir)\include\fribidi\;$(ProjectDir)\..\..\prebuilt\include\fribidi\;$(OutDir)\include\harfbuzz\;$(ProjectDir)\..\..\prebuilt\include\harfbuzz\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(ProjectDir)\..\libavfilter\;$(OutDir)\include\freetype2\;$(ProjectDir)\..\..\prebuilt\include\freetype2\;$(OutDir)\include\fribidi\;$(ProjectDir)\..\..\prebuilt\include\fribidi\;$(OutDir)\include\harfbuzz\;$(ProjectDir)\..\..\prebuilt\include\harfbuzz\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>FRIBIDI_LIB_STATIC;_MSC_VER;BUILDING_avfilter;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugDLLWinRT|Win32'">
     <ClCompile>
       <PreprocessorDefinitions>_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;DEBUG;BUILDING_avfilter;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\;$(ProjectDir)\..\libavfilter\dnn\;$(ProjectDir)\..\libavfilter\;$(OutDir)\include\freetype2\;$(ProjectDir)\..\..\prebuilt\include\freetype2\;$(OutDir)\include\fribidi\;$(ProjectDir)\..\..\prebuilt\include\fribidi\;$(OutDir)\include\harfbuzz\;$(ProjectDir)\..\..\prebuilt\include\harfbuzz\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(ProjectDir)\..\libavfilter\;$(OutDir)\include\freetype2\;$(ProjectDir)\..\..\prebuilt\include\freetype2\;$(OutDir)\include\fribidi\;$(ProjectDir)\..\..\prebuilt\include\fribidi\;$(OutDir)\include\harfbuzz\;$(ProjectDir)\..\..\prebuilt\include\harfbuzz\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="$([System.String]::Copy($(PlatformToolset)).Contains('Intel'))">/Qvec- /Qsimd- %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(AdditionalOptions)' == '' and '$(VisualStudioVersion)' != '12.0'">/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>4244;4267;4018;4146;4028;4996;4090;4114;4308;4305;4005;4101;4554;4307;4273;4133;4544;4334;4293;4047;4703;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+	  <LanguageStandard_C Condition="'$(VisualStudioVersion)' > '15.0'">stdc11</LanguageStandard_C>
     </ClCompile>
     <Link>
       <AdditionalDependencies>avutild_winrt.lib;avformatd_winrt.lib;avcodecd_winrt.lib;swresampled_winrt.lib;postprocd_winrt.lib;swscaled_winrt.lib;assd_winrt.lib;fontconfigd_winrt.lib;freetyped_winrt.lib;fribidid_winrt.lib;harfbuzzd_winrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -182,17 +185,18 @@ cd $(ProjectDir)
       <GenerateDebugInformation>false</GenerateDebugInformation>
     </NASM>
     <ResourceCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\;$(ProjectDir)\..\libavfilter\dnn\;$(ProjectDir)\..\libavfilter\;$(OutDir)\include\freetype2\;$(ProjectDir)\..\..\prebuilt\include\freetype2\;$(OutDir)\include\fribidi\;$(ProjectDir)\..\..\prebuilt\include\fribidi\;$(OutDir)\include\harfbuzz\;$(ProjectDir)\..\..\prebuilt\include\harfbuzz\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(ProjectDir)\..\libavfilter\;$(OutDir)\include\freetype2\;$(ProjectDir)\..\..\prebuilt\include\freetype2\;$(OutDir)\include\fribidi\;$(ProjectDir)\..\..\prebuilt\include\fribidi\;$(OutDir)\include\harfbuzz\;$(ProjectDir)\..\..\prebuilt\include\harfbuzz\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_MSC_VER;BUILDING_avfilter;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugDLLWinRT|x64'">
     <ClCompile>
       <PreprocessorDefinitions>_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;DEBUG;BUILDING_avfilter;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\;$(ProjectDir)\..\libavfilter\dnn\;$(ProjectDir)\..\libavfilter\;$(OutDir)\include\freetype2\;$(ProjectDir)\..\..\prebuilt\include\freetype2\;$(OutDir)\include\fribidi\;$(ProjectDir)\..\..\prebuilt\include\fribidi\;$(OutDir)\include\harfbuzz\;$(ProjectDir)\..\..\prebuilt\include\harfbuzz\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(ProjectDir)\..\libavfilter\;$(OutDir)\include\freetype2\;$(ProjectDir)\..\..\prebuilt\include\freetype2\;$(OutDir)\include\fribidi\;$(ProjectDir)\..\..\prebuilt\include\fribidi\;$(OutDir)\include\harfbuzz\;$(ProjectDir)\..\..\prebuilt\include\harfbuzz\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="$([System.String]::Copy($(PlatformToolset)).Contains('Intel'))">/Qvec- /Qsimd- %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(AdditionalOptions)' == '' and '$(VisualStudioVersion)' != '12.0'">/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>4244;4267;4018;4146;4028;4996;4090;4114;4308;4305;4005;4101;4554;4307;4273;4133;4544;4334;4293;4047;4703;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+	  <LanguageStandard_C Condition="'$(VisualStudioVersion)' > '15.0'">stdc11</LanguageStandard_C>
     </ClCompile>
     <Link>
       <AdditionalDependencies>avutild_winrt.lib;avformatd_winrt.lib;avcodecd_winrt.lib;swresampled_winrt.lib;postprocd_winrt.lib;swscaled_winrt.lib;assd_winrt.lib;fontconfigd_winrt.lib;freetyped_winrt.lib;fribidid_winrt.lib;harfbuzzd_winrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -241,17 +245,18 @@ cd $(ProjectDir)
       <GenerateDebugInformation>false</GenerateDebugInformation>
     </NASM>
     <ResourceCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\;$(ProjectDir)\..\libavfilter\dnn\;$(ProjectDir)\..\libavfilter\;$(OutDir)\include\freetype2\;$(ProjectDir)\..\..\prebuilt\include\freetype2\;$(OutDir)\include\fribidi\;$(ProjectDir)\..\..\prebuilt\include\fribidi\;$(OutDir)\include\harfbuzz\;$(ProjectDir)\..\..\prebuilt\include\harfbuzz\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(ProjectDir)\..\libavfilter\;$(OutDir)\include\freetype2\;$(ProjectDir)\..\..\prebuilt\include\freetype2\;$(OutDir)\include\fribidi\;$(ProjectDir)\..\..\prebuilt\include\fribidi\;$(OutDir)\include\harfbuzz\;$(ProjectDir)\..\..\prebuilt\include\harfbuzz\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_MSC_VER;BUILDING_avfilter;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseWinRT|Win32'">
     <ClCompile>
       <PreprocessorDefinitions>FRIBIDI_LIB_STATIC;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;BUILDING_avfilter;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\;$(ProjectDir)\..\libavfilter\dnn\;$(ProjectDir)\..\libavfilter\;$(OutDir)\include\freetype2\;$(ProjectDir)\..\..\prebuilt\include\freetype2\;$(OutDir)\include\fribidi\;$(ProjectDir)\..\..\prebuilt\include\fribidi\;$(OutDir)\include\harfbuzz\;$(ProjectDir)\..\..\prebuilt\include\harfbuzz\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(ProjectDir)\..\libavfilter\;$(OutDir)\include\freetype2\;$(ProjectDir)\..\..\prebuilt\include\freetype2\;$(OutDir)\include\fribidi\;$(ProjectDir)\..\..\prebuilt\include\fribidi\;$(OutDir)\include\harfbuzz\;$(ProjectDir)\..\..\prebuilt\include\harfbuzz\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="$([System.String]::Copy($(PlatformToolset)).Contains('Intel'))">/Qvec- /Qsimd- %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(AdditionalOptions)' == '' and '$(VisualStudioVersion)' != '12.0'">/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>4244;4267;4018;4146;4028;4996;4090;4114;4308;4305;4005;4101;4554;4307;4273;4133;4544;4334;4293;4047;4703;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+	  <LanguageStandard_C Condition="'$(VisualStudioVersion)' > '15.0'">stdc11</LanguageStandard_C>
     </ClCompile>
     <Lib>
       <AdditionalDependencies>libass_winrt.lib;libfontconfig_winrt.lib;libfreetype_winrt.lib;libfribidi_winrt.lib;libharfbuzz_winrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -299,17 +304,18 @@ cd $(ProjectDir)
       <GenerateDebugInformation>false</GenerateDebugInformation>
     </NASM>
     <ResourceCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\;$(ProjectDir)\..\libavfilter\dnn\;$(ProjectDir)\..\libavfilter\;$(OutDir)\include\freetype2\;$(ProjectDir)\..\..\prebuilt\include\freetype2\;$(OutDir)\include\fribidi\;$(ProjectDir)\..\..\prebuilt\include\fribidi\;$(OutDir)\include\harfbuzz\;$(ProjectDir)\..\..\prebuilt\include\harfbuzz\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(ProjectDir)\..\libavfilter\;$(OutDir)\include\freetype2\;$(ProjectDir)\..\..\prebuilt\include\freetype2\;$(OutDir)\include\fribidi\;$(ProjectDir)\..\..\prebuilt\include\fribidi\;$(OutDir)\include\harfbuzz\;$(ProjectDir)\..\..\prebuilt\include\harfbuzz\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>FRIBIDI_LIB_STATIC;_MSC_VER;BUILDING_avfilter;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseWinRT|x64'">
     <ClCompile>
       <PreprocessorDefinitions>FRIBIDI_LIB_STATIC;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;BUILDING_avfilter;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\;$(ProjectDir)\..\libavfilter\dnn\;$(ProjectDir)\..\libavfilter\;$(OutDir)\include\freetype2\;$(ProjectDir)\..\..\prebuilt\include\freetype2\;$(OutDir)\include\fribidi\;$(ProjectDir)\..\..\prebuilt\include\fribidi\;$(OutDir)\include\harfbuzz\;$(ProjectDir)\..\..\prebuilt\include\harfbuzz\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(ProjectDir)\..\libavfilter\;$(OutDir)\include\freetype2\;$(ProjectDir)\..\..\prebuilt\include\freetype2\;$(OutDir)\include\fribidi\;$(ProjectDir)\..\..\prebuilt\include\fribidi\;$(OutDir)\include\harfbuzz\;$(ProjectDir)\..\..\prebuilt\include\harfbuzz\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="$([System.String]::Copy($(PlatformToolset)).Contains('Intel'))">/Qvec- /Qsimd- %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(AdditionalOptions)' == '' and '$(VisualStudioVersion)' != '12.0'">/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>4244;4267;4018;4146;4028;4996;4090;4114;4308;4305;4005;4101;4554;4307;4273;4133;4544;4334;4293;4047;4703;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+	  <LanguageStandard_C Condition="'$(VisualStudioVersion)' > '15.0'">stdc11</LanguageStandard_C>
     </ClCompile>
     <Lib>
       <AdditionalDependencies>libass_winrt.lib;libfontconfig_winrt.lib;libfreetype_winrt.lib;libfribidi_winrt.lib;libharfbuzz_winrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -357,17 +363,18 @@ cd $(ProjectDir)
       <GenerateDebugInformation>false</GenerateDebugInformation>
     </NASM>
     <ResourceCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\;$(ProjectDir)\..\libavfilter\dnn\;$(ProjectDir)\..\libavfilter\;$(OutDir)\include\freetype2\;$(ProjectDir)\..\..\prebuilt\include\freetype2\;$(OutDir)\include\fribidi\;$(ProjectDir)\..\..\prebuilt\include\fribidi\;$(OutDir)\include\harfbuzz\;$(ProjectDir)\..\..\prebuilt\include\harfbuzz\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(ProjectDir)\..\libavfilter\;$(OutDir)\include\freetype2\;$(ProjectDir)\..\..\prebuilt\include\freetype2\;$(OutDir)\include\fribidi\;$(ProjectDir)\..\..\prebuilt\include\fribidi\;$(OutDir)\include\harfbuzz\;$(ProjectDir)\..\..\prebuilt\include\harfbuzz\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>FRIBIDI_LIB_STATIC;_MSC_VER;BUILDING_avfilter;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseDLLWinRT|Win32'">
     <ClCompile>
       <PreprocessorDefinitions>_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;BUILDING_avfilter;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\;$(ProjectDir)\..\libavfilter\dnn\;$(ProjectDir)\..\libavfilter\;$(OutDir)\include\freetype2\;$(ProjectDir)\..\..\prebuilt\include\freetype2\;$(OutDir)\include\fribidi\;$(ProjectDir)\..\..\prebuilt\include\fribidi\;$(OutDir)\include\harfbuzz\;$(ProjectDir)\..\..\prebuilt\include\harfbuzz\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(ProjectDir)\..\libavfilter\;$(OutDir)\include\freetype2\;$(ProjectDir)\..\..\prebuilt\include\freetype2\;$(OutDir)\include\fribidi\;$(ProjectDir)\..\..\prebuilt\include\fribidi\;$(OutDir)\include\harfbuzz\;$(ProjectDir)\..\..\prebuilt\include\harfbuzz\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="$([System.String]::Copy($(PlatformToolset)).Contains('Intel'))">/Qvec- /Qsimd- %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(AdditionalOptions)' == '' and '$(VisualStudioVersion)' != '12.0'">/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>4244;4267;4018;4146;4028;4996;4090;4114;4308;4305;4005;4101;4554;4307;4273;4133;4544;4334;4293;4047;4703;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+	  <LanguageStandard_C Condition="'$(VisualStudioVersion)' > '15.0'">stdc11</LanguageStandard_C>
     </ClCompile>
     <Link>
       <AdditionalDependencies>avutil_winrt.lib;avformat_winrt.lib;avcodec_winrt.lib;swresample_winrt.lib;postproc_winrt.lib;swscale_winrt.lib;ass_winrt.lib;fontconfig_winrt.lib;freetype_winrt.lib;fribidi_winrt.lib;harfbuzz_winrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -416,17 +423,18 @@ cd $(ProjectDir)
       <GenerateDebugInformation>false</GenerateDebugInformation>
     </NASM>
     <ResourceCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\;$(ProjectDir)\..\libavfilter\dnn\;$(ProjectDir)\..\libavfilter\;$(OutDir)\include\freetype2\;$(ProjectDir)\..\..\prebuilt\include\freetype2\;$(OutDir)\include\fribidi\;$(ProjectDir)\..\..\prebuilt\include\fribidi\;$(OutDir)\include\harfbuzz\;$(ProjectDir)\..\..\prebuilt\include\harfbuzz\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(ProjectDir)\..\libavfilter\;$(OutDir)\include\freetype2\;$(ProjectDir)\..\..\prebuilt\include\freetype2\;$(OutDir)\include\fribidi\;$(ProjectDir)\..\..\prebuilt\include\fribidi\;$(OutDir)\include\harfbuzz\;$(ProjectDir)\..\..\prebuilt\include\harfbuzz\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_MSC_VER;BUILDING_avfilter;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseDLLWinRT|x64'">
     <ClCompile>
       <PreprocessorDefinitions>_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;BUILDING_avfilter;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\;$(ProjectDir)\..\libavfilter\dnn\;$(ProjectDir)\..\libavfilter\;$(OutDir)\include\freetype2\;$(ProjectDir)\..\..\prebuilt\include\freetype2\;$(OutDir)\include\fribidi\;$(ProjectDir)\..\..\prebuilt\include\fribidi\;$(OutDir)\include\harfbuzz\;$(ProjectDir)\..\..\prebuilt\include\harfbuzz\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(ProjectDir)\..\libavfilter\;$(OutDir)\include\freetype2\;$(ProjectDir)\..\..\prebuilt\include\freetype2\;$(OutDir)\include\fribidi\;$(ProjectDir)\..\..\prebuilt\include\fribidi\;$(OutDir)\include\harfbuzz\;$(ProjectDir)\..\..\prebuilt\include\harfbuzz\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="$([System.String]::Copy($(PlatformToolset)).Contains('Intel'))">/Qvec- /Qsimd- %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(AdditionalOptions)' == '' and '$(VisualStudioVersion)' != '12.0'">/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>4244;4267;4018;4146;4028;4996;4090;4114;4308;4305;4005;4101;4554;4307;4273;4133;4544;4334;4293;4047;4703;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+	  <LanguageStandard_C Condition="'$(VisualStudioVersion)' > '15.0'">stdc11</LanguageStandard_C>
     </ClCompile>
     <Link>
       <AdditionalDependencies>avutil_winrt.lib;avformat_winrt.lib;avcodec_winrt.lib;swresample_winrt.lib;postproc_winrt.lib;swscale_winrt.lib;ass_winrt.lib;fontconfig_winrt.lib;freetype_winrt.lib;fribidi_winrt.lib;harfbuzz_winrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -475,17 +483,18 @@ cd $(ProjectDir)
       <GenerateDebugInformation>false</GenerateDebugInformation>
     </NASM>
     <ResourceCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\;$(ProjectDir)\..\libavfilter\dnn\;$(ProjectDir)\..\libavfilter\;$(OutDir)\include\freetype2\;$(ProjectDir)\..\..\prebuilt\include\freetype2\;$(OutDir)\include\fribidi\;$(ProjectDir)\..\..\prebuilt\include\fribidi\;$(OutDir)\include\harfbuzz\;$(ProjectDir)\..\..\prebuilt\include\harfbuzz\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(ProjectDir)\..\libavfilter\;$(OutDir)\include\freetype2\;$(ProjectDir)\..\..\prebuilt\include\freetype2\;$(OutDir)\include\fribidi\;$(ProjectDir)\..\..\prebuilt\include\fribidi\;$(OutDir)\include\harfbuzz\;$(ProjectDir)\..\..\prebuilt\include\harfbuzz\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_MSC_VER;BUILDING_avfilter;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseDLLWinRTStaticDeps|Win32'">
     <ClCompile>
       <PreprocessorDefinitions>FRIBIDI_LIB_STATIC;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;BUILDING_avfilter;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\;$(ProjectDir)\..\libavfilter\dnn\;$(ProjectDir)\..\libavfilter\;$(OutDir)\include\freetype2\;$(ProjectDir)\..\..\prebuilt\include\freetype2\;$(OutDir)\include\fribidi\;$(ProjectDir)\..\..\prebuilt\include\fribidi\;$(OutDir)\include\harfbuzz\;$(ProjectDir)\..\..\prebuilt\include\harfbuzz\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(ProjectDir)\..\libavfilter\;$(OutDir)\include\freetype2\;$(ProjectDir)\..\..\prebuilt\include\freetype2\;$(OutDir)\include\fribidi\;$(ProjectDir)\..\..\prebuilt\include\fribidi\;$(OutDir)\include\harfbuzz\;$(ProjectDir)\..\..\prebuilt\include\harfbuzz\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="$([System.String]::Copy($(PlatformToolset)).Contains('Intel'))">/Qvec- /Qsimd- %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(AdditionalOptions)' == '' and '$(VisualStudioVersion)' != '12.0'">/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>4244;4267;4018;4146;4028;4996;4090;4114;4308;4305;4005;4101;4554;4307;4273;4133;4544;4334;4293;4047;4703;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+	  <LanguageStandard_C Condition="'$(VisualStudioVersion)' > '15.0'">stdc11</LanguageStandard_C>
     </ClCompile>
     <Link>
       <AdditionalDependencies>avutil_winrt.lib;avformat_winrt.lib;avcodec_winrt.lib;swresample_winrt.lib;postproc_winrt.lib;swscale_winrt.lib;libass_winrt.lib;libfontconfig_winrt.lib;libfreetype_winrt.lib;libfribidi_winrt.lib;libharfbuzz_winrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -534,17 +543,18 @@ cd $(ProjectDir)
       <GenerateDebugInformation>false</GenerateDebugInformation>
     </NASM>
     <ResourceCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\;$(ProjectDir)\..\libavfilter\dnn\;$(ProjectDir)\..\libavfilter\;$(OutDir)\include\freetype2\;$(ProjectDir)\..\..\prebuilt\include\freetype2\;$(OutDir)\include\fribidi\;$(ProjectDir)\..\..\prebuilt\include\fribidi\;$(OutDir)\include\harfbuzz\;$(ProjectDir)\..\..\prebuilt\include\harfbuzz\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(ProjectDir)\..\libavfilter\;$(OutDir)\include\freetype2\;$(ProjectDir)\..\..\prebuilt\include\freetype2\;$(OutDir)\include\fribidi\;$(ProjectDir)\..\..\prebuilt\include\fribidi\;$(OutDir)\include\harfbuzz\;$(ProjectDir)\..\..\prebuilt\include\harfbuzz\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>FRIBIDI_LIB_STATIC;_MSC_VER;BUILDING_avfilter;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseDLLWinRTStaticDeps|x64'">
     <ClCompile>
       <PreprocessorDefinitions>FRIBIDI_LIB_STATIC;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;BUILDING_avfilter;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\;$(ProjectDir)\..\libavfilter\dnn\;$(ProjectDir)\..\libavfilter\;$(OutDir)\include\freetype2\;$(ProjectDir)\..\..\prebuilt\include\freetype2\;$(OutDir)\include\fribidi\;$(ProjectDir)\..\..\prebuilt\include\fribidi\;$(OutDir)\include\harfbuzz\;$(ProjectDir)\..\..\prebuilt\include\harfbuzz\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(ProjectDir)\..\libavfilter\;$(OutDir)\include\freetype2\;$(ProjectDir)\..\..\prebuilt\include\freetype2\;$(OutDir)\include\fribidi\;$(ProjectDir)\..\..\prebuilt\include\fribidi\;$(OutDir)\include\harfbuzz\;$(ProjectDir)\..\..\prebuilt\include\harfbuzz\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="$([System.String]::Copy($(PlatformToolset)).Contains('Intel'))">/Qvec- /Qsimd- %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(AdditionalOptions)' == '' and '$(VisualStudioVersion)' != '12.0'">/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>4244;4267;4018;4146;4028;4996;4090;4114;4308;4305;4005;4101;4554;4307;4273;4133;4544;4334;4293;4047;4703;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+	  <LanguageStandard_C Condition="'$(VisualStudioVersion)' > '15.0'">stdc11</LanguageStandard_C>
     </ClCompile>
     <Link>
       <AdditionalDependencies>avutil_winrt.lib;avformat_winrt.lib;avcodec_winrt.lib;swresample_winrt.lib;postproc_winrt.lib;swscale_winrt.lib;libass_winrt.lib;libfontconfig_winrt.lib;libfreetype_winrt.lib;libfribidi_winrt.lib;libharfbuzz_winrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -593,7 +603,7 @@ cd $(ProjectDir)
       <GenerateDebugInformation>false</GenerateDebugInformation>
     </NASM>
     <ResourceCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\;$(ProjectDir)\..\libavfilter\dnn\;$(ProjectDir)\..\libavfilter\;$(OutDir)\include\freetype2\;$(ProjectDir)\..\..\prebuilt\include\freetype2\;$(OutDir)\include\fribidi\;$(ProjectDir)\..\..\prebuilt\include\fribidi\;$(OutDir)\include\harfbuzz\;$(ProjectDir)\..\..\prebuilt\include\harfbuzz\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(ProjectDir)\..\libavfilter\;$(OutDir)\include\freetype2\;$(ProjectDir)\..\..\prebuilt\include\freetype2\;$(OutDir)\include\fribidi\;$(ProjectDir)\..\..\prebuilt\include\fribidi\;$(OutDir)\include\harfbuzz\;$(ProjectDir)\..\..\prebuilt\include\harfbuzz\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>FRIBIDI_LIB_STATIC;_MSC_VER;BUILDING_avfilter;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
   </ItemDefinitionGroup>

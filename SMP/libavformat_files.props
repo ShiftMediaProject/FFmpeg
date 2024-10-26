@@ -38,10 +38,12 @@
     <ClCompile Include="..\libavformat\version.c" />
     <ClCompile Include="..\libavformat\file_open.c" />
     <ClCompile Include="..\libavformat\isom.c" />
-    <ClCompile Include="..\libavformat\iamf_reader.c" />
-    <ClCompile Include="..\libavformat\iamf_parse.c" />
-    <ClCompile Include="..\libavformat\iamf.c" />
-    <ClCompile Include="..\libavformat\iamf_writer.c" />
+    <ClCompile Include="..\libavformat\av1.c" />
+    <ClCompile Include="..\libavformat\avc.c" />
+    <ClCompile Include="..\libavformat\hevc.c" />
+    <ClCompile Include="..\libavformat\nal.c" />
+    <ClCompile Include="..\libavformat\vvc.c" />
+    <ClCompile Include="..\libavformat\vpcc.c" />
     <ClCompile Include="..\libavformat\network.c" />
     <ClCompile Include="..\libavformat\riffdec.c" />
     <ClCompile Include="..\libavformat\riffenc.c" />
@@ -211,10 +213,6 @@
     <ClCompile Include="..\libavformat\flic.c" />
     <ClCompile Include="..\libavformat\flvdec.c" />
     <ClCompile Include="..\libavformat\flvenc.c" />
-    <ClCompile Include="..\libavformat\avc.c" />
-    <ClCompile Include="..\libavformat\hevc.c" />
-    <ClCompile Include="..\libavformat\av1.c" />
-    <ClCompile Include="..\libavformat\vpcc.c" />
     <ClCompile Include="..\libavformat\4xm.c" />
     <ClCompile Include="..\libavformat\framecrcenc.c" />
     <ClCompile Include="..\libavformat\framehash.c" />
@@ -245,8 +243,6 @@
     <ClCompile Include="..\libavformat\hls_sample_encryption.c" />
     <ClCompile Include="..\libavformat\hlsenc.c" />
     <ClCompile Include="..\libavformat\hnm.c" />
-    <ClCompile Include="..\libavformat\iamfdec.c" />
-    <ClCompile Include="..\libavformat\iamfenc.c" />
     <ClCompile Include="..\libavformat\icodec.c" />
     <ClCompile Include="..\libavformat\icoenc.c" />
     <ClCompile Include="..\libavformat\idcin.c" />
@@ -279,6 +275,7 @@
     <ClCompile Include="..\libavformat\kvag.c" />
     <ClCompile Include="..\libavformat\lafdec.c" />
     <ClCompile Include="..\libavformat\latmenc.c" />
+    <ClCompile Include="..\libavformat\lc3.c" />
     <ClCompile Include="..\libavformat\lmlm4.c" />
     <ClCompile Include="..\libavformat\loasdec.c" />
     <ClCompile Include="..\libavformat\luodatdec.c" />
@@ -293,7 +290,6 @@
     <ClCompile Include="..\libavformat\qtpalette.c" />
     <ClCompile Include="..\libavformat\dovi_isom.c" />
     <ClCompile Include="..\libavformat\matroskaenc.c" />
-    <ClCompile Include="..\libavformat\vvc.c" />
     <ClCompile Include="..\libavformat\wv.c" />
     <ClCompile Include="..\libavformat\mca.c" />
     <ClCompile Include="..\libavformat\mccdec.c" />
@@ -374,6 +370,7 @@
     <ClCompile Include="..\libavformat\qcp.c" />
     <ClCompile Include="..\libavformat\qoadec.c" />
     <ClCompile Include="..\libavformat\r3d.c" />
+    <ClCompile Include="..\libavformat\rcwtdec.c" />
     <ClCompile Include="..\libavformat\rcwtenc.c" />
     <ClCompile Include="..\libavformat\realtextdec.c" />
     <ClCompile Include="..\libavformat\redspark.c" />
@@ -550,14 +547,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\libavformat\ac3_channel_layout_tab.c">
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)'=='ReleaseWinRT'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)'=='DebugWinRT'">true</ExcludedFromBuild>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="..\libavformat\bitstream.c">
       <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)'=='Debug'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)'=='ReleaseWinRT'">true</ExcludedFromBuild>

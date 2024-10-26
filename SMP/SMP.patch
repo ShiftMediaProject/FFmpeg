@@ -1,22 +1,83 @@
-diff --git a/fftools/opt_common.c b/fftools/opt_common.c
-index 9d2d5184a0..4f0a8d59ce 100644
---- a/fftools/opt_common.c
-+++ b/fftools/opt_common.c
-@@ -48,6 +48,9 @@
- #include "libavformat/avformat.h"
- #include "libavformat/version.h"
+diff --git a/fftools/ffmpeg.h b/fftools/ffmpeg.h
+index 733d551fa4..24800ab676 100644
+--- a/fftools/ffmpeg.h
++++ b/fftools/ffmpeg.h
+@@ -831,7 +831,7 @@ int dec_create(const OptionsContext *o, const char *arg, Scheduler *sch);
+  * @retval ">=0" non-negative scheduler index on success
+  * @retval "<0"  an error code on failure
+  */
+-int dec_init(Decoder **pdec, Scheduler *sch,
++int dec_open(Decoder **pdec, Scheduler *sch,
+              AVDictionary **dec_opts, const DecoderOpts *o,
+              AVFrame *param_out);
+ void dec_free(Decoder **pdec);
+diff --git a/fftools/ffmpeg_dec.c b/fftools/ffmpeg_dec.c
+index 2723a0312e..bd8c5c2ee4 100644
+--- a/fftools/ffmpeg_dec.c
++++ b/fftools/ffmpeg_dec.c
+@@ -829,7 +829,7 @@ static int packet_decode(DecoderPriv *dp, AVPacket *pkt, AVFrame *frame)
+     }
+ }
  
-+#include "libavfilter/avfilter.h"
-+#include "libavfilter/version.h"
-+
- #include "libavdevice/avdevice.h"
- #include "libavdevice/version.h"
+-static int dec_open(DecoderPriv *dp, AVDictionary **dec_opts,
++static int dec_open2(DecoderPriv *dp, AVDictionary **dec_opts,
+                     const DecoderOpts *o, AVFrame *param_out);
  
+ static int dec_standalone_open(DecoderPriv *dp, const AVPacket *pkt)
+@@ -864,7 +864,7 @@ static int dec_standalone_open(DecoderPriv *dp, const AVPacket *pkt)
+     snprintf(name, sizeof(name), "dec%d", dp->index);
+     o.name = name;
+ 
+-    return dec_open(dp, &dp->standalone_init.opts, &o, NULL);
++    return dec_open2(dp, &dp->standalone_init.opts, &o, NULL);
+ }
+ 
+ static void dec_thread_set_name(const DecoderPriv *dp)
+@@ -1519,7 +1519,7 @@ static int hw_device_setup_for_decode(DecoderPriv *dp,
+     return 0;
+ }
+ 
+-static int dec_open(DecoderPriv *dp, AVDictionary **dec_opts,
++static int dec_open2(DecoderPriv *dp, AVDictionary **dec_opts,
+                     const DecoderOpts *o, AVFrame *param_out)
+ {
+     const AVCodec *codec = o->codec;
+@@ -1644,7 +1644,7 @@ static int dec_open(DecoderPriv *dp, AVDictionary **dec_opts,
+     return 0;
+ }
+ 
+-int dec_init(Decoder **pdec, Scheduler *sch,
++int dec_open(Decoder **pdec, Scheduler *sch,
+              AVDictionary **dec_opts, const DecoderOpts *o,
+              AVFrame *param_out)
+ {
+@@ -1659,7 +1659,7 @@ int dec_init(Decoder **pdec, Scheduler *sch,
+ 
+     multiview_check_manual(dp, *dec_opts);
+ 
+-    ret = dec_open(dp, dec_opts, o, param_out);
++    ret = dec_open2(dp, dec_opts, o, param_out);
+     if (ret < 0)
+         goto fail;
+ 
+diff --git a/fftools/ffmpeg_demux.c b/fftools/ffmpeg_demux.c
+index 13aef15eab..5b3c3b588a 100644
+--- a/fftools/ffmpeg_demux.c
++++ b/fftools/ffmpeg_demux.c
+@@ -948,7 +948,7 @@ static int ist_use(InputStream *ist, int decoding_needed,
+         if (!ds->decoded_params)
+             return AVERROR(ENOMEM);
+ 
+-        ret = dec_init(&ist->decoder, d->sch,
++        ret = dec_open(&ist->decoder, d->sch,
+                        &ds->decoder_opts, &ds->dec_opts, ds->decoded_params);
+         if (ret < 0)
+             return ret;
 diff --git a/libavcodec/mfenc.c b/libavcodec/mfenc.c
-index a674a35aa4..d7a52378b5 100644
+index b8f8a25f43..323b39267d 100644
 --- a/libavcodec/mfenc.c
 +++ b/libavcodec/mfenc.c
-@@ -59,6 +59,10 @@ typedef struct MFContext {
+@@ -60,6 +60,10 @@ typedef struct MFContext {
  static int mf_choose_output_type(AVCodecContext *avctx);
  static int mf_setup_context(AVCodecContext *avctx);
  
@@ -28,18 +89,18 @@ index a674a35aa4..d7a52378b5 100644
  // Sentinel value only used by us.
  #define MF_INVALID_TIME AV_NOPTS_VALUE
 diff --git a/libavfilter/textutils.c b/libavfilter/textutils.c
-index ef658d04a2..3ecce972f2 100644
+index e6b5239b20..1693b04678 100644
 --- a/libavfilter/textutils.c
 +++ b/libavfilter/textutils.c
-@@ -30,6 +30,7 @@
- #include "libavutil/error.h"
+@@ -31,6 +31,7 @@
  #include "libavutil/file.h"
+ #include "libavutil/mem.h"
  #include "libavutil/time.h"
 +#include "libavutil/time_internal.h"
  
  static int ff_expand_text_function_internal(FFExpandTextContext *expand_text, AVBPrint *bp,
                                              char *name, unsigned argc, char **argv)
-@@ -189,7 +190,7 @@ int ff_print_pts(void *log_ctx, AVBPrint *bp, double pts, const char *delta,
+@@ -190,7 +191,7 @@ int ff_print_pts(void *log_ctx, AVBPrint *bp, double pts, const char *delta,
          if (!strcmp(fmt, "localtime"))
              localtime_r(&ms, &tm);
          else
@@ -48,7 +109,7 @@ index ef658d04a2..3ecce972f2 100644
          av_bprint_strftime(bp, av_x_if_null(strftime_fmt, "%Y-%m-%d %H:%M:%S"), &tm);
      } else {
          av_log(log_ctx, AV_LOG_ERROR, "Invalid format '%s'\n", fmt);
-@@ -219,7 +220,7 @@ int ff_print_time(void *log_ctx, AVBPrint *bp,
+@@ -220,7 +221,7 @@ int ff_print_time(void *log_ctx, AVBPrint *bp,
      if (localtime)
          localtime_r(&now, &tm);
      else

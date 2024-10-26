@@ -1,4 +1,4 @@
-/** libswscale DCE definitions
+/** d3d12va_encode.c file wrapper for libavcodec
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,16 +20,7 @@
  */
 
 #include "config.h"
-#include "stdint.h"
 #include "config_components.h"
-
-
-#if !(HAVE_AVX_INLINE)
-void rgb2rgb_init_avx() {return;}
-#endif
-#if !(HAVE_MMXEXT_INLINE)
-void rgb2rgb_init_mmxext() {return;}
-#endif
-#if !(HAVE_SSE2_INLINE)
-void rgb2rgb_init_sse2() {return;}
+#if CONFIG_D3D12VA_ENCODE
+#   include "../../libavcodec/d3d12va_encode.c"
 #endif

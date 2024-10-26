@@ -14,10 +14,11 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugWinRT|Win32'">
     <ClCompile>
       <PreprocessorDefinitions>ILBC_STATIC_DEFINE;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;DEBUG;BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\;$(ProjectDir)\..\libavcodec\vvc\;$(ProjectDir)\..\libavcodec\x86\vvc\;$(ProjectDir)\..\libavcodec\bsf\;$(ProjectDir)\..\libavcodec\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;$(OutDir)\include\opus\;$(ProjectDir)\..\..\prebuilt\include\opus\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(ProjectDir)\..\libavcodec\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;$(OutDir)\include\opus\;$(ProjectDir)\..\..\prebuilt\include\opus\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="$([System.String]::Copy($(PlatformToolset)).Contains('Intel'))">/Qvec- /Qsimd- %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(AdditionalOptions)' == '' and '$(VisualStudioVersion)' != '12.0'">/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>4244;4267;4018;4146;4028;4996;4090;4114;4308;4305;4005;4101;4554;4307;4273;4133;4544;4334;4293;4047;4703;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+	  <LanguageStandard_C Condition="'$(VisualStudioVersion)' > '15.0'">stdc11</LanguageStandard_C>
     </ClCompile>
     <Lib>
       <AdditionalDependencies>libbz2d_winrt.lib;libiconvd_winrt.lib;liblzmad_winrt.lib;libzlibd_winrt.lib;libx264d_winrt.lib;libx265d_winrt.lib;libxvidcored_winrt.lib;libilbcd_winrt.lib;libmp3lamed_winrt.lib;libopusd_winrt.lib;libspeexd_winrt.lib;libtheorad_winrt.lib;libvorbisd_winrt.lib;libvpxd_winrt.lib;mfplat.lib;mfuuid.lib;dxgi.lib;d3d11.lib;d3d12.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -84,17 +85,18 @@ cd $(ProjectDir)
       <GenerateDebugInformation>false</GenerateDebugInformation>
     </NASM>
     <ResourceCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\;$(ProjectDir)\..\libavcodec\vvc\;$(ProjectDir)\..\libavcodec\x86\vvc\;$(ProjectDir)\..\libavcodec\bsf\;$(ProjectDir)\..\libavcodec\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;$(OutDir)\include\opus\;$(ProjectDir)\..\..\prebuilt\include\opus\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(ProjectDir)\..\libavcodec\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;$(OutDir)\include\opus\;$(ProjectDir)\..\..\prebuilt\include\opus\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>ILBC_STATIC_DEFINE;_MSC_VER;BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugWinRT|x64'">
     <ClCompile>
       <PreprocessorDefinitions>ILBC_STATIC_DEFINE;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;DEBUG;BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\;$(ProjectDir)\..\libavcodec\vvc\;$(ProjectDir)\..\libavcodec\x86\vvc\;$(ProjectDir)\..\libavcodec\bsf\;$(ProjectDir)\..\libavcodec\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;$(OutDir)\include\opus\;$(ProjectDir)\..\..\prebuilt\include\opus\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(ProjectDir)\..\libavcodec\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;$(OutDir)\include\opus\;$(ProjectDir)\..\..\prebuilt\include\opus\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="$([System.String]::Copy($(PlatformToolset)).Contains('Intel'))">/Qvec- /Qsimd- %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(AdditionalOptions)' == '' and '$(VisualStudioVersion)' != '12.0'">/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>4244;4267;4018;4146;4028;4996;4090;4114;4308;4305;4005;4101;4554;4307;4273;4133;4544;4334;4293;4047;4703;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+	  <LanguageStandard_C Condition="'$(VisualStudioVersion)' > '15.0'">stdc11</LanguageStandard_C>
     </ClCompile>
     <Lib>
       <AdditionalDependencies>libbz2d_winrt.lib;libiconvd_winrt.lib;liblzmad_winrt.lib;libzlibd_winrt.lib;libx264d_winrt.lib;libx265d_winrt.lib;libxvidcored_winrt.lib;libilbcd_winrt.lib;libmp3lamed_winrt.lib;libopusd_winrt.lib;libspeexd_winrt.lib;libtheorad_winrt.lib;libvorbisd_winrt.lib;libvpxd_winrt.lib;mfplat.lib;mfuuid.lib;dxgi.lib;d3d11.lib;d3d12.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -161,17 +163,18 @@ cd $(ProjectDir)
       <GenerateDebugInformation>false</GenerateDebugInformation>
     </NASM>
     <ResourceCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\;$(ProjectDir)\..\libavcodec\vvc\;$(ProjectDir)\..\libavcodec\x86\vvc\;$(ProjectDir)\..\libavcodec\bsf\;$(ProjectDir)\..\libavcodec\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;$(OutDir)\include\opus\;$(ProjectDir)\..\..\prebuilt\include\opus\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(ProjectDir)\..\libavcodec\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;$(OutDir)\include\opus\;$(ProjectDir)\..\..\prebuilt\include\opus\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>ILBC_STATIC_DEFINE;_MSC_VER;BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugDLLWinRT|Win32'">
     <ClCompile>
       <PreprocessorDefinitions>X264_API_IMPORTS;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;DEBUG;BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\;$(ProjectDir)\..\libavcodec\vvc\;$(ProjectDir)\..\libavcodec\x86\vvc\;$(ProjectDir)\..\libavcodec\bsf\;$(ProjectDir)\..\libavcodec\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;$(OutDir)\include\opus\;$(ProjectDir)\..\..\prebuilt\include\opus\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(ProjectDir)\..\libavcodec\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;$(OutDir)\include\opus\;$(ProjectDir)\..\..\prebuilt\include\opus\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="$([System.String]::Copy($(PlatformToolset)).Contains('Intel'))">/Qvec- /Qsimd- %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(AdditionalOptions)' == '' and '$(VisualStudioVersion)' != '12.0'">/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>4244;4267;4018;4146;4028;4996;4090;4114;4308;4305;4005;4101;4554;4307;4273;4133;4544;4334;4293;4047;4703;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+	  <LanguageStandard_C Condition="'$(VisualStudioVersion)' > '15.0'">stdc11</LanguageStandard_C>
     </ClCompile>
     <Link>
       <AdditionalDependencies>avutild_winrt.lib;swresampled_winrt.lib;bz2d_winrt.lib;iconvd_winrt.lib;lzmad_winrt.lib;zlibd_winrt.lib;x264d_winrt.lib;x265d_winrt.lib;xvidcored_winrt.lib;ilbcd_winrt.lib;mp3lamed_winrt.lib;opusd_winrt.lib;speexd_winrt.lib;theorad_winrt.lib;vorbisd_winrt.lib;vpxd_winrt.lib;mfplat.lib;mfuuid.lib;dxgi.lib;d3d11.lib;d3d12.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -239,17 +242,18 @@ cd $(ProjectDir)
       <GenerateDebugInformation>false</GenerateDebugInformation>
     </NASM>
     <ResourceCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\;$(ProjectDir)\..\libavcodec\vvc\;$(ProjectDir)\..\libavcodec\x86\vvc\;$(ProjectDir)\..\libavcodec\bsf\;$(ProjectDir)\..\libavcodec\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;$(OutDir)\include\opus\;$(ProjectDir)\..\..\prebuilt\include\opus\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(ProjectDir)\..\libavcodec\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;$(OutDir)\include\opus\;$(ProjectDir)\..\..\prebuilt\include\opus\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>X264_API_IMPORTS;_MSC_VER;BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugDLLWinRT|x64'">
     <ClCompile>
       <PreprocessorDefinitions>X264_API_IMPORTS;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;DEBUG;BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\;$(ProjectDir)\..\libavcodec\vvc\;$(ProjectDir)\..\libavcodec\x86\vvc\;$(ProjectDir)\..\libavcodec\bsf\;$(ProjectDir)\..\libavcodec\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;$(OutDir)\include\opus\;$(ProjectDir)\..\..\prebuilt\include\opus\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(ProjectDir)\..\libavcodec\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;$(OutDir)\include\opus\;$(ProjectDir)\..\..\prebuilt\include\opus\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="$([System.String]::Copy($(PlatformToolset)).Contains('Intel'))">/Qvec- /Qsimd- %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(AdditionalOptions)' == '' and '$(VisualStudioVersion)' != '12.0'">/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>4244;4267;4018;4146;4028;4996;4090;4114;4308;4305;4005;4101;4554;4307;4273;4133;4544;4334;4293;4047;4703;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+	  <LanguageStandard_C Condition="'$(VisualStudioVersion)' > '15.0'">stdc11</LanguageStandard_C>
     </ClCompile>
     <Link>
       <AdditionalDependencies>avutild_winrt.lib;swresampled_winrt.lib;bz2d_winrt.lib;iconvd_winrt.lib;lzmad_winrt.lib;zlibd_winrt.lib;x264d_winrt.lib;x265d_winrt.lib;xvidcored_winrt.lib;ilbcd_winrt.lib;mp3lamed_winrt.lib;opusd_winrt.lib;speexd_winrt.lib;theorad_winrt.lib;vorbisd_winrt.lib;vpxd_winrt.lib;mfplat.lib;mfuuid.lib;dxgi.lib;d3d11.lib;d3d12.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -317,17 +321,18 @@ cd $(ProjectDir)
       <GenerateDebugInformation>false</GenerateDebugInformation>
     </NASM>
     <ResourceCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\;$(ProjectDir)\..\libavcodec\vvc\;$(ProjectDir)\..\libavcodec\x86\vvc\;$(ProjectDir)\..\libavcodec\bsf\;$(ProjectDir)\..\libavcodec\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;$(OutDir)\include\opus\;$(ProjectDir)\..\..\prebuilt\include\opus\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(ProjectDir)\..\libavcodec\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;$(OutDir)\include\opus\;$(ProjectDir)\..\..\prebuilt\include\opus\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>X264_API_IMPORTS;_MSC_VER;BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseWinRT|Win32'">
     <ClCompile>
       <PreprocessorDefinitions>ILBC_STATIC_DEFINE;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\;$(ProjectDir)\..\libavcodec\vvc\;$(ProjectDir)\..\libavcodec\x86\vvc\;$(ProjectDir)\..\libavcodec\bsf\;$(ProjectDir)\..\libavcodec\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;$(OutDir)\include\opus\;$(ProjectDir)\..\..\prebuilt\include\opus\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(ProjectDir)\..\libavcodec\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;$(OutDir)\include\opus\;$(ProjectDir)\..\..\prebuilt\include\opus\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="$([System.String]::Copy($(PlatformToolset)).Contains('Intel'))">/Qvec- /Qsimd- %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(AdditionalOptions)' == '' and '$(VisualStudioVersion)' != '12.0'">/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>4244;4267;4018;4146;4028;4996;4090;4114;4308;4305;4005;4101;4554;4307;4273;4133;4544;4334;4293;4047;4703;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+	  <LanguageStandard_C Condition="'$(VisualStudioVersion)' > '15.0'">stdc11</LanguageStandard_C>
     </ClCompile>
     <Lib>
       <AdditionalDependencies>libbz2_winrt.lib;libiconv_winrt.lib;liblzma_winrt.lib;libzlib_winrt.lib;libx264_winrt.lib;libx265_winrt.lib;libxvidcore_winrt.lib;libilbc_winrt.lib;libmp3lame_winrt.lib;libopus_winrt.lib;libspeex_winrt.lib;libtheora_winrt.lib;libvorbis_winrt.lib;libvpx_winrt.lib;mfplat.lib;mfuuid.lib;dxgi.lib;d3d11.lib;d3d12.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -394,17 +399,18 @@ cd $(ProjectDir)
       <GenerateDebugInformation>false</GenerateDebugInformation>
     </NASM>
     <ResourceCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\;$(ProjectDir)\..\libavcodec\vvc\;$(ProjectDir)\..\libavcodec\x86\vvc\;$(ProjectDir)\..\libavcodec\bsf\;$(ProjectDir)\..\libavcodec\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;$(OutDir)\include\opus\;$(ProjectDir)\..\..\prebuilt\include\opus\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(ProjectDir)\..\libavcodec\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;$(OutDir)\include\opus\;$(ProjectDir)\..\..\prebuilt\include\opus\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>ILBC_STATIC_DEFINE;_MSC_VER;BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseWinRT|x64'">
     <ClCompile>
       <PreprocessorDefinitions>ILBC_STATIC_DEFINE;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\;$(ProjectDir)\..\libavcodec\vvc\;$(ProjectDir)\..\libavcodec\x86\vvc\;$(ProjectDir)\..\libavcodec\bsf\;$(ProjectDir)\..\libavcodec\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;$(OutDir)\include\opus\;$(ProjectDir)\..\..\prebuilt\include\opus\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(ProjectDir)\..\libavcodec\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;$(OutDir)\include\opus\;$(ProjectDir)\..\..\prebuilt\include\opus\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="$([System.String]::Copy($(PlatformToolset)).Contains('Intel'))">/Qvec- /Qsimd- %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(AdditionalOptions)' == '' and '$(VisualStudioVersion)' != '12.0'">/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>4244;4267;4018;4146;4028;4996;4090;4114;4308;4305;4005;4101;4554;4307;4273;4133;4544;4334;4293;4047;4703;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+	  <LanguageStandard_C Condition="'$(VisualStudioVersion)' > '15.0'">stdc11</LanguageStandard_C>
     </ClCompile>
     <Lib>
       <AdditionalDependencies>libbz2_winrt.lib;libiconv_winrt.lib;liblzma_winrt.lib;libzlib_winrt.lib;libx264_winrt.lib;libx265_winrt.lib;libxvidcore_winrt.lib;libilbc_winrt.lib;libmp3lame_winrt.lib;libopus_winrt.lib;libspeex_winrt.lib;libtheora_winrt.lib;libvorbis_winrt.lib;libvpx_winrt.lib;mfplat.lib;mfuuid.lib;dxgi.lib;d3d11.lib;d3d12.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -471,17 +477,18 @@ cd $(ProjectDir)
       <GenerateDebugInformation>false</GenerateDebugInformation>
     </NASM>
     <ResourceCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\;$(ProjectDir)\..\libavcodec\vvc\;$(ProjectDir)\..\libavcodec\x86\vvc\;$(ProjectDir)\..\libavcodec\bsf\;$(ProjectDir)\..\libavcodec\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;$(OutDir)\include\opus\;$(ProjectDir)\..\..\prebuilt\include\opus\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(ProjectDir)\..\libavcodec\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;$(OutDir)\include\opus\;$(ProjectDir)\..\..\prebuilt\include\opus\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>ILBC_STATIC_DEFINE;_MSC_VER;BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseDLLWinRT|Win32'">
     <ClCompile>
       <PreprocessorDefinitions>X264_API_IMPORTS;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\;$(ProjectDir)\..\libavcodec\vvc\;$(ProjectDir)\..\libavcodec\x86\vvc\;$(ProjectDir)\..\libavcodec\bsf\;$(ProjectDir)\..\libavcodec\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;$(OutDir)\include\opus\;$(ProjectDir)\..\..\prebuilt\include\opus\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(ProjectDir)\..\libavcodec\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;$(OutDir)\include\opus\;$(ProjectDir)\..\..\prebuilt\include\opus\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="$([System.String]::Copy($(PlatformToolset)).Contains('Intel'))">/Qvec- /Qsimd- %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(AdditionalOptions)' == '' and '$(VisualStudioVersion)' != '12.0'">/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>4244;4267;4018;4146;4028;4996;4090;4114;4308;4305;4005;4101;4554;4307;4273;4133;4544;4334;4293;4047;4703;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+	  <LanguageStandard_C Condition="'$(VisualStudioVersion)' > '15.0'">stdc11</LanguageStandard_C>
     </ClCompile>
     <Link>
       <AdditionalDependencies>avutil_winrt.lib;swresample_winrt.lib;bz2_winrt.lib;iconv_winrt.lib;lzma_winrt.lib;zlib_winrt.lib;x264_winrt.lib;x265_winrt.lib;xvidcore_winrt.lib;ilbc_winrt.lib;mp3lame_winrt.lib;opus_winrt.lib;speex_winrt.lib;theora_winrt.lib;vorbis_winrt.lib;vpx_winrt.lib;mfplat.lib;mfuuid.lib;dxgi.lib;d3d11.lib;d3d12.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -549,17 +556,18 @@ cd $(ProjectDir)
       <GenerateDebugInformation>false</GenerateDebugInformation>
     </NASM>
     <ResourceCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\;$(ProjectDir)\..\libavcodec\vvc\;$(ProjectDir)\..\libavcodec\x86\vvc\;$(ProjectDir)\..\libavcodec\bsf\;$(ProjectDir)\..\libavcodec\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;$(OutDir)\include\opus\;$(ProjectDir)\..\..\prebuilt\include\opus\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(ProjectDir)\..\libavcodec\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;$(OutDir)\include\opus\;$(ProjectDir)\..\..\prebuilt\include\opus\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>X264_API_IMPORTS;_MSC_VER;BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseDLLWinRT|x64'">
     <ClCompile>
       <PreprocessorDefinitions>X264_API_IMPORTS;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\;$(ProjectDir)\..\libavcodec\vvc\;$(ProjectDir)\..\libavcodec\x86\vvc\;$(ProjectDir)\..\libavcodec\bsf\;$(ProjectDir)\..\libavcodec\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;$(OutDir)\include\opus\;$(ProjectDir)\..\..\prebuilt\include\opus\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(ProjectDir)\..\libavcodec\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;$(OutDir)\include\opus\;$(ProjectDir)\..\..\prebuilt\include\opus\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="$([System.String]::Copy($(PlatformToolset)).Contains('Intel'))">/Qvec- /Qsimd- %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(AdditionalOptions)' == '' and '$(VisualStudioVersion)' != '12.0'">/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>4244;4267;4018;4146;4028;4996;4090;4114;4308;4305;4005;4101;4554;4307;4273;4133;4544;4334;4293;4047;4703;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+	  <LanguageStandard_C Condition="'$(VisualStudioVersion)' > '15.0'">stdc11</LanguageStandard_C>
     </ClCompile>
     <Link>
       <AdditionalDependencies>avutil_winrt.lib;swresample_winrt.lib;bz2_winrt.lib;iconv_winrt.lib;lzma_winrt.lib;zlib_winrt.lib;x264_winrt.lib;x265_winrt.lib;xvidcore_winrt.lib;ilbc_winrt.lib;mp3lame_winrt.lib;opus_winrt.lib;speex_winrt.lib;theora_winrt.lib;vorbis_winrt.lib;vpx_winrt.lib;mfplat.lib;mfuuid.lib;dxgi.lib;d3d11.lib;d3d12.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -627,17 +635,18 @@ cd $(ProjectDir)
       <GenerateDebugInformation>false</GenerateDebugInformation>
     </NASM>
     <ResourceCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\;$(ProjectDir)\..\libavcodec\vvc\;$(ProjectDir)\..\libavcodec\x86\vvc\;$(ProjectDir)\..\libavcodec\bsf\;$(ProjectDir)\..\libavcodec\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;$(OutDir)\include\opus\;$(ProjectDir)\..\..\prebuilt\include\opus\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(ProjectDir)\..\libavcodec\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;$(OutDir)\include\opus\;$(ProjectDir)\..\..\prebuilt\include\opus\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>X264_API_IMPORTS;_MSC_VER;BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseDLLWinRTStaticDeps|Win32'">
     <ClCompile>
       <PreprocessorDefinitions>ILBC_STATIC_DEFINE;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\;$(ProjectDir)\..\libavcodec\vvc\;$(ProjectDir)\..\libavcodec\x86\vvc\;$(ProjectDir)\..\libavcodec\bsf\;$(ProjectDir)\..\libavcodec\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;$(OutDir)\include\opus\;$(ProjectDir)\..\..\prebuilt\include\opus\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(ProjectDir)\..\libavcodec\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;$(OutDir)\include\opus\;$(ProjectDir)\..\..\prebuilt\include\opus\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="$([System.String]::Copy($(PlatformToolset)).Contains('Intel'))">/Qvec- /Qsimd- %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(AdditionalOptions)' == '' and '$(VisualStudioVersion)' != '12.0'">/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>4244;4267;4018;4146;4028;4996;4090;4114;4308;4305;4005;4101;4554;4307;4273;4133;4544;4334;4293;4047;4703;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+	  <LanguageStandard_C Condition="'$(VisualStudioVersion)' > '15.0'">stdc11</LanguageStandard_C>
     </ClCompile>
     <Link>
       <AdditionalDependencies>avutil_winrt.lib;swresample_winrt.lib;libbz2_winrt.lib;libiconv_winrt.lib;liblzma_winrt.lib;libzlib_winrt.lib;libx264_winrt.lib;libx265_winrt.lib;libxvidcore_winrt.lib;libilbc_winrt.lib;libmp3lame_winrt.lib;libopus_winrt.lib;libspeex_winrt.lib;libtheora_winrt.lib;libvorbis_winrt.lib;libvpx_winrt.lib;mfplat.lib;mfuuid.lib;dxgi.lib;d3d11.lib;d3d12.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -705,17 +714,18 @@ cd $(ProjectDir)
       <GenerateDebugInformation>false</GenerateDebugInformation>
     </NASM>
     <ResourceCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\;$(ProjectDir)\..\libavcodec\vvc\;$(ProjectDir)\..\libavcodec\x86\vvc\;$(ProjectDir)\..\libavcodec\bsf\;$(ProjectDir)\..\libavcodec\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;$(OutDir)\include\opus\;$(ProjectDir)\..\..\prebuilt\include\opus\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(ProjectDir)\..\libavcodec\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;$(OutDir)\include\opus\;$(ProjectDir)\..\..\prebuilt\include\opus\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>ILBC_STATIC_DEFINE;_MSC_VER;BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseDLLWinRTStaticDeps|x64'">
     <ClCompile>
       <PreprocessorDefinitions>ILBC_STATIC_DEFINE;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\;$(ProjectDir)\..\libavcodec\vvc\;$(ProjectDir)\..\libavcodec\x86\vvc\;$(ProjectDir)\..\libavcodec\bsf\;$(ProjectDir)\..\libavcodec\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;$(OutDir)\include\opus\;$(ProjectDir)\..\..\prebuilt\include\opus\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(ProjectDir)\..\libavcodec\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;$(OutDir)\include\opus\;$(ProjectDir)\..\..\prebuilt\include\opus\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="$([System.String]::Copy($(PlatformToolset)).Contains('Intel'))">/Qvec- /Qsimd- %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(AdditionalOptions)' == '' and '$(VisualStudioVersion)' != '12.0'">/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>4244;4267;4018;4146;4028;4996;4090;4114;4308;4305;4005;4101;4554;4307;4273;4133;4544;4334;4293;4047;4703;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+	  <LanguageStandard_C Condition="'$(VisualStudioVersion)' > '15.0'">stdc11</LanguageStandard_C>
     </ClCompile>
     <Link>
       <AdditionalDependencies>avutil_winrt.lib;swresample_winrt.lib;libbz2_winrt.lib;libiconv_winrt.lib;liblzma_winrt.lib;libzlib_winrt.lib;libx264_winrt.lib;libx265_winrt.lib;libxvidcore_winrt.lib;libilbc_winrt.lib;libmp3lame_winrt.lib;libopus_winrt.lib;libspeex_winrt.lib;libtheora_winrt.lib;libvorbis_winrt.lib;libvpx_winrt.lib;mfplat.lib;mfuuid.lib;dxgi.lib;d3d11.lib;d3d12.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -783,7 +793,7 @@ cd $(ProjectDir)
       <GenerateDebugInformation>false</GenerateDebugInformation>
     </NASM>
     <ResourceCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\;$(ProjectDir)\..\libavcodec\vvc\;$(ProjectDir)\..\libavcodec\x86\vvc\;$(ProjectDir)\..\libavcodec\bsf\;$(ProjectDir)\..\libavcodec\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;$(OutDir)\include\opus\;$(ProjectDir)\..\..\prebuilt\include\opus\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(ProjectDir)\..\libavcodec\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;$(OutDir)\include\opus\;$(ProjectDir)\..\..\prebuilt\include\opus\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>ILBC_STATIC_DEFINE;_MSC_VER;BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
   </ItemDefinitionGroup>

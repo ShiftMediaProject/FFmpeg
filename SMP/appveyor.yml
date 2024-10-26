@@ -16,8 +16,6 @@ environment:
   GITHUBTOKEN:
     secure: c9Sads7Y16h7FP+LrR3IjVygYAgh8GByE8TtazxDg7jpPVxc+XDV81z7MoUc2Ada
   matrix:
-  - MSVC_VER: 15
-    APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
   - MSVC_VER: 16
     APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
   - MSVC_VER: 17

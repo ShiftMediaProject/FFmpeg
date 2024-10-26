@@ -28,9 +28,11 @@ static const FFBitStreamFilter *bitstream_filters[] = {
     &ff_chomp_bsf,
     &ff_dump_extradata_bsf,
     &ff_dca_core_bsf,
+    &ff_dovi_rpu_bsf,
     &ff_dts2pts_bsf,
     &ff_dv_error_marker_bsf,
     &ff_eac3_core_bsf,
+    &ff_evc_frame_merge_bsf,
     &ff_extract_extradata_bsf,
     &ff_filter_units_bsf,
     &ff_h264_metadata_bsf,
@@ -64,5 +66,4 @@ static const FFBitStreamFilter *bitstream_filters[] = {
     &ff_vp9_superframe_split_bsf,
     &ff_vvc_metadata_bsf,
     &ff_vvc_mp4toannexb_bsf,
-    &ff_evc_frame_merge_bsf,
     NULL };

@@ -126,6 +126,7 @@ EXPORTS
     avcodec_get_hw_frames_parameters
     avcodec_get_name
     avcodec_get_subtitle_rect_class
+    avcodec_get_supported_config
     avcodec_get_type
     avcodec_is_open
     avcodec_license

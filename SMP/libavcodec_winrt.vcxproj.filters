@@ -19,20 +19,29 @@
     <Filter Include="Source Files\libavcodec">
       <UniqueIdentifier>{bf017c32-250d-47da-b7e6-d5a5091cb1e6}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\libavcodec\bsf">
+    <Filter Include="Source Files\libavcodec\aac">
       <UniqueIdentifier>{fd9e10e9-18f6-437d-b5d7-17290540c8b8}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\libavcodec\vvc">
+    <Filter Include="Source Files\libavcodec\bsf">
       <UniqueIdentifier>{f026e68e-ff14-4bf4-8758-6384ac7bcfaf}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\libavcodec\x86">
+    <Filter Include="Source Files\libavcodec\hevc">
       <UniqueIdentifier>{a2d068fe-f5d5-4b6f-95d4-f15631533341}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\libavcodec\x86\h26x">
+    <Filter Include="Source Files\libavcodec\opus">
       <UniqueIdentifier>{8a4a673d-2aba-4d8d-a18e-dab035e5c446}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\libavcodec\x86\vvc">
+    <Filter Include="Source Files\libavcodec\vvc">
       <UniqueIdentifier>{0dcfb38d-54ca-4ceb-b383-4662f006eca9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\libavcodec\x86">
+      <UniqueIdentifier>{57bf1423-fb68-441f-b5c1-f41e6ae5fa9c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\libavcodec\x86\h26x">
+      <UniqueIdentifier>{bda0568e-a423-4fcc-affe-6ba7c2a40f78}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\libavcodec\x86\vvc">
+      <UniqueIdentifier>{60d9e8db-aa53-43bc-852b-44f83e68a787}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -46,7 +55,19 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
+    <NASM Include="..\libavcodec\x86\vvc\vvc_alf.asm">
+      <Filter>Source Files\libavcodec\x86\vvc</Filter>
+    </NASM>
+    <NASM Include="..\libavcodec\x86\vvc\vvc_dmvr.asm">
+      <Filter>Source Files\libavcodec\x86\vvc</Filter>
+    </NASM>
     <NASM Include="..\libavcodec\x86\vvc\vvc_mc.asm">
+      <Filter>Source Files\libavcodec\x86\vvc</Filter>
+    </NASM>
+    <NASM Include="..\libavcodec\x86\vvc\vvc_of.asm">
+      <Filter>Source Files\libavcodec\x86\vvc</Filter>
+    </NASM>
+    <NASM Include="..\libavcodec\x86\vvc\vvc_sad.asm">
       <Filter>Source Files\libavcodec\x86\vvc</Filter>
     </NASM>
     <NASM Include="..\libavcodec\x86\h26x\h2656_inter.asm">
@@ -352,7 +373,7 @@
     <ClCompile Include="..\libavcodec\avfft.c">
       <Filter>Source Files\libavcodec</Filter>
     </ClCompile>
-    <ClCompile Include="..\libavcodec\avpacket.c">
+    <ClCompile Include="..\libavcodec\packet.c">
       <Filter>Source Files\libavcodec</Filter>
     </ClCompile>
     <ClCompile Include="..\libavcodec\bitstream.c">
@@ -394,6 +415,9 @@
     <ClCompile Include="..\libavcodec\jni.c">
       <Filter>Source Files\libavcodec</Filter>
     </ClCompile>
+    <ClCompile Include="..\libavcodec\lcevcdec.c">
+      <Filter>Source Files\libavcodec</Filter>
+    </ClCompile>
     <ClCompile Include="..\libavcodec\mathtables.c">
       <Filter>Source Files\libavcodec</Filter>
     </ClCompile>
@@ -422,6 +446,9 @@
       <Filter>Source Files\libavcodec</Filter>
     </ClCompile>
     <ClCompile Include="..\libavcodec\refstruct.c">
+      <Filter>Source Files\libavcodec</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libavcodec\threadprogress.c">
       <Filter>Source Files\libavcodec</Filter>
     </ClCompile>
     <ClCompile Include="..\libavcodec\utils.c">
@@ -499,6 +526,12 @@
     <ClCompile Include="..\libavcodec\dovi_rpu.c">
       <Filter>Source Files\libavcodec</Filter>
     </ClCompile>
+    <ClCompile Include="..\libavcodec\dovi_rpudec.c">
+      <Filter>Source Files\libavcodec</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libavcodec\dovi_rpuenc.c">
+      <Filter>Source Files\libavcodec</Filter>
+    </ClCompile>
     <ClCompile Include="..\libavcodec\error_resilience.c">
       <Filter>Source Files\libavcodec</Filter>
     </ClCompile>
@@ -550,6 +583,9 @@
     <ClCompile Include="..\libavcodec\h264_ps.c">
       <Filter>Source Files\libavcodec</Filter>
     </ClCompile>
+    <ClCompile Include="..\libavcodec\h264data.c">
+      <Filter>Source Files\libavcodec</Filter>
+    </ClCompile>
     <ClCompile Include="..\libavcodec\h2645data.c">
       <Filter>Source Files\libavcodec</Filter>
     </ClCompile>
@@ -568,22 +604,10 @@
     <ClCompile Include="..\libavcodec\h2645_sei.c">
       <Filter>Source Files\libavcodec</Filter>
     </ClCompile>
-    <ClCompile Include="..\libavcodec\hevc_parse.c">
-      <Filter>Source Files\libavcodec</Filter>
-    </ClCompile>
-    <ClCompile Include="..\libavcodec\hevc_ps.c">
-      <Filter>Source Files\libavcodec</Filter>
-    </ClCompile>
-    <ClCompile Include="..\libavcodec\hevc_data.c">
-      <Filter>Source Files\libavcodec</Filter>
-    </ClCompile>
-    <ClCompile Include="..\libavcodec\hevc_sei.c">
+    <ClCompile Include="..\libavcodec\aom_film_grain.c">
       <Filter>Source Files\libavcodec</Filter>
     </ClCompile>
     <ClCompile Include="..\libavcodec\dynamic_hdr_vivid.c">
-      <Filter>Source Files\libavcodec</Filter>
-    </ClCompile>
-    <ClCompile Include="..\libavcodec\aom_film_grain.c">
       <Filter>Source Files\libavcodec</Filter>
     </ClCompile>
     <ClCompile Include="..\libavcodec\huffman.c">
@@ -601,7 +625,7 @@
     <ClCompile Include="..\libavcodec\intrax8dsp.c">
       <Filter>Source Files\libavcodec</Filter>
     </ClCompile>
-    <ClCompile Include="..\libavcodec\msmpeg4data.c">
+    <ClCompile Include="..\libavcodec\msmpeg4_vc1_data.c">
       <Filter>Source Files\libavcodec</Filter>
     </ClCompile>
     <ClCompile Include="..\libavcodec\ivi_dsp.c">
@@ -697,7 +721,7 @@
     <ClCompile Include="..\libavcodec\msmpeg4.c">
       <Filter>Source Files\libavcodec</Filter>
     </ClCompile>
-    <ClCompile Include="..\libavcodec\msmpeg4_vc1_data.c">
+    <ClCompile Include="..\libavcodec\msmpeg4data.c">
       <Filter>Source Files\libavcodec</Filter>
     </ClCompile>
     <ClCompile Include="..\libavcodec\msmpeg4enc.c">
@@ -751,12 +775,6 @@
     <ClCompile Include="..\libavcodec\elbg.c">
       <Filter>Source Files\libavcodec</Filter>
     </ClCompile>
-    <ClCompile Include="..\libavcodec\aacdec.c">
-      <Filter>Source Files\libavcodec</Filter>
-    </ClCompile>
-    <ClCompile Include="..\libavcodec\aacdec_common.c">
-      <Filter>Source Files\libavcodec</Filter>
-    </ClCompile>
     <ClCompile Include="..\libavcodec\aactab.c">
       <Filter>Source Files\libavcodec</Filter>
     </ClCompile>
@@ -776,9 +794,6 @@
       <Filter>Source Files\libavcodec</Filter>
     </ClCompile>
     <ClCompile Include="..\libavcodec\cbrt_data.c">
-      <Filter>Source Files\libavcodec</Filter>
-    </ClCompile>
-    <ClCompile Include="..\libavcodec\aacdec_fixed.c">
       <Filter>Source Files\libavcodec</Filter>
     </ClCompile>
     <ClCompile Include="..\libavcodec\aacsbr_fixed.c">
@@ -1087,6 +1102,9 @@
     <ClCompile Include="..\libavcodec\cavsdata.c">
       <Filter>Source Files\libavcodec</Filter>
     </ClCompile>
+    <ClCompile Include="..\libavcodec\dpcm.c">
+      <Filter>Source Files\libavcodec</Filter>
+    </ClCompile>
     <ClCompile Include="..\libavcodec\ccaption_dec.c">
       <Filter>Source Files\libavcodec</Filter>
     </ClCompile>
@@ -1184,9 +1202,6 @@
       <Filter>Source Files\libavcodec</Filter>
     </ClCompile>
     <ClCompile Include="..\libavcodec\dds.c">
-      <Filter>Source Files\libavcodec</Filter>
-    </ClCompile>
-    <ClCompile Include="..\libavcodec\dpcm.c">
       <Filter>Source Files\libavcodec</Filter>
     </ClCompile>
     <ClCompile Include="..\libavcodec\diracdec.c">
@@ -1525,9 +1540,6 @@
     <ClCompile Include="..\libavcodec\h264_slice.c">
       <Filter>Source Files\libavcodec</Filter>
     </ClCompile>
-    <ClCompile Include="..\libavcodec\h264data.c">
-      <Filter>Source Files\libavcodec</Filter>
-    </ClCompile>
     <ClCompile Include="..\libavcodec\h274.c">
       <Filter>Source Files\libavcodec</Filter>
     </ClCompile>
@@ -1549,25 +1561,7 @@
     <ClCompile Include="..\libavcodec\hdrenc.c">
       <Filter>Source Files\libavcodec</Filter>
     </ClCompile>
-    <ClCompile Include="..\libavcodec\hevcdec.c">
-      <Filter>Source Files\libavcodec</Filter>
-    </ClCompile>
-    <ClCompile Include="..\libavcodec\hevc_mvs.c">
-      <Filter>Source Files\libavcodec</Filter>
-    </ClCompile>
-    <ClCompile Include="..\libavcodec\hevc_cabac.c">
-      <Filter>Source Files\libavcodec</Filter>
-    </ClCompile>
-    <ClCompile Include="..\libavcodec\hevc_refs.c">
-      <Filter>Source Files\libavcodec</Filter>
-    </ClCompile>
-    <ClCompile Include="..\libavcodec\hevcpred.c">
-      <Filter>Source Files\libavcodec</Filter>
-    </ClCompile>
-    <ClCompile Include="..\libavcodec\hevcdsp.c">
-      <Filter>Source Files\libavcodec</Filter>
-    </ClCompile>
-    <ClCompile Include="..\libavcodec\hevc_filter.c">
+    <ClCompile Include="..\libavcodec\container_fifo.c">
       <Filter>Source Files\libavcodec</Filter>
     </ClCompile>
     <ClCompile Include="..\libavcodec\hnm4video.c">
@@ -1888,37 +1882,7 @@
     <ClCompile Include="..\libavcodec\on2avcdata.c">
       <Filter>Source Files\libavcodec</Filter>
     </ClCompile>
-    <ClCompile Include="..\libavcodec\opusdec.c">
-      <Filter>Source Files\libavcodec</Filter>
-    </ClCompile>
-    <ClCompile Include="..\libavcodec\opusdec_celt.c">
-      <Filter>Source Files\libavcodec</Filter>
-    </ClCompile>
-    <ClCompile Include="..\libavcodec\opus_celt.c">
-      <Filter>Source Files\libavcodec</Filter>
-    </ClCompile>
-    <ClCompile Include="..\libavcodec\opus_pvq.c">
-      <Filter>Source Files\libavcodec</Filter>
-    </ClCompile>
-    <ClCompile Include="..\libavcodec\opus_silk.c">
-      <Filter>Source Files\libavcodec</Filter>
-    </ClCompile>
-    <ClCompile Include="..\libavcodec\opustab.c">
-      <Filter>Source Files\libavcodec</Filter>
-    </ClCompile>
     <ClCompile Include="..\libavcodec\vorbis_data.c">
-      <Filter>Source Files\libavcodec</Filter>
-    </ClCompile>
-    <ClCompile Include="..\libavcodec\opus_parse.c">
-      <Filter>Source Files\libavcodec</Filter>
-    </ClCompile>
-    <ClCompile Include="..\libavcodec\opus_rc.c">
-      <Filter>Source Files\libavcodec</Filter>
-    </ClCompile>
-    <ClCompile Include="..\libavcodec\opusenc.c">
-      <Filter>Source Files\libavcodec</Filter>
-    </ClCompile>
-    <ClCompile Include="..\libavcodec\opusenc_psy.c">
       <Filter>Source Files\libavcodec</Filter>
     </ClCompile>
     <ClCompile Include="..\libavcodec\osq.c">
@@ -1969,7 +1933,7 @@
     <ClCompile Include="..\libavcodec\textdec.c">
       <Filter>Source Files\libavcodec</Filter>
     </ClCompile>
-    <ClCompile Include="..\libavcodec\proresdec2.c">
+    <ClCompile Include="..\libavcodec\proresdec.c">
       <Filter>Source Files\libavcodec</Filter>
     </ClCompile>
     <ClCompile Include="..\libavcodec\proresdata.c">
@@ -2776,9 +2740,6 @@
     <ClCompile Include="..\libavcodec\h264_parser.c">
       <Filter>Source Files\libavcodec</Filter>
     </ClCompile>
-    <ClCompile Include="..\libavcodec\hevc_parser.c">
-      <Filter>Source Files\libavcodec</Filter>
-    </ClCompile>
     <ClCompile Include="..\libavcodec\hdr_parser.c">
       <Filter>Source Files\libavcodec</Filter>
     </ClCompile>
@@ -2813,9 +2774,6 @@
       <Filter>Source Files\libavcodec</Filter>
     </ClCompile>
     <ClCompile Include="..\libavcodec\mpegvideo_parser.c">
-      <Filter>Source Files\libavcodec</Filter>
-    </ClCompile>
-    <ClCompile Include="..\libavcodec\opus_parser.c">
       <Filter>Source Files\libavcodec</Filter>
     </ClCompile>
     <ClCompile Include="..\libavcodec\png_parser.c">
@@ -3016,47 +2974,101 @@
     <ClCompile Include="..\libavcodec\x86\h26x\h2656dsp.c">
       <Filter>Source Files\libavcodec\x86\h26x</Filter>
     </ClCompile>
-    <ClCompile Include="..\libavcodec\vvc\vvcdec.c">
+    <ClCompile Include="..\libavcodec\vvc\dec.c">
       <Filter>Source Files\libavcodec\vvc</Filter>
     </ClCompile>
-    <ClCompile Include="..\libavcodec\vvc\vvcdsp.c">
+    <ClCompile Include="..\libavcodec\vvc\dsp.c">
       <Filter>Source Files\libavcodec\vvc</Filter>
     </ClCompile>
-    <ClCompile Include="..\libavcodec\vvc\vvc_cabac.c">
+    <ClCompile Include="..\libavcodec\vvc\ctu.c">
       <Filter>Source Files\libavcodec\vvc</Filter>
     </ClCompile>
-    <ClCompile Include="..\libavcodec\vvc\vvc_ctu.c">
+    <ClCompile Include="..\libavcodec\vvc\data.c">
       <Filter>Source Files\libavcodec\vvc</Filter>
     </ClCompile>
-    <ClCompile Include="..\libavcodec\vvc\vvc_data.c">
+    <ClCompile Include="..\libavcodec\vvc\filter.c">
       <Filter>Source Files\libavcodec\vvc</Filter>
     </ClCompile>
-    <ClCompile Include="..\libavcodec\vvc\vvc_filter.c">
+    <ClCompile Include="..\libavcodec\vvc\inter.c">
       <Filter>Source Files\libavcodec\vvc</Filter>
     </ClCompile>
-    <ClCompile Include="..\libavcodec\vvc\vvc_inter.c">
+    <ClCompile Include="..\libavcodec\vvc\intra.c">
       <Filter>Source Files\libavcodec\vvc</Filter>
     </ClCompile>
-    <ClCompile Include="..\libavcodec\vvc\vvc_intra.c">
+    <ClCompile Include="..\libavcodec\vvc\intra_utils.c">
       <Filter>Source Files\libavcodec\vvc</Filter>
     </ClCompile>
-    <ClCompile Include="..\libavcodec\vvc\vvc_intra_utils.c">
+    <ClCompile Include="..\libavcodec\vvc\itx_1d.c">
       <Filter>Source Files\libavcodec\vvc</Filter>
     </ClCompile>
-    <ClCompile Include="..\libavcodec\vvc\vvc_itx_1d.c">
+    <ClCompile Include="..\libavcodec\vvc\mvs.c">
       <Filter>Source Files\libavcodec\vvc</Filter>
     </ClCompile>
-    <ClCompile Include="..\libavcodec\vvc\vvc_mvs.c">
+    <ClCompile Include="..\libavcodec\vvc\ps.c">
       <Filter>Source Files\libavcodec\vvc</Filter>
     </ClCompile>
-    <ClCompile Include="..\libavcodec\vvc\vvc_ps.c">
+    <ClCompile Include="..\libavcodec\vvc\refs.c">
       <Filter>Source Files\libavcodec\vvc</Filter>
     </ClCompile>
-    <ClCompile Include="..\libavcodec\vvc\vvc_refs.c">
+    <ClCompile Include="..\libavcodec\vvc\thread.c">
       <Filter>Source Files\libavcodec\vvc</Filter>
     </ClCompile>
-    <ClCompile Include="..\libavcodec\vvc\vvc_thread.c">
-      <Filter>Source Files\libavcodec\vvc</Filter>
+    <ClCompile Include="..\libavcodec\opus\dec_celt.c">
+      <Filter>Source Files\libavcodec\opus</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libavcodec\opus\celt.c">
+      <Filter>Source Files\libavcodec\opus</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libavcodec\opus\pvq.c">
+      <Filter>Source Files\libavcodec\opus</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libavcodec\opus\silk.c">
+      <Filter>Source Files\libavcodec\opus</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libavcodec\opus\tab.c">
+      <Filter>Source Files\libavcodec\opus</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libavcodec\opus\parse.c">
+      <Filter>Source Files\libavcodec\opus</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libavcodec\opus\rc.c">
+      <Filter>Source Files\libavcodec\opus</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libavcodec\opus\enc.c">
+      <Filter>Source Files\libavcodec\opus</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libavcodec\opus\enc_psy.c">
+      <Filter>Source Files\libavcodec\opus</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libavcodec\hevc\hevcdec.c">
+      <Filter>Source Files\libavcodec\hevc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libavcodec\hevc\pred.c">
+      <Filter>Source Files\libavcodec\hevc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libavcodec\hevc\sei.c">
+      <Filter>Source Files\libavcodec\hevc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libavcodec\aac\aacdec.c">
+      <Filter>Source Files\libavcodec\aac</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libavcodec\aac\aacdec_tab.c">
+      <Filter>Source Files\libavcodec\aac</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libavcodec\aac\aacdec_float.c">
+      <Filter>Source Files\libavcodec\aac</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libavcodec\aac\aacdec_usac.c">
+      <Filter>Source Files\libavcodec\aac</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libavcodec\aac\aacdec_ac.c">
+      <Filter>Source Files\libavcodec\aac</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libavcodec\aac\aacdec_lpd.c">
+      <Filter>Source Files\libavcodec\aac</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libavcodec\aac\aacdec_fixed.c">
+      <Filter>Source Files\libavcodec\aac</Filter>
     </ClCompile>
     <ClCompile Include="..\libavcodec\x86\constants.c">
       <Filter>Source Files\libavcodec\x86</Filter>
@@ -3292,6 +3304,12 @@
     <ClCompile Include="libavcodec\d3d12va_decode_wrap.c">
       <Filter>Source Files\libavcodec</Filter>
     </ClCompile>
+    <ClCompile Include="libavcodec\d3d12va_encode_wrap.c">
+      <Filter>Source Files\libavcodec</Filter>
+    </ClCompile>
+    <ClCompile Include="libavcodec\d3d12va_encode_hevc_wrap.c">
+      <Filter>Source Files\libavcodec</Filter>
+    </ClCompile>
     <ClCompile Include="libavcodec\d3d12va_h264_wrap.c">
       <Filter>Source Files\libavcodec</Filter>
     </ClCompile>
@@ -3328,7 +3346,10 @@
     <ClCompile Include="libavcodec\dxva2_vp9_wrap.c">
       <Filter>Source Files\libavcodec</Filter>
     </ClCompile>
-    <ClCompile Include="libavcodec\hevc_ps_enc_wrap.c">
+    <ClCompile Include="libavcodec\hevc\ps_enc_wrap.c">
+      <Filter>Source Files\libavcodec\hevc</Filter>
+    </ClCompile>
+    <ClCompile Include="libavcodec\hw_base_encode_wrap.c">
       <Filter>Source Files\libavcodec</Filter>
     </ClCompile>
     <ClCompile Include="libavcodec\nvdec_wrap.c">
@@ -3511,9 +3532,6 @@
     <ClCompile Include="..\libavcodec\xvididct.c">
       <Filter>Source Files\libavcodec</Filter>
     </ClCompile>
-    <ClCompile Include="..\libavcodec\opusdsp.c">
-      <Filter>Source Files\libavcodec</Filter>
-    </ClCompile>
     <ClCompile Include="..\libavcodec\proresdsp.c">
       <Filter>Source Files\libavcodec</Filter>
     </ClCompile>
@@ -3556,8 +3574,50 @@
     <ClCompile Include="..\libavcodec\bsf\dca_core.c">
       <Filter>Source Files\libavcodec\bsf</Filter>
     </ClCompile>
+    <ClCompile Include="..\libavcodec\bsf\dovi_rpu.c">
+      <Filter>Source Files\libavcodec\bsf</Filter>
+    </ClCompile>
     <ClCompile Include="..\libavcodec\bsf\null.c">
       <Filter>Source Files\libavcodec\bsf</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libavcodec\vvc\cabac.c">
+      <Filter>Source Files\libavcodec\vvc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libavcodec\opus\dec.c">
+      <Filter>Source Files\libavcodec\opus</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libavcodec\opus\dsp.c">
+      <Filter>Source Files\libavcodec\opus</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libavcodec\opus\parser.c">
+      <Filter>Source Files\libavcodec\opus</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libavcodec\hevc\cabac.c">
+      <Filter>Source Files\libavcodec\hevc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libavcodec\hevc\data.c">
+      <Filter>Source Files\libavcodec\hevc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libavcodec\hevc\dsp.c">
+      <Filter>Source Files\libavcodec\hevc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libavcodec\hevc\filter.c">
+      <Filter>Source Files\libavcodec\hevc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libavcodec\hevc\mvs.c">
+      <Filter>Source Files\libavcodec\hevc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libavcodec\hevc\refs.c">
+      <Filter>Source Files\libavcodec\hevc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libavcodec\hevc\parser.c">
+      <Filter>Source Files\libavcodec\hevc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libavcodec\hevc\parse.c">
+      <Filter>Source Files\libavcodec\hevc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libavcodec\hevc\ps.c">
+      <Filter>Source Files\libavcodec\hevc</Filter>
     </ClCompile>
     <ClCompile Include="..\libavcodec\x86\mpegaudiodsp.c">
       <Filter>Source Files\libavcodec\x86</Filter>

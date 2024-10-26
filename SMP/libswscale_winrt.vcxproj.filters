@@ -46,6 +46,9 @@
     <NASM Include="..\libswscale\x86\scale_avx2.asm">
       <Filter>Source Files\libswscale\x86</Filter>
     </NASM>
+    <NASM Include="..\libswscale\x86\range_convert.asm">
+      <Filter>Source Files\libswscale\x86</Filter>
+    </NASM>
     <NASM Include="..\libswscale\x86\rgb_2_rgb.asm">
       <Filter>Source Files\libswscale\x86</Filter>
     </NASM>
@@ -101,9 +104,6 @@
     </ClCompile>
     <ClCompile Include="..\libswscale\x86\hscale_fast_bilinear_simd.c">
       <Filter>Source Files\libswscale\x86</Filter>
-    </ClCompile>
-    <ClCompile Include="libswscale\dce_defs.c">
-      <Filter>Source Files\libswscale</Filter>
     </ClCompile>
     <ClCompile Include="..\libswscale\input.c">
       <Filter>Source Files\libswscale</Filter>

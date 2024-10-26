@@ -16,6 +16,7 @@
     <NASM Include="..\libswscale\x86\output.asm" />
     <NASM Include="..\libswscale\x86\scale.asm" />
     <NASM Include="..\libswscale\x86\scale_avx2.asm" />
+    <NASM Include="..\libswscale\x86\range_convert.asm" />
     <NASM Include="..\libswscale\x86\rgb_2_rgb.asm" />
     <NASM Include="..\libswscale\x86\yuv_2_rgb.asm" />
     <NASM Include="..\libswscale\x86\yuv2yuvX.asm" />
@@ -36,7 +37,6 @@
     <ClCompile Include="..\libswscale\yuv2rgb.c" />
     <ClCompile Include="..\libswscale\vscale.c" />
     <ClCompile Include="..\libswscale\x86\hscale_fast_bilinear_simd.c" />
-    <ClCompile Include="libswscale\dce_defs.c" />
     <ClCompile Include="..\libswscale\input.c">
       <ObjectFileName>$(IntDir)\libswscale_input.obj</ObjectFileName>
     </ClCompile>

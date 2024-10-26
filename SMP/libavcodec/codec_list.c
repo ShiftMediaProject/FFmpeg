@@ -230,6 +230,9 @@ static const FFCodec *codec_list[] = {
 #if CONFIG_HEVC_AMF_ENCODER
     &ff_hevc_amf_encoder,
 #endif
+#if CONFIG_HEVC_D3D12VA_ENCODER
+    &ff_hevc_d3d12va_encoder,
+#endif
     &ff_hevc_mf_encoder,
 #if CONFIG_HEVC_NVENC_ENCODER
     &ff_hevc_nvenc_encoder,
@@ -802,6 +805,9 @@ static const FFCodec *codec_list[] = {
 #endif
 #if CONFIG_VP9_QSV_DECODER
     &ff_vp9_qsv_decoder,
+#endif
+#if CONFIG_VVC_QSV_DECODER
+    &ff_vvc_qsv_decoder,
 #endif
     &ff_vnull_decoder,
     &ff_anull_decoder,
