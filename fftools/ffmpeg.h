@@ -749,7 +749,7 @@ int dec_create(const OptionsContext *o, const char *arg, Scheduler *sch);
  * @retval ">=0" non-negative scheduler index on success
  * @retval "<0"  an error code on failure
  */
-int dec_init(Decoder **pdec, Scheduler *sch,
+int dec_open(Decoder **pdec, Scheduler *sch,
              AVDictionary **dec_opts, const DecoderOpts *o,
              AVFrame *param_out);
 void dec_free(Decoder **pdec);

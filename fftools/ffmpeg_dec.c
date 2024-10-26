@@ -765,7 +765,7 @@ static int packet_decode(DecoderPriv *dp, AVPacket *pkt, AVFrame *frame)
     }
 }
 
-static int dec_open(DecoderPriv *dp, AVDictionary **dec_opts,
+static int dec_open2(DecoderPriv *dp, AVDictionary **dec_opts,
                     const DecoderOpts *o, AVFrame *param_out);
 
 static int dec_standalone_open(DecoderPriv *dp, const AVPacket *pkt)
@@ -800,7 +800,7 @@ static int dec_standalone_open(DecoderPriv *dp, const AVPacket *pkt)
     snprintf(name, sizeof(name), "dec%d", dp->index);
     o.name = name;
 
-    return dec_open(dp, &dp->standalone_init.opts, &o, NULL);
+    return dec_open2(dp, &dp->standalone_init.opts, &o, NULL);
 }
 
 static void dec_thread_set_name(const DecoderPriv *dp)
@@ -1138,7 +1138,7 @@ static int hw_device_setup_for_decode(DecoderPriv *dp,
     return 0;
 }
 
-static int dec_open(DecoderPriv *dp, AVDictionary **dec_opts,
+static int dec_open2(DecoderPriv *dp, AVDictionary **dec_opts,
                     const DecoderOpts *o, AVFrame *param_out)
 {
     const AVCodec *codec = o->codec;
@@ -1250,7 +1250,7 @@ static int dec_open(DecoderPriv *dp, AVDictionary **dec_opts,
     return 0;
 }
 
-int dec_init(Decoder **pdec, Scheduler *sch,
+int dec_open(Decoder **pdec, Scheduler *sch,
              AVDictionary **dec_opts, const DecoderOpts *o,
              AVFrame *param_out)
 {
@@ -1263,7 +1263,7 @@ int dec_init(Decoder **pdec, Scheduler *sch,
     if (ret < 0)
         return ret;
 
-    ret = dec_open(dp, dec_opts, o, param_out);
+    ret = dec_open2(dp, dec_opts, o, param_out);
     if (ret < 0)
         goto fail;
 
