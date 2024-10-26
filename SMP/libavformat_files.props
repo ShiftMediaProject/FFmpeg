@@ -514,6 +514,7 @@
     <ClCompile Include="..\libavformat\libgme.c" />
     <ClCompile Include="..\libavformat\libmodplug.c" />
     <ClCompile Include="..\libavformat\async.c" />
+    <ClCompile Include="..\libavformat\bluray.c" />
     <ClCompile Include="..\libavformat\cache.c" />
     <ClCompile Include="..\libavformat\concat.c" />
     <ClCompile Include="..\libavformat\crypto.c" />

@@ -22,6 +22,7 @@
 #include "config_components.h"
 static const URLProtocol *url_protocols[] = {
     &ff_async_protocol,
+    &ff_bluray_protocol,
     &ff_cache_protocol,
     &ff_concat_protocol,
     &ff_concatf_protocol,

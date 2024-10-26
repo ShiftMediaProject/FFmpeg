@@ -13,7 +13,7 @@
   </ImportGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <PreprocessorDefinitions>ILBC_STATIC_DEFINE;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;DEBUG;BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>ILBC_STATIC_DEFINE;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;DEBUG;BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\;$(ProjectDir)\..\libavcodec\vvc\;$(ProjectDir)\..\libavcodec\x86\vvc\;$(ProjectDir)\..\libavcodec\bsf\;$(ProjectDir)\..\libavcodec\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;$(OutDir)\include\opus\;$(ProjectDir)\..\..\prebuilt\include\opus\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="$([System.String]::Copy($(PlatformToolset)).Contains('Intel'))">/Qvec- /Qsimd- %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(AdditionalOptions)' == '' and '$(VisualStudioVersion)' != '12.0'">/utf-8 %(AdditionalOptions)</AdditionalOptions>
@@ -90,7 +90,7 @@ cd $(ProjectDir)
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <PreprocessorDefinitions>ILBC_STATIC_DEFINE;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;DEBUG;BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>ILBC_STATIC_DEFINE;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;DEBUG;BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\;$(ProjectDir)\..\libavcodec\vvc\;$(ProjectDir)\..\libavcodec\x86\vvc\;$(ProjectDir)\..\libavcodec\bsf\;$(ProjectDir)\..\libavcodec\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;$(OutDir)\include\opus\;$(ProjectDir)\..\..\prebuilt\include\opus\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="$([System.String]::Copy($(PlatformToolset)).Contains('Intel'))">/Qvec- /Qsimd- %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(AdditionalOptions)' == '' and '$(VisualStudioVersion)' != '12.0'">/utf-8 %(AdditionalOptions)</AdditionalOptions>
@@ -167,7 +167,7 @@ cd $(ProjectDir)
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugDLL|Win32'">
     <ClCompile>
-      <PreprocessorDefinitions>X264_API_IMPORTS;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;DEBUG;BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>X264_API_IMPORTS;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;DEBUG;BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\;$(ProjectDir)\..\libavcodec\vvc\;$(ProjectDir)\..\libavcodec\x86\vvc\;$(ProjectDir)\..\libavcodec\bsf\;$(ProjectDir)\..\libavcodec\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;$(OutDir)\include\opus\;$(ProjectDir)\..\..\prebuilt\include\opus\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="$([System.String]::Copy($(PlatformToolset)).Contains('Intel'))">/Qvec- /Qsimd- %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(AdditionalOptions)' == '' and '$(VisualStudioVersion)' != '12.0'">/utf-8 %(AdditionalOptions)</AdditionalOptions>
@@ -245,7 +245,7 @@ cd $(ProjectDir)
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugDLL|x64'">
     <ClCompile>
-      <PreprocessorDefinitions>X264_API_IMPORTS;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;DEBUG;BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>X264_API_IMPORTS;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;DEBUG;BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\;$(ProjectDir)\..\libavcodec\vvc\;$(ProjectDir)\..\libavcodec\x86\vvc\;$(ProjectDir)\..\libavcodec\bsf\;$(ProjectDir)\..\libavcodec\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;$(OutDir)\include\opus\;$(ProjectDir)\..\..\prebuilt\include\opus\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="$([System.String]::Copy($(PlatformToolset)).Contains('Intel'))">/Qvec- /Qsimd- %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(AdditionalOptions)' == '' and '$(VisualStudioVersion)' != '12.0'">/utf-8 %(AdditionalOptions)</AdditionalOptions>
@@ -323,7 +323,7 @@ cd $(ProjectDir)
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <PreprocessorDefinitions>ILBC_STATIC_DEFINE;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>ILBC_STATIC_DEFINE;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\;$(ProjectDir)\..\libavcodec\vvc\;$(ProjectDir)\..\libavcodec\x86\vvc\;$(ProjectDir)\..\libavcodec\bsf\;$(ProjectDir)\..\libavcodec\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;$(OutDir)\include\opus\;$(ProjectDir)\..\..\prebuilt\include\opus\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="$([System.String]::Copy($(PlatformToolset)).Contains('Intel'))">/Qvec- /Qsimd- %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(AdditionalOptions)' == '' and '$(VisualStudioVersion)' != '12.0'">/utf-8 %(AdditionalOptions)</AdditionalOptions>
@@ -400,7 +400,7 @@ cd $(ProjectDir)
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <PreprocessorDefinitions>ILBC_STATIC_DEFINE;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>ILBC_STATIC_DEFINE;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\;$(ProjectDir)\..\libavcodec\vvc\;$(ProjectDir)\..\libavcodec\x86\vvc\;$(ProjectDir)\..\libavcodec\bsf\;$(ProjectDir)\..\libavcodec\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;$(OutDir)\include\opus\;$(ProjectDir)\..\..\prebuilt\include\opus\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="$([System.String]::Copy($(PlatformToolset)).Contains('Intel'))">/Qvec- /Qsimd- %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(AdditionalOptions)' == '' and '$(VisualStudioVersion)' != '12.0'">/utf-8 %(AdditionalOptions)</AdditionalOptions>
@@ -477,7 +477,7 @@ cd $(ProjectDir)
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseDLL|Win32'">
     <ClCompile>
-      <PreprocessorDefinitions>X264_API_IMPORTS;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>X264_API_IMPORTS;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\;$(ProjectDir)\..\libavcodec\vvc\;$(ProjectDir)\..\libavcodec\x86\vvc\;$(ProjectDir)\..\libavcodec\bsf\;$(ProjectDir)\..\libavcodec\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;$(OutDir)\include\opus\;$(ProjectDir)\..\..\prebuilt\include\opus\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="$([System.String]::Copy($(PlatformToolset)).Contains('Intel'))">/Qvec- /Qsimd- %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(AdditionalOptions)' == '' and '$(VisualStudioVersion)' != '12.0'">/utf-8 %(AdditionalOptions)</AdditionalOptions>
@@ -555,7 +555,7 @@ cd $(ProjectDir)
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseDLL|x64'">
     <ClCompile>
-      <PreprocessorDefinitions>X264_API_IMPORTS;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>X264_API_IMPORTS;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\;$(ProjectDir)\..\libavcodec\vvc\;$(ProjectDir)\..\libavcodec\x86\vvc\;$(ProjectDir)\..\libavcodec\bsf\;$(ProjectDir)\..\libavcodec\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;$(OutDir)\include\opus\;$(ProjectDir)\..\..\prebuilt\include\opus\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="$([System.String]::Copy($(PlatformToolset)).Contains('Intel'))">/Qvec- /Qsimd- %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(AdditionalOptions)' == '' and '$(VisualStudioVersion)' != '12.0'">/utf-8 %(AdditionalOptions)</AdditionalOptions>
@@ -633,7 +633,7 @@ cd $(ProjectDir)
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseDLLStaticDeps|Win32'">
     <ClCompile>
-      <PreprocessorDefinitions>ILBC_STATIC_DEFINE;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>ILBC_STATIC_DEFINE;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\;$(ProjectDir)\..\libavcodec\vvc\;$(ProjectDir)\..\libavcodec\x86\vvc\;$(ProjectDir)\..\libavcodec\bsf\;$(ProjectDir)\..\libavcodec\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;$(OutDir)\include\opus\;$(ProjectDir)\..\..\prebuilt\include\opus\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="$([System.String]::Copy($(PlatformToolset)).Contains('Intel'))">/Qvec- /Qsimd- %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(AdditionalOptions)' == '' and '$(VisualStudioVersion)' != '12.0'">/utf-8 %(AdditionalOptions)</AdditionalOptions>
@@ -711,7 +711,7 @@ cd $(ProjectDir)
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseDLLStaticDeps|x64'">
     <ClCompile>
-      <PreprocessorDefinitions>ILBC_STATIC_DEFINE;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>ILBC_STATIC_DEFINE;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;BUILDING_avcodec;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\;$(ProjectDir)\..\libavcodec\vvc\;$(ProjectDir)\..\libavcodec\x86\vvc\;$(ProjectDir)\..\libavcodec\bsf\;$(ProjectDir)\..\libavcodec\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;$(OutDir)\include\opus\;$(ProjectDir)\..\..\prebuilt\include\opus\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="$([System.String]::Copy($(PlatformToolset)).Contains('Intel'))">/Qvec- /Qsimd- %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(AdditionalOptions)' == '' and '$(VisualStudioVersion)' != '12.0'">/utf-8 %(AdditionalOptions)</AdditionalOptions>
