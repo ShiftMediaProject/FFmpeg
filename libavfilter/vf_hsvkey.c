@@ -24,7 +24,7 @@
 #include "libavutil/intreadwrite.h"
 #include "libavutil/pixdesc.h"
 #include "avfilter.h"
-#include "internal.h"
+#include "filters.h"
 
 typedef struct HSVKeyContext {
     const AVClass *class;

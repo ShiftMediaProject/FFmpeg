@@ -422,13 +422,13 @@ static av_cold int xvid_encode_init(AVCodecContext *avctx)
 
     /* Decide how we should decide blocks */
     switch (avctx->mb_decision) {
-    case 2:
+    case FF_MB_DECISION_RD:
         x->vop_flags |=  XVID_VOP_MODEDECISION_RD;
         x->me_flags  |=  XVID_ME_HALFPELREFINE8_RD    |
                          XVID_ME_QUARTERPELREFINE8_RD |
                          XVID_ME_EXTSEARCH_RD         |
                          XVID_ME_CHECKPREDICTION_RD;
-    case 1:
+    case FF_MB_DECISION_BITS:
         if (!(x->vop_flags & XVID_VOP_MODEDECISION_RD))
             x->vop_flags |= XVID_VOP_FAST_MODEDECISION_RD;
         x->me_flags |= XVID_ME_HALFPELREFINE16_RD |
@@ -908,6 +908,7 @@ const FFCodec ff_libxvid_encoder = {
     FF_CODEC_ENCODE_CB(xvid_encode_frame),
     .close          = xvid_encode_close,
     .p.pix_fmts     = (const enum AVPixelFormat[]) { AV_PIX_FMT_YUV420P, AV_PIX_FMT_NONE },
+    .color_ranges   = AVCOL_RANGE_MPEG,
     .p.priv_class   = &xvid_class,
     .caps_internal  = FF_CODEC_CAP_INIT_CLEANUP,
     .p.wrapper_name = "libxvid",

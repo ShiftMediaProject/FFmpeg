@@ -35,7 +35,6 @@
 #include "libavutil/pixdesc.h"
 
 #include "avfilter.h"
-#include "internal.h"
 #include "video.h"
 #include "filters.h"
 #include "framerate.h"
@@ -374,6 +373,7 @@ retry:
 static int config_output(AVFilterLink *outlink)
 {
     AVFilterContext *ctx = outlink->src;
+    FilterLink *l = ff_filter_link(outlink);
     FrameRateContext *s = ctx->priv;
     int exact;
 
@@ -399,7 +399,7 @@ static int config_output(AVFilterLink *outlink)
         av_log(ctx, AV_LOG_WARNING, "Timebase conversion is not exact\n");
     }
 
-    outlink->frame_rate = s->dest_frame_rate;
+    l->frame_rate = s->dest_frame_rate;
     outlink->time_base = s->dest_time_base;
 
     ff_dlog(ctx,

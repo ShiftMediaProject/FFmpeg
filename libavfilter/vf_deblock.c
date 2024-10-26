@@ -27,7 +27,7 @@
 #include "libavutil/pixdesc.h"
 
 #include "avfilter.h"
-#include "internal.h"
+#include "filters.h"
 #include "video.h"
 
 enum FilterType { WEAK, STRONG, NB_FILTER };

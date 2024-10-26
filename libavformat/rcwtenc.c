@@ -21,11 +21,6 @@
 /*
  * RCWT (Raw Captions With Time) is a format native to ccextractor, a commonly
  * used open source tool for processing 608/708 Closed Captions (CC) sources.
- * It can be used to archive the original, raw CC bitstream and to produce
- * a source file for later CC processing or conversion. As a result,
- * it also allows for interopability with ccextractor for processing CC data
- * extracted via ffmpeg. The format is simple to parse and can be used
- * to retain all lines and variants of CC.
  *
  * This muxer implements the specification as of March 2024, which has
  * been stable and unchanged since April 2014.
@@ -159,7 +154,6 @@ static int rcwt_write_trailer(AVFormatContext *avf)
 const FFOutputFormat ff_rcwt_muxer = {
     .p.name             = "rcwt",
     .p.long_name        = NULL_IF_CONFIG_SMALL("RCWT (Raw Captions With Time)"),
-    .p.extensions       = "bin",
     .p.flags            = AVFMT_GLOBALHEADER | AVFMT_VARIABLE_FPS | AVFMT_TS_NONSTRICT,
     .p.video_codec      = AV_CODEC_ID_NONE,
     .p.audio_codec      = AV_CODEC_ID_NONE,

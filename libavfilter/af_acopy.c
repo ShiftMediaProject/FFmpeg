@@ -18,7 +18,7 @@
 
 #include "audio.h"
 #include "avfilter.h"
-#include "internal.h"
+#include "filters.h"
 
 static int filter_frame(AVFilterLink *inlink, AVFrame *in)
 {

@@ -24,11 +24,11 @@
 #include <string.h>
 
 #include "libavutil/intreadwrite.h"
+#include "libavutil/mem.h"
 #include "libavutil/mem_internal.h"
 
 #include "avcodec.h"
 #include "codec_internal.h"
-#include "decode.h"
 #define CACHED_BITSTREAM_READER !ARCH_X86_32
 #include "golomb.h"
 #include "get_bits.h"
@@ -288,9 +288,6 @@ static int decode_frame(AVCodecContext *avctx,
         return ret;
 
     avctx->execute2(avctx, decode_slices, frame, NULL, s->nb_slices);
-
-    frame->pict_type = AV_PICTURE_TYPE_I;
-    frame->flags |= AV_FRAME_FLAG_KEY;
 
     *got_frame = 1;
 

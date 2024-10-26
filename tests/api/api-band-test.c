@@ -25,12 +25,12 @@
  */
 
 #include "libavutil/adler32.h"
+#include "libavutil/mem.h"
 #include "libavcodec/avcodec.h"
 #include "libavformat/avformat.h"
 #include "libavutil/imgutils.h"
 
 uint8_t *slice_byte_buffer;
-uint8_t slice_byte_buffer_size;
 int draw_horiz_band_called;
 
 static void draw_horiz_band(AVCodecContext *ctx, const AVFrame *fr, int offset[4],
@@ -106,6 +106,11 @@ static int video_decode(const char *input_filename)
         return -1;
     }
 
+    if (!(codec->capabilities & AV_CODEC_CAP_DRAW_HORIZ_BAND)) {
+        av_log(NULL, AV_LOG_ERROR, "Codec does not support draw_horiz_band\n");
+        return -1;
+    }
+
     ctx = avcodec_alloc_context3(codec);
     if (!ctx) {
         av_log(NULL, AV_LOG_ERROR, "Can't allocate decoder context\n");
@@ -139,11 +144,6 @@ static int video_decode(const char *input_filename)
         return AVERROR(ENOMEM);
     }
 
-    if (strcmp(codec->name, "flv") && strcmp(codec->name, "mpeg4") && strcmp(codec->name, "huffyuv")) {
-        av_log(NULL, AV_LOG_ERROR, "Wrong codec\n");
-        return -1;
-    }
-
     byte_buffer_size = av_image_get_buffer_size(ctx->pix_fmt, ctx->width, ctx->height, 32);
     byte_buffer = av_malloc(byte_buffer_size);
     if (!byte_buffer) {
@@ -157,7 +157,6 @@ static int video_decode(const char *input_filename)
         return AVERROR(ENOMEM);
     }
     memset(slice_byte_buffer, 0, byte_buffer_size);
-    slice_byte_buffer_size = byte_buffer_size;
 
     result = 0;
     while (result >= 0) {
@@ -223,7 +222,7 @@ int main(int argc, char **argv)
 {
     if (argc < 2)
     {
-        av_log(NULL, AV_LOG_ERROR, "Incorrect input: expected %s <name of a video file>\nNote that test works only for huffyuv, flv and mpeg4 decoders\n", argv[0]);
+        av_log(NULL, AV_LOG_ERROR, "Incorrect input: expected %s <name of a video file>\n", argv[0]);
         return 1;
     }
 

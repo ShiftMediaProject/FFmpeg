@@ -29,6 +29,7 @@
 #include "libavutil/iamf.h"
 #include "libavutil/internal.h"
 #include "libavutil/intmath.h"
+#include "libavutil/mem.h"
 #include "libavutil/opt.h"
 
 /**
@@ -218,7 +219,8 @@ const AVClass *avformat_get_class(void)
         { "descriptions",       .type = AV_OPT_TYPE_CONST, { .i64 = AV_DISPOSITION_DESCRIPTIONS      },    .unit = "disposition" }, \
         { "metadata",           .type = AV_OPT_TYPE_CONST, { .i64 = AV_DISPOSITION_METADATA          },    .unit = "disposition" }, \
         { "dependent",          .type = AV_OPT_TYPE_CONST, { .i64 = AV_DISPOSITION_DEPENDENT         },    .unit = "disposition" }, \
-        { "still_image",        .type = AV_OPT_TYPE_CONST, { .i64 = AV_DISPOSITION_STILL_IMAGE       },    .unit = "disposition" }
+        { "still_image",        .type = AV_OPT_TYPE_CONST, { .i64 = AV_DISPOSITION_STILL_IMAGE       },    .unit = "disposition" }, \
+        { "multilayer",         .type = AV_OPT_TYPE_CONST, { .i64 = AV_DISPOSITION_MULTILAYER        },    .unit = "disposition" }
 
 static const AVOption stream_options[] = {
     DISPOSITION_OPT(AVStream),
@@ -316,7 +318,9 @@ AVStream *avformat_new_stream(AVFormatContext *s, const AVCodec *c)
         sti->pts_buffer[i] = AV_NOPTS_VALUE;
 
     st->sample_aspect_ratio = (AVRational) { 0, 1 };
+#if FF_API_INTERNAL_TIMING
     sti->transferred_mux_tb = (AVRational) { 0, 1 };;
+#endif
 
 #if FF_API_AVSTREAM_SIDE_DATA
     sti->inject_global_side_data = si->inject_global_side_data;
@@ -344,13 +348,26 @@ static const AVOption tile_grid_options[] = {
     { "vertical_offset",   NULL, OFFSET(vertical_offset),   AV_OPT_TYPE_INT, { .i64 = 0 }, 0, INT_MAX, FLAGS },
     { NULL },
 };
-#undef FLAGS
 #undef OFFSET
 
 static const AVClass tile_grid_class = {
     .class_name = "AVStreamGroupTileGrid",
     .version    = LIBAVUTIL_VERSION_INT,
     .option     = tile_grid_options,
+};
+
+#define OFFSET(x) offsetof(AVStreamGroupLCEVC, x)
+static const AVOption lcevc_options[] = {
+    { "video_size", "size of video after LCEVC enhancement has been applied", OFFSET(width),
+        AV_OPT_TYPE_IMAGE_SIZE, { .str = NULL }, 0, INT_MAX, FLAGS },
+    { NULL },
+};
+#undef OFFSET
+
+static const AVClass lcevc_class = {
+    .class_name = "AVStreamGroupLCEVC",
+    .version    = LIBAVUTIL_VERSION_INT,
+    .option     = lcevc_options,
 };
 
 static void *stream_group_child_next(void *obj, void *prev)
@@ -364,12 +381,16 @@ static void *stream_group_child_next(void *obj, void *prev)
             return stg->params.iamf_mix_presentation;
         case AV_STREAM_GROUP_PARAMS_TILE_GRID:
             return stg->params.tile_grid;
+        case AV_STREAM_GROUP_PARAMS_LCEVC:
+            return stg->params.lcevc;
         default:
             break;
         }
     }
     return NULL;
 }
+
+#undef FLAGS
 
 static const AVClass *stream_group_child_iterate(void **opaque)
 {
@@ -388,6 +409,9 @@ static const AVClass *stream_group_child_iterate(void **opaque)
         break;
     case AV_STREAM_GROUP_PARAMS_TILE_GRID:
         ret = &tile_grid_class;
+        break;
+    case AV_STREAM_GROUP_PARAMS_LCEVC:
+        ret = &lcevc_class;
         break;
     default:
         break;
@@ -457,6 +481,13 @@ AVStreamGroup *avformat_stream_group_create(AVFormatContext *s,
             goto fail;
         stg->params.tile_grid->av_class = &tile_grid_class;
         av_opt_set_defaults(stg->params.tile_grid);
+        break;
+    case AV_STREAM_GROUP_PARAMS_LCEVC:
+        stg->params.lcevc = av_mallocz(sizeof(*stg->params.lcevc));
+        if (!stg->params.lcevc)
+            goto fail;
+        stg->params.lcevc->av_class = &lcevc_class;
+        av_opt_set_defaults(stg->params.lcevc);
         break;
     default:
         goto fail;

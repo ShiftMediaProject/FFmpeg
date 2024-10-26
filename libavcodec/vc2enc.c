@@ -19,6 +19,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include "libavutil/mem.h"
 #include "libavutil/pixdesc.h"
 #include "libavutil/opt.h"
 #include "libavutil/version.h"
@@ -40,8 +41,9 @@
 typedef struct VC2BaseVideoFormat {
     enum AVPixelFormat pix_fmt;
     AVRational time_base;
-    int width, height, interlaced, level;
-    const char *name;
+    int width, height;
+    uint8_t interlaced, level;
+    char name[13];
 } VC2BaseVideoFormat;
 
 static const VC2BaseVideoFormat base_video_fmts[] = {
@@ -103,9 +105,11 @@ typedef struct Plane {
 } Plane;
 
 typedef struct SliceArgs {
-    PutBitContext pb;
-    int cache[DIRAC_MAX_QUANT_INDEX];
-    void *ctx;
+    const struct VC2EncContext *ctx;
+    union {
+        int cache[DIRAC_MAX_QUANT_INDEX];
+        uint8_t *buf;
+    };
     int x;
     int y;
     int quant_idx;
@@ -115,7 +119,7 @@ typedef struct SliceArgs {
 } SliceArgs;
 
 typedef struct TransformArgs {
-    void *ctx;
+    const struct VC2EncContext *ctx;
     Plane *plane;
     const void *idata;
     ptrdiff_t istride;
@@ -529,8 +533,8 @@ static void encode_picture_start(VC2EncContext *s)
 #define QUANT(c, mul, add, shift) (((mul) * (c) + (add)) >> (shift))
 
 /* VC-2 13.5.5.2 - slice_band() */
-static void encode_subband(VC2EncContext *s, PutBitContext *pb, int sx, int sy,
-                           SubBand *b, int quant)
+static void encode_subband(const VC2EncContext *s, PutBitContext *pb,
+                           int sx, int sy, const SubBand *b, int quant)
 {
     int x, y;
 
@@ -560,7 +564,7 @@ static int count_hq_slice(SliceArgs *slice, int quant_idx)
     int x, y;
     uint8_t quants[MAX_DWT_LEVELS][4];
     int bits = 0, p, level, orientation;
-    VC2EncContext *s = slice->ctx;
+    const VC2EncContext *s = slice->ctx;
 
     if (slice->cache[quant_idx])
         return slice->cache[quant_idx];
@@ -578,7 +582,7 @@ static int count_hq_slice(SliceArgs *slice, int quant_idx)
         bits += 8;
         for (level = 0; level < s->wavelet_depth; level++) {
             for (orientation = !!level; orientation < 4; orientation++) {
-                SubBand *b = &s->plane[p].band[level][orientation];
+                const SubBand *b = &s->plane[p].band[level][orientation];
 
                 const int q_idx = quants[level][orientation];
                 const uint64_t q_m = ((uint64_t)s->qmagic_lut[q_idx][0]) << 2;
@@ -620,7 +624,7 @@ static int count_hq_slice(SliceArgs *slice, int quant_idx)
 static int rate_control(AVCodecContext *avctx, void *arg)
 {
     SliceArgs *slice_dat = arg;
-    VC2EncContext *s = slice_dat->ctx;
+    const VC2EncContext *s = slice_dat->ctx;
     const int top = slice_dat->bits_ceil;
     const int bottom = slice_dat->bits_floor;
     int quant_buf[2] = {-1, -1};
@@ -725,9 +729,9 @@ static int calc_slice_sizes(VC2EncContext *s)
 /* VC-2 13.5.3 - hq_slice */
 static int encode_hq_slice(AVCodecContext *avctx, void *arg)
 {
-    SliceArgs *slice_dat = arg;
-    VC2EncContext *s = slice_dat->ctx;
-    PutBitContext *pb = &slice_dat->pb;
+    const SliceArgs *slice_dat = arg;
+    const VC2EncContext *s = slice_dat->ctx;
+    PutBitContext pb0, *const pb = &pb0;
     const int slice_x = slice_dat->x;
     const int slice_y = slice_dat->y;
     const int quant_idx = slice_dat->quant_idx;
@@ -736,8 +740,9 @@ static int encode_hq_slice(AVCodecContext *avctx, void *arg)
     int p, level, orientation;
 
     /* The reference decoder ignores it, and its typical length is 0 */
-    memset(put_bits_ptr(pb), 0, s->prefix_bytes);
-    skip_put_bytes(pb, s->prefix_bytes);
+    memset(slice_dat->buf, 0, s->prefix_bytes);
+
+    init_put_bits(pb, slice_dat->buf + s->prefix_bytes, slice_dat->bytes - s->prefix_bytes);
 
     put_bits(pb, 8, quant_idx);
 
@@ -790,7 +795,7 @@ static int encode_slices(VC2EncContext *s)
     for (slice_y = 0; slice_y < s->num_y; slice_y++) {
         for (slice_x = 0; slice_x < s->num_x; slice_x++) {
             SliceArgs *args = &enc_args[s->num_x*slice_y + slice_x];
-            init_put_bits(&args->pb, buf + skip, args->bytes+s->prefix_bytes);
+            args->buf = buf + skip;
             skip += args->bytes;
         }
     }
@@ -841,7 +846,7 @@ static int encode_slices(VC2EncContext *s)
 static int dwt_plane(AVCodecContext *avctx, void *arg)
 {
     TransformArgs *transform_dat = arg;
-    VC2EncContext *s = transform_dat->ctx;
+    const VC2EncContext *s = transform_dat->ctx;
     const void *frame_data = transform_dat->idata;
     const ptrdiff_t linesize = transform_dat->istride;
     const int field = transform_dat->field;
@@ -920,10 +925,8 @@ static int encode_frame(VC2EncContext *s, AVPacket *avpkt, const AVFrame *frame,
     if (field < 2) {
         ret = ff_get_encode_buffer(s->avctx, avpkt,
                                    max_frame_bytes << s->interlaced, 0);
-        if (ret) {
-            av_log(s->avctx, AV_LOG_ERROR, "Error getting output packet.\n");
+        if (ret < 0)
             return ret;
-        }
         init_put_bits(&s->pb, avpkt->data, avpkt->size);
     }
 
@@ -985,7 +988,7 @@ static av_cold int vc2_encode_frame(AVCodecContext *avctx, AVPacket *avpkt,
     }
 
     s->slice_min_bytes = s->slice_max_bytes - s->slice_max_bytes*(s->tolerance/100.0f);
-    if (s->slice_min_bytes < 0)
+    if (s->slice_min_bytes < 0 || s->slice_max_bytes > INT_MAX >> 3)
         return AVERROR(EINVAL);
 
     ret = encode_frame(s, avpkt, frame, aux_data, header_size, s->interlaced);
@@ -1026,9 +1029,9 @@ static av_cold int vc2_encode_init(AVCodecContext *avctx)
 {
     Plane *p;
     SubBand *b;
-    int i, level, o, shift, ret;
-    const AVPixFmtDescriptor *fmt = av_pix_fmt_desc_get(avctx->pix_fmt);
-    const int depth = fmt->comp[0].depth;
+    int i, level, o, shift;
+    const AVPixFmtDescriptor *pixdesc;
+    int depth;
     VC2EncContext *s = avctx->priv_data;
 
     s->picture_number = 0;
@@ -1100,12 +1103,13 @@ static av_cold int vc2_encode_init(AVCodecContext *avctx)
                s->base_vf, base_video_fmts[s->base_vf].name);
     }
 
+    pixdesc = av_pix_fmt_desc_get(avctx->pix_fmt);
     /* Chroma subsampling */
-    ret = av_pix_fmt_get_chroma_sub_sample(avctx->pix_fmt, &s->chroma_x_shift, &s->chroma_y_shift);
-    if (ret)
-        return ret;
+    s->chroma_x_shift = pixdesc->log2_chroma_w;
+    s->chroma_y_shift = pixdesc->log2_chroma_h;
 
     /* Bit depth and color range index */
+    depth = pixdesc->comp[0].depth;
     if (depth == 8 && avctx->color_range == AVCOL_RANGE_JPEG) {
         s->bpp = 1;
         s->bpp_idx = 1;
@@ -1240,5 +1244,6 @@ const FFCodec ff_vc2_encoder = {
     FF_CODEC_ENCODE_CB(vc2_encode_frame),
     .p.priv_class   = &vc2enc_class,
     .defaults       = vc2enc_defaults,
-    .p.pix_fmts     = allowed_pix_fmts
+    .p.pix_fmts     = allowed_pix_fmts,
+    .color_ranges   = AVCOL_RANGE_MPEG | AVCOL_RANGE_JPEG,
 };

@@ -23,17 +23,18 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "libavutil/mem.h"
 #include "avcodec.h"
 #include "nvdec.h"
 #include "decode.h"
 #include "internal.h"
-#include "hevcdec.h"
-#include "hevc_data.h"
+#include "hevc/hevcdec.h"
+#include "hevc/data.h"
 #include "hwaccel_internal.h"
 
 static void dpb_add(CUVIDHEVCPICPARAMS *pp, int idx, const HEVCFrame *src)
 {
-    FrameDecodeData *fdd = (FrameDecodeData*)src->frame->private_ref->data;
+    FrameDecodeData *fdd = (FrameDecodeData*)src->f->private_ref->data;
     const NVDECFrame *cf = fdd->hwaccel_priv;
 
     pp->RefPicIdx[idx]      = cf ? cf->idx : -1;
@@ -43,8 +44,8 @@ static void dpb_add(CUVIDHEVCPICPARAMS *pp, int idx, const HEVCFrame *src)
 
 static void fill_scaling_lists(CUVIDHEVCPICPARAMS *ppc, const HEVCContext *s)
 {
-    const ScalingList *sl = s->ps.pps->scaling_list_data_present_flag ?
-                            &s->ps.pps->scaling_list : &s->ps.sps->scaling_list;
+    const ScalingList *sl = s->pps->scaling_list_data_present_flag ?
+                            &s->pps->scaling_list : &s->pps->sps->scaling_list;
     int i, j, pos;
 
     for (i = 0; i < 6; i++) {
@@ -72,8 +73,9 @@ static int nvdec_hevc_start_frame(AVCodecContext *avctx,
                                   const uint8_t *buffer, uint32_t size)
 {
     const HEVCContext *s = avctx->priv_data;
-    const HEVCPPS *pps = s->ps.pps;
-    const HEVCSPS *sps = s->ps.sps;
+    const HEVCLayerContext *l = &s->layers[s->cur_layer];
+    const HEVCPPS *pps = s->pps;
+    const HEVCSPS *sps = pps->sps;
 
     NVDECContext       *ctx = avctx->internal->hwaccel_priv_data;
     CUVIDPICPARAMS      *pp = &ctx->pic_params;
@@ -83,11 +85,11 @@ static int nvdec_hevc_start_frame(AVCodecContext *avctx,
 
     int i, j, dpb_size, ret;
 
-    ret = ff_nvdec_start_frame(avctx, s->ref->frame);
+    ret = ff_nvdec_start_frame(avctx, s->cur_frame->f);
     if (ret < 0)
         return ret;
 
-    fdd = (FrameDecodeData*)s->ref->frame->private_ref->data;
+    fdd = (FrameDecodeData*)s->cur_frame->f->private_ref->data;
     cf  = (NVDECFrame*)fdd->hwaccel_priv;
 
     *pp = (CUVIDPICPARAMS) {
@@ -104,44 +106,44 @@ static int nvdec_hevc_start_frame(AVCodecContext *avctx,
             .log2_diff_max_min_luma_coding_block_size     = sps->log2_diff_max_min_coding_block_size,
             .log2_min_transform_block_size_minus2         = sps->log2_min_tb_size - 2,
             .log2_diff_max_min_transform_block_size       = sps->log2_max_trafo_size - sps->log2_min_tb_size,
-            .pcm_enabled_flag                             = sps->pcm_enabled_flag,
-            .log2_min_pcm_luma_coding_block_size_minus3   = sps->pcm_enabled_flag ? sps->pcm.log2_min_pcm_cb_size - 3 : 0,
+            .pcm_enabled_flag                             = sps->pcm_enabled,
+            .log2_min_pcm_luma_coding_block_size_minus3   = sps->pcm_enabled ? sps->pcm.log2_min_pcm_cb_size - 3 : 0,
             .log2_diff_max_min_pcm_luma_coding_block_size = sps->pcm.log2_max_pcm_cb_size - sps->pcm.log2_min_pcm_cb_size,
-            .pcm_sample_bit_depth_luma_minus1             = sps->pcm_enabled_flag ? sps->pcm.bit_depth - 1 : 0,
-            .pcm_sample_bit_depth_chroma_minus1           = sps->pcm_enabled_flag ? sps->pcm.bit_depth_chroma - 1 : 0,
+            .pcm_sample_bit_depth_luma_minus1             = sps->pcm_enabled ? sps->pcm.bit_depth - 1 : 0,
+            .pcm_sample_bit_depth_chroma_minus1           = sps->pcm_enabled ? sps->pcm.bit_depth_chroma - 1 : 0,
 #if NVDECAPI_CHECK_VERSION(8, 1)
             .log2_max_transform_skip_block_size_minus2    = pps->log2_max_transform_skip_block_size - 2,
             .log2_sao_offset_scale_luma                   = pps->log2_sao_offset_scale_luma,
             .log2_sao_offset_scale_chroma                 = pps->log2_sao_offset_scale_chroma,
-            .high_precision_offsets_enabled_flag          = sps->high_precision_offsets_enabled_flag,
+            .high_precision_offsets_enabled_flag          = sps->high_precision_offsets_enabled,
 #endif
-            .pcm_loop_filter_disabled_flag                = sps->pcm.loop_filter_disable_flag,
-            .strong_intra_smoothing_enabled_flag          = sps->sps_strong_intra_smoothing_enable_flag,
+            .pcm_loop_filter_disabled_flag                = sps->pcm_loop_filter_disabled,
+            .strong_intra_smoothing_enabled_flag          = sps->strong_intra_smoothing_enabled,
             .max_transform_hierarchy_depth_intra          = sps->max_transform_hierarchy_depth_intra,
             .max_transform_hierarchy_depth_inter          = sps->max_transform_hierarchy_depth_inter,
-            .amp_enabled_flag                             = sps->amp_enabled_flag,
-            .separate_colour_plane_flag                   = sps->separate_colour_plane_flag,
+            .amp_enabled_flag                             = sps->amp_enabled,
+            .separate_colour_plane_flag                   = sps->separate_colour_plane,
             .log2_max_pic_order_cnt_lsb_minus4            = sps->log2_max_poc_lsb - 4,
             .num_short_term_ref_pic_sets                  = sps->nb_st_rps,
-            .long_term_ref_pics_present_flag              = sps->long_term_ref_pics_present_flag,
+            .long_term_ref_pics_present_flag              = sps->long_term_ref_pics_present,
             .num_long_term_ref_pics_sps                   = sps->num_long_term_ref_pics_sps,
-            .sps_temporal_mvp_enabled_flag                = sps->sps_temporal_mvp_enabled_flag,
+            .sps_temporal_mvp_enabled_flag                = sps->temporal_mvp_enabled,
             .sample_adaptive_offset_enabled_flag          = sps->sao_enabled,
-            .scaling_list_enable_flag                     = sps->scaling_list_enable_flag,
+            .scaling_list_enable_flag                     = sps->scaling_list_enabled,
             .IrapPicFlag                                  = IS_IRAP(s),
             .IdrPicFlag                                   = IS_IDR(s),
             .bit_depth_luma_minus8                        = sps->bit_depth - 8,
             .bit_depth_chroma_minus8                      = sps->bit_depth - 8,
 #if NVDECAPI_CHECK_VERSION(9, 0)
-            .sps_range_extension_flag                     = sps->sps_range_extension_flag,
-            .transform_skip_rotation_enabled_flag         = sps->transform_skip_rotation_enabled_flag,
-            .transform_skip_context_enabled_flag          = sps->transform_skip_context_enabled_flag,
-            .implicit_rdpcm_enabled_flag                  = sps->implicit_rdpcm_enabled_flag,
-            .explicit_rdpcm_enabled_flag                  = sps->explicit_rdpcm_enabled_flag,
-            .extended_precision_processing_flag           = sps->extended_precision_processing_flag,
-            .intra_smoothing_disabled_flag                = sps->intra_smoothing_disabled_flag,
-            .persistent_rice_adaptation_enabled_flag      = sps->persistent_rice_adaptation_enabled_flag,
-            .cabac_bypass_alignment_enabled_flag          = sps->cabac_bypass_alignment_enabled_flag,
+            .sps_range_extension_flag                     = sps->range_extension,
+            .transform_skip_rotation_enabled_flag         = sps->transform_skip_rotation_enabled,
+            .transform_skip_context_enabled_flag          = sps->transform_skip_context_enabled,
+            .implicit_rdpcm_enabled_flag                  = sps->implicit_rdpcm_enabled,
+            .explicit_rdpcm_enabled_flag                  = sps->explicit_rdpcm_enabled,
+            .extended_precision_processing_flag           = sps->extended_precision_processing,
+            .intra_smoothing_disabled_flag                = sps->intra_smoothing_disabled,
+            .persistent_rice_adaptation_enabled_flag      = sps->persistent_rice_adaptation_enabled,
+            .cabac_bypass_alignment_enabled_flag          = sps->cabac_bypass_alignment_enabled,
 #endif
 
             .dependent_slice_segments_enabled_flag        = pps->dependent_slice_segments_enabled_flag,
@@ -186,11 +188,11 @@ static int nvdec_hevc_start_frame(AVCodecContext *avctx,
 
             .NumBitsForShortTermRPSInSlice                = s->sh.short_term_rps ? s->sh.short_term_ref_pic_set_size : 0,
             .NumDeltaPocsOfRefRpsIdx                      = s->sh.short_term_rps ? s->sh.short_term_rps->rps_idx_num_delta_pocs : 0,
-            .NumPocTotalCurr                              = ff_hevc_frame_nb_refs(s),
+            .NumPocTotalCurr                              = ff_hevc_frame_nb_refs(&s->sh, pps, s->cur_layer),
             .NumPocStCurrBefore                           = s->rps[ST_CURR_BEF].nb_refs,
             .NumPocStCurrAfter                            = s->rps[ST_CURR_AFT].nb_refs,
             .NumPocLtCurr                                 = s->rps[LT_CURR].nb_refs,
-            .CurrPicOrderCntVal                           = s->ref->poc,
+            .CurrPicOrderCntVal                           = s->cur_frame->poc,
         },
     };
 
@@ -224,8 +226,8 @@ static int nvdec_hevc_start_frame(AVCodecContext *avctx,
     }
 
     dpb_size = 0;
-    for (i = 0; i < FF_ARRAY_ELEMS(s->DPB); i++) {
-        const HEVCFrame *ref = &s->DPB[i];
+    for (i = 0; i < FF_ARRAY_ELEMS(l->DPB); i++) {
+        const HEVCFrame *ref = &l->DPB[i];
         if (!(ref->flags & (HEVC_FRAME_FLAG_SHORT_REF | HEVC_FRAME_FLAG_LONG_REF)))
             continue;
         if (dpb_size >= FF_ARRAY_ELEMS(ppc->RefPicIdx)) {
@@ -299,7 +301,7 @@ static int nvdec_hevc_frame_params(AVCodecContext *avctx,
                                    AVBufferRef *hw_frames_ctx)
 {
     const HEVCContext *s = avctx->priv_data;
-    const HEVCSPS *sps = s->ps.sps;
+    const HEVCSPS *sps = s->pps->sps;
     return ff_nvdec_frame_params(avctx, hw_frames_ctx, sps->temporal_layer[sps->max_sub_layers - 1].max_dec_pic_buffering + 1, 1);
 }
 

@@ -20,8 +20,9 @@
 
 #include "config_components.h"
 
+#include "libavutil/mem.h"
 #include "avfilter.h"
-#include "internal.h"
+#include "filters.h"
 
 #define DEFAULT_LENGTH 300
 

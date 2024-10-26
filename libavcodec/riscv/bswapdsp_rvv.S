@@ -21,7 +21,8 @@
 #include "config.h"
 #include "libavutil/riscv/asm.S"
 
-func ff_bswap16_buf_rvv, zve32x
+func ff_bswap16_buf_rvv, zve32x, zba
+        lpad    0
 1:
         vsetvli t0, a2, e16, m8, ta, ma
         vle16.v v8, (a1)

@@ -73,22 +73,18 @@ static CoefType calc_cpl_coord(CoefSumType energy_ch, CoefSumType energy_cpl)
  * @param s  AC-3 encoder private context
  * @return   0 on success, negative error code on failure
  */
-static av_cold int ac3_fixed_mdct_init(AC3EncodeContext *s)
+static av_cold int ac3_fixed_mdct_init(AVCodecContext *avctx, AC3EncodeContext *s)
 {
     float fwin[AC3_BLOCK_SIZE];
     const float scale = -1.0f;
 
-    int32_t *iwin = av_malloc_array(AC3_BLOCK_SIZE, sizeof(*iwin));
-    if (!iwin)
-        return AVERROR(ENOMEM);
+    int32_t *iwin = s->mdct_window_fixed;
 
     ff_kbd_window_init(fwin, 5.0, AC3_BLOCK_SIZE);
     for (int i = 0; i < AC3_BLOCK_SIZE; i++)
         iwin[i] = lrintf(fwin[i] * (1 << 22));
 
-    s->mdct_window = iwin;
-
-    s->fdsp = avpriv_alloc_fixed_dsp(s->avctx->flags & AV_CODEC_FLAG_BITEXACT);
+    s->fdsp = avpriv_alloc_fixed_dsp(avctx->flags & AV_CODEC_FLAG_BITEXACT);
     if (!s->fdsp)
         return AVERROR(ENOMEM);
 
@@ -100,9 +96,15 @@ static av_cold int ac3_fixed_mdct_init(AC3EncodeContext *s)
 static av_cold int ac3_fixed_encode_init(AVCodecContext *avctx)
 {
     AC3EncodeContext *s = avctx->priv_data;
+    int ret;
+
     s->fixed_point = 1;
-    s->mdct_init               = ac3_fixed_mdct_init;
-    s->allocate_sample_buffers = allocate_sample_buffers;
+    s->encode_frame            = encode_frame;
+
+    ret = ac3_fixed_mdct_init(avctx, s);
+    if (ret < 0)
+        return ret;
+
     return ff_ac3_encode_init(avctx);
 }
 
@@ -115,7 +117,7 @@ const FFCodec ff_ac3_fixed_encoder = {
     .p.capabilities  = AV_CODEC_CAP_DR1 | AV_CODEC_CAP_ENCODER_REORDERED_OPAQUE,
     .priv_data_size  = sizeof(AC3EncodeContext),
     .init            = ac3_fixed_encode_init,
-    FF_CODEC_ENCODE_CB(ff_ac3_fixed_encode_frame),
+    FF_CODEC_ENCODE_CB(ff_ac3_encode_frame),
     .close           = ff_ac3_encode_close,
     .p.sample_fmts   = (const enum AVSampleFormat[]){ AV_SAMPLE_FMT_S32P,
                                                       AV_SAMPLE_FMT_NONE },

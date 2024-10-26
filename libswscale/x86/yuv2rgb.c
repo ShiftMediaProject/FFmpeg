@@ -1,7 +1,8 @@
 /*
  * software YUV to RGB converter
  *
- * Copyright (C) 2009 Konstantin Shishkov
+ * Copyright (C) 2001-2007 Michael Niedermayer
+ * Copyright (C) 2009-2010 Konstantin Shishkov
  *
  * MMX/MMXEXT template stuff (needed for fast movntq support),
  * 1,4,8bpp support and context / deglobalize stuff
@@ -39,29 +40,201 @@
 
 #if HAVE_X86ASM
 
-#define DITHER1XBPP // only for MMX
+#define YUV2RGB_LOOP(depth)                                          \
+    h_size = (c->dstW + 7) & ~7;                                     \
+    if (h_size * depth > FFABS(dstStride[0]))                        \
+        h_size -= 8;                                                 \
+                                                                     \
+    vshift = c->srcFormat != AV_PIX_FMT_YUV422P;                     \
+                                                                     \
+    for (y = 0; y < srcSliceH; y++) {                                \
+        uint8_t *image    = dst[0] + (y + srcSliceY) * dstStride[0]; \
+        const uint8_t *py = src[0] +               y * srcStride[0]; \
+        const uint8_t *pu = src[1] +   (y >> vshift) * srcStride[1]; \
+        const uint8_t *pv = src[2] +   (y >> vshift) * srcStride[2]; \
+        x86_reg index = -h_size / 2;                                 \
 
-//MMX versions
-#if HAVE_MMX
-#undef RENAME
-#define COMPILE_TEMPLATE_MMX
-#define RENAME(a) a ## _mmx
-#include "yuv2rgb_template.c"
-#undef COMPILE_TEMPLATE_MMX
-#endif /* HAVE_MMX */
+extern void ff_yuv_420_rgb24_ssse3(x86_reg index, uint8_t *image, const uint8_t *pu_index,
+                                   const uint8_t *pv_index, const uint64_t *pointer_c_dither,
+                                   const uint8_t *py_2index);
+extern void ff_yuv_420_bgr24_ssse3(x86_reg index, uint8_t *image, const uint8_t *pu_index,
+                                   const uint8_t *pv_index, const uint64_t *pointer_c_dither,
+                                   const uint8_t *py_2index);
 
-// MMXEXT versions
-#undef RENAME
-#define COMPILE_TEMPLATE_MMXEXT
-#define RENAME(a) a ## _mmxext
-#include "yuv2rgb_template.c"
-#undef COMPILE_TEMPLATE_MMXEXT
+extern void ff_yuv_420_rgb15_ssse3(x86_reg index, uint8_t *image, const uint8_t *pu_index,
+                                   const uint8_t *pv_index, const uint64_t *pointer_c_dither,
+                                   const uint8_t *py_2index);
+extern void ff_yuv_420_rgb16_ssse3(x86_reg index, uint8_t *image, const uint8_t *pu_index,
+                                   const uint8_t *pv_index, const uint64_t *pointer_c_dither,
+                                   const uint8_t *py_2index);
+extern void ff_yuv_420_rgb32_ssse3(x86_reg index, uint8_t *image, const uint8_t *pu_index,
+                                   const uint8_t *pv_index, const uint64_t *pointer_c_dither,
+                                   const uint8_t *py_2index);
+extern void ff_yuv_420_bgr32_ssse3(x86_reg index, uint8_t *image, const uint8_t *pu_index,
+                                   const uint8_t *pv_index, const uint64_t *pointer_c_dither,
+                                   const uint8_t *py_2index);
+extern void ff_yuva_420_rgb32_ssse3(x86_reg index, uint8_t *image, const uint8_t *pu_index,
+                                    const uint8_t *pv_index, const uint64_t *pointer_c_dither,
+                                    const uint8_t *py_2index, const uint8_t *pa_2index);
+extern void ff_yuva_420_bgr32_ssse3(x86_reg index, uint8_t *image, const uint8_t *pu_index,
+                                    const uint8_t *pv_index, const uint64_t *pointer_c_dither,
+                                    const uint8_t *py_2index, const uint8_t *pa_2index);
+#if ARCH_X86_64
+extern void ff_yuv_420_gbrp24_ssse3(x86_reg index, uint8_t *image, uint8_t *dst_b, uint8_t *dst_r,
+                                    const uint8_t *pu_index, const uint8_t *pv_index,
+                                    const uint64_t *pointer_c_dither,
+                                    const uint8_t *py_2index);
+#endif
 
-//SSSE3 versions
-#undef RENAME
-#define COMPILE_TEMPLATE_SSSE3
-#define RENAME(a) a ## _ssse3
-#include "yuv2rgb_template.c"
+static inline int yuv420_rgb15_ssse3(SwsContext *c, const uint8_t *src[],
+                                     int srcStride[],
+                                     int srcSliceY, int srcSliceH,
+                                     uint8_t *dst[], int dstStride[])
+{
+    int y, h_size, vshift;
+
+    YUV2RGB_LOOP(2)
+
+        c->blueDither  = ff_dither8[y       & 1];
+        c->greenDither = ff_dither8[y       & 1];
+        c->redDither   = ff_dither8[(y + 1) & 1];
+
+        ff_yuv_420_rgb15_ssse3(index, image, pu - index, pv - index, &(c->redDither), py - 2 * index);
+    }
+    return srcSliceH;
+}
+
+static inline int yuv420_rgb16_ssse3(SwsContext *c, const uint8_t *src[],
+                                     int srcStride[],
+                                     int srcSliceY, int srcSliceH,
+                                     uint8_t *dst[], int dstStride[])
+{
+    int y, h_size, vshift;
+
+    YUV2RGB_LOOP(2)
+
+        c->blueDither  = ff_dither8[y       & 1];
+        c->greenDither = ff_dither4[y       & 1];
+        c->redDither   = ff_dither8[(y + 1) & 1];
+
+        ff_yuv_420_rgb16_ssse3(index, image, pu - index, pv - index, &(c->redDither), py - 2 * index);
+    }
+    return srcSliceH;
+}
+
+static inline int yuv420_rgb32_ssse3(SwsContext *c, const uint8_t *src[],
+                                     int srcStride[],
+                                     int srcSliceY, int srcSliceH,
+                                     uint8_t *dst[], int dstStride[])
+{
+    int y, h_size, vshift;
+
+    YUV2RGB_LOOP(4)
+
+        ff_yuv_420_rgb32_ssse3(index, image, pu - index, pv - index, &(c->redDither), py - 2 * index);
+    }
+    return srcSliceH;
+}
+
+static inline int yuv420_bgr32_ssse3(SwsContext *c, const uint8_t *src[],
+                                     int srcStride[],
+                                     int srcSliceY, int srcSliceH,
+                                     uint8_t *dst[], int dstStride[])
+{
+    int y, h_size, vshift;
+
+    YUV2RGB_LOOP(4)
+
+        ff_yuv_420_bgr32_ssse3(index, image, pu - index, pv - index, &(c->redDither), py - 2 * index);
+    }
+    return srcSliceH;
+}
+
+static inline int yuva420_rgb32_ssse3(SwsContext *c, const uint8_t *src[],
+                                      int srcStride[],
+                                      int srcSliceY, int srcSliceH,
+                                      uint8_t *dst[], int dstStride[])
+{
+    int y, h_size, vshift;
+    YUV2RGB_LOOP(4)
+
+        const uint8_t *pa = src[3] + y * srcStride[3];
+        ff_yuva_420_rgb32_ssse3(index, image, pu - index, pv - index, &(c->redDither), py - 2 * index, pa - 2 * index);
+    }
+    return srcSliceH;
+}
+
+static inline int yuva420_bgr32_ssse3(SwsContext *c, const uint8_t *src[],
+                                      int srcStride[],
+                                      int srcSliceY, int srcSliceH,
+                                      uint8_t *dst[], int dstStride[])
+{
+    int y, h_size, vshift;
+
+    YUV2RGB_LOOP(4)
+
+        const uint8_t *pa = src[3] + y * srcStride[3];
+        ff_yuva_420_bgr32_ssse3(index, image, pu - index, pv - index, &(c->redDither), py - 2 * index, pa - 2 * index);
+    }
+    return srcSliceH;
+}
+
+static inline int yuv420_rgb24_ssse3(SwsContext *c, const uint8_t *src[],
+                                     int srcStride[],
+                                     int srcSliceY, int srcSliceH,
+                                     uint8_t *dst[], int dstStride[])
+{
+    int y, h_size, vshift;
+
+    YUV2RGB_LOOP(3)
+
+        ff_yuv_420_rgb24_ssse3(index, image, pu - index, pv - index, &(c->redDither), py - 2 * index);
+    }
+    return srcSliceH;
+}
+
+static inline int yuv420_bgr24_ssse3(SwsContext *c, const uint8_t *src[],
+                                     int srcStride[],
+                                     int srcSliceY, int srcSliceH,
+                                     uint8_t *dst[], int dstStride[])
+{
+    int y, h_size, vshift;
+
+    YUV2RGB_LOOP(3)
+
+        ff_yuv_420_bgr24_ssse3(index, image, pu - index, pv - index, &(c->redDither), py - 2 * index);
+    }
+    return srcSliceH;
+}
+
+#if ARCH_X86_64
+static inline int yuv420_gbrp_ssse3(SwsContext *c, const uint8_t *src[],
+                                    int srcStride[],
+                                    int srcSliceY, int srcSliceH,
+                                    uint8_t *dst[], int dstStride[])
+{
+    int y, h_size, vshift;
+
+    h_size = (c->dstW + 7) & ~7;
+    if (h_size * 3 > FFABS(dstStride[0]))
+        h_size -= 8;
+
+    vshift = c->srcFormat != AV_PIX_FMT_YUV422P;
+
+    for (y = 0; y < srcSliceH; y++) {
+        uint8_t *dst_g    = dst[0] + (y + srcSliceY) * dstStride[0];
+        uint8_t *dst_b    = dst[1] + (y + srcSliceY) * dstStride[1];
+        uint8_t *dst_r    = dst[2] + (y + srcSliceY) * dstStride[2];
+        const uint8_t *py = src[0] +               y * srcStride[0];
+        const uint8_t *pu = src[1] +   (y >> vshift) * srcStride[1];
+        const uint8_t *pv = src[2] +   (y >> vshift) * srcStride[2];
+        x86_reg index = -h_size / 2;
+
+        ff_yuv_420_gbrp24_ssse3(index, dst_g, dst_b, dst_r, pu - index, pv - index, &(c->redDither), py - 2 * index);
+    }
+    return srcSliceH;
+}
+#endif
 
 #endif /* HAVE_X86ASM */
 
@@ -96,40 +269,10 @@ av_cold SwsFunc ff_yuv2rgb_init_x86(SwsContext *c)
             return yuv420_rgb16_ssse3;
         case AV_PIX_FMT_RGB555:
             return yuv420_rgb15_ssse3;
-        }
-    }
-
-    if (EXTERNAL_MMXEXT(cpu_flags)) {
-        switch (c->dstFormat) {
-        case AV_PIX_FMT_RGB24:
-            return yuv420_rgb24_mmxext;
-        case AV_PIX_FMT_BGR24:
-            return yuv420_bgr24_mmxext;
-        }
-    }
-
-    if (EXTERNAL_MMX(cpu_flags)) {
-        switch (c->dstFormat) {
-            case AV_PIX_FMT_RGB32:
-                if (c->srcFormat == AV_PIX_FMT_YUVA420P) {
-#if CONFIG_SWSCALE_ALPHA
-                    return yuva420_rgb32_mmx;
+#if ARCH_X86_64
+        case AV_PIX_FMT_GBRP:
+            return yuv420_gbrp_ssse3;
 #endif
-                    break;
-                } else
-                    return yuv420_rgb32_mmx;
-            case AV_PIX_FMT_BGR32:
-                if (c->srcFormat == AV_PIX_FMT_YUVA420P) {
-#if CONFIG_SWSCALE_ALPHA
-                    return yuva420_bgr32_mmx;
-#endif
-                    break;
-                } else
-                    return yuv420_bgr32_mmx;
-            case AV_PIX_FMT_RGB565:
-                return yuv420_rgb16_mmx;
-            case AV_PIX_FMT_RGB555:
-                return yuv420_rgb15_mmx;
         }
     }
 

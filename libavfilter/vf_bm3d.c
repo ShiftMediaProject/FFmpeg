@@ -33,13 +33,13 @@
 
 #include "libavutil/cpu.h"
 #include "libavutil/imgutils.h"
+#include "libavutil/mem.h"
 #include "libavutil/opt.h"
 #include "libavutil/pixdesc.h"
 #include "libavutil/tx.h"
 #include "avfilter.h"
 #include "filters.h"
 #include "framesync.h"
-#include "internal.h"
 #include "video.h"
 
 #define MAX_NB_THREADS 32
@@ -952,9 +952,11 @@ static av_cold int init(AVFilterContext *ctx)
 
 static int config_output(AVFilterLink *outlink)
 {
+    FilterLink *outl     = ff_filter_link(outlink);
     AVFilterContext *ctx = outlink->src;
     BM3DContext *s = ctx->priv;
     AVFilterLink *src = ctx->inputs[0];
+    FilterLink  *srcl = ff_filter_link(src);
     AVFilterLink *ref;
     FFFrameSyncIn *in;
     int ret;
@@ -977,7 +979,7 @@ static int config_output(AVFilterLink *outlink)
     outlink->h = src->h;
     outlink->time_base = src->time_base;
     outlink->sample_aspect_ratio = src->sample_aspect_ratio;
-    outlink->frame_rate = src->frame_rate;
+    outl->frame_rate = srcl->frame_rate;
 
     if (!s->ref)
         return 0;

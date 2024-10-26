@@ -23,11 +23,12 @@
 #include "libavutil/hwcontext.h"
 #include "libavutil/hwcontext_cuda_internal.h"
 #include "libavutil/cuda_check.h"
+#include "libavutil/mem.h"
 #include "libavutil/opt.h"
 #include "libavutil/pixdesc.h"
 
 #include "avfilter.h"
-#include "internal.h"
+#include "filters.h"
 
 #include "cuda/load_helper.h"
 
@@ -357,8 +358,10 @@ static int format_is_supported(enum AVPixelFormat fmt)
 static int config_props(AVFilterLink *inlink)
 {
     AVFilterContext *ctx = inlink->dst;
+    FilterLink      *inl = ff_filter_link(inlink);
+    FilterLink     *outl = ff_filter_link(ctx->outputs[0]);
     ThumbnailCudaContext *s = ctx->priv;
-    AVHWFramesContext     *hw_frames_ctx = (AVHWFramesContext*)inlink->hw_frames_ctx->data;
+    AVHWFramesContext     *hw_frames_ctx = (AVHWFramesContext*)inl->hw_frames_ctx->data;
     AVCUDADeviceContext *device_hwctx = hw_frames_ctx->device_ctx->hwctx;
     CUcontext dummy, cuda_ctx = device_hwctx->cuda_ctx;
     CudaFunctions *cu = device_hwctx->internal->cuda_dl;
@@ -400,10 +403,10 @@ static int config_props(AVFilterLink *inlink)
 
     CHECK_CU(cu->cuCtxPopCurrent(&dummy));
 
-    s->hw_frames_ctx = ctx->inputs[0]->hw_frames_ctx;
+    s->hw_frames_ctx = inl->hw_frames_ctx;
 
-    ctx->outputs[0]->hw_frames_ctx = av_buffer_ref(s->hw_frames_ctx);
-    if (!ctx->outputs[0]->hw_frames_ctx)
+    outl->hw_frames_ctx = av_buffer_ref(s->hw_frames_ctx);
+    if (!outl->hw_frames_ctx)
         return AVERROR(ENOMEM);
 
     s->tb = inlink->time_base;

@@ -25,7 +25,7 @@
 
 #include "libavutil/opt.h"
 #include "avfilter.h"
-#include "internal.h"
+#include "filters.h"
 #include "video.h"
 
 typedef struct NullContext {
@@ -48,22 +48,25 @@ static int config_output_props(AVFilterLink *outlink)
     AVFilterContext *ctx = outlink->src;
     FrameStepContext *framestep = ctx->priv;
     AVFilterLink *inlink = ctx->inputs[0];
+    FilterLink       *il = ff_filter_link(inlink);
+    FilterLink       *ol = ff_filter_link(outlink);
 
-    outlink->frame_rate =
-        av_div_q(inlink->frame_rate, (AVRational){framestep->frame_step, 1});
+    ol->frame_rate =
+        av_div_q(il->frame_rate, (AVRational){framestep->frame_step, 1});
 
     av_log(ctx, AV_LOG_VERBOSE, "step:%d frame_rate:%d/%d(%f) -> frame_rate:%d/%d(%f)\n",
            framestep->frame_step,
-           inlink->frame_rate.num, inlink->frame_rate.den, av_q2d(inlink->frame_rate),
-           outlink->frame_rate.num, outlink->frame_rate.den, av_q2d(outlink->frame_rate));
+           il->frame_rate.num, il->frame_rate.den, av_q2d(il->frame_rate),
+           ol->frame_rate.num, ol->frame_rate.den, av_q2d(ol->frame_rate));
     return 0;
 }
 
 static int filter_frame(AVFilterLink *inlink, AVFrame *ref)
 {
+    FilterLink             *inl = ff_filter_link(inlink);
     FrameStepContext *framestep = inlink->dst->priv;
 
-    if (!(inlink->frame_count_out % framestep->frame_step)) {
+    if (!(inl->frame_count_out % framestep->frame_step)) {
         return ff_filter_frame(inlink->dst->outputs[0], ref);
     } else {
         av_frame_free(&ref);

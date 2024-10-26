@@ -27,10 +27,11 @@
  * Anal. Mach. Intell. PAMI-2, 1980."
  */
 
+#include "libavutil/mem.h"
 #include "libavutil/opt.h"
 #include "libavutil/imgutils.h"
 #include "avfilter.h"
-#include "internal.h"
+#include "filters.h"
 #include "video.h"
 
 typedef struct YAEPContext {

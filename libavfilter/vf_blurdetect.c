@@ -30,10 +30,12 @@
  * @author Thilo Borgmann <thilo.borgmann _at_ mail.de>
  */
 
-#include "libavutil/imgutils.h"
+#include "libavutil/mem.h"
 #include "libavutil/opt.h"
+#include "libavutil/pixdesc.h"
 #include "libavutil/qsort.h"
-#include "internal.h"
+
+#include "filters.h"
 #include "edge_common.h"
 #include "video.h"
 
@@ -255,6 +257,7 @@ static void set_meta(AVDictionary **metadata, const char *key, float d)
 
 static int blurdetect_filter_frame(AVFilterLink *inlink, AVFrame *in)
 {
+    FilterLink      *inl  = ff_filter_link(inlink);
     AVFilterContext *ctx  = inlink->dst;
     BLRContext *s         = ctx->priv;
     AVFilterLink *outlink = ctx->outputs[0];
@@ -315,7 +318,7 @@ static int blurdetect_filter_frame(AVFilterLink *inlink, AVFrame *in)
 
     set_meta(metadata, "lavfi.blur", blur);
 
-    s->nb_frames = inlink->frame_count_in;
+    s->nb_frames = inl->frame_count_in;
 
     return ff_filter_frame(outlink, in);
 }

@@ -82,12 +82,12 @@ static av_cold void speedhq_init_static_data(void)
 
         bits = ff_mpeg12_vlc_dc_lum_bits[index] + index;
         code = mpeg12_vlc_dc_lum_code_reversed[index] +
-                (av_mod_uintp2(diff, index) << ff_mpeg12_vlc_dc_lum_bits[index]);
+                (av_zero_extend(diff, index) << ff_mpeg12_vlc_dc_lum_bits[index]);
         speedhq_lum_dc_uni[i + 255] = bits + (code << 8);
 
         bits = ff_mpeg12_vlc_dc_chroma_bits[index] + index;
         code = mpeg12_vlc_dc_chroma_code_reversed[index] +
-                (av_mod_uintp2(diff, index) << ff_mpeg12_vlc_dc_chroma_bits[index]);
+                (av_zero_extend(diff, index) << ff_mpeg12_vlc_dc_chroma_bits[index]);
         speedhq_chr_dc_uni[i + 255] = bits + (code << 8);
     }
 
@@ -102,6 +102,12 @@ av_cold int ff_speedhq_encode_init(MpegEncContext *s)
     if (s->width > 65500 || s->height > 65500) {
         av_log(s, AV_LOG_ERROR, "SpeedHQ does not support resolutions above 65500x65500\n");
         return AVERROR(EINVAL);
+    }
+
+    // border is not implemented correctly at the moment, see ticket #10078
+    if (s->width % 16) {
+        av_log(s, AV_LOG_ERROR, "width must be a multiple of 16\n");
+        return AVERROR_PATCHWELCOME;
     }
 
     s->min_qcoeff = -2048;
@@ -176,12 +182,12 @@ static inline void encode_dc(PutBitContext *pb, int diff, int component)
             put_bits_le(pb,
                         ff_mpeg12_vlc_dc_lum_bits[index] + index,
                         mpeg12_vlc_dc_lum_code_reversed[index] +
-                        (av_mod_uintp2(diff, index) << ff_mpeg12_vlc_dc_lum_bits[index]));
+                        (av_zero_extend(diff, index) << ff_mpeg12_vlc_dc_lum_bits[index]));
         else
             put_bits_le(pb,
                         ff_mpeg12_vlc_dc_chroma_bits[index] + index,
                         mpeg12_vlc_dc_chroma_code_reversed[index] +
-                        (av_mod_uintp2(diff, index) << ff_mpeg12_vlc_dc_chroma_bits[index]));
+                        (av_zero_extend(diff, index) << ff_mpeg12_vlc_dc_chroma_bits[index]));
     } else {
         if (component == 0)
             put_bits_le(pb,
@@ -294,6 +300,7 @@ const FFCodec ff_speedhq_encoder = {
     FF_CODEC_ENCODE_CB(ff_mpv_encode_picture),
     .close          = ff_mpv_encode_end,
     .caps_internal  = FF_CODEC_CAP_INIT_CLEANUP,
+    .color_ranges   = AVCOL_RANGE_MPEG,
     .p.pix_fmts     = (const enum AVPixelFormat[]) {
         AV_PIX_FMT_YUV420P, AV_PIX_FMT_YUV422P, AV_PIX_FMT_YUV444P,
         AV_PIX_FMT_NONE

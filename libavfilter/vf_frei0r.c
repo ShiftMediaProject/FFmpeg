@@ -39,8 +39,8 @@
 #include "libavutil/opt.h"
 #include "libavutil/parseutils.h"
 #include "avfilter.h"
+#include "filters.h"
 #include "formats.h"
-#include "internal.h"
 #include "video.h"
 
 typedef f0r_instance_t (*f0r_construct_f)(unsigned int width, unsigned int height);
@@ -450,6 +450,7 @@ static av_cold int source_init(AVFilterContext *ctx)
 static int source_config_props(AVFilterLink *outlink)
 {
     AVFilterContext *ctx = outlink->src;
+    FilterLink        *l = ff_filter_link(outlink);
     Frei0rContext *s = ctx->priv;
 
     if (av_image_check_size(s->w, s->h, 0, ctx) < 0)
@@ -457,7 +458,7 @@ static int source_config_props(AVFilterLink *outlink)
     outlink->w = s->w;
     outlink->h = s->h;
     outlink->time_base = s->time_base;
-    outlink->frame_rate = av_inv_q(s->time_base);
+    l->frame_rate = av_inv_q(s->time_base);
     outlink->sample_aspect_ratio = (AVRational){1,1};
 
     if (s->destruct && s->instance)

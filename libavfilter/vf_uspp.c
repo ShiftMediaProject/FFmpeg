@@ -29,12 +29,14 @@
 
 #include "libavutil/avassert.h"
 #include "libavutil/imgutils.h"
+#include "libavutil/mem.h"
 #include "libavutil/mem_internal.h"
 #include "libavutil/opt.h"
 #include "libavutil/pixdesc.h"
 #include "libavutil/video_enc_params.h"
 #include "libavcodec/avcodec.h"
-#include "internal.h"
+
+#include "filters.h"
 #include "qp_table.h"
 #include "avfilter.h"
 #include "video.h"

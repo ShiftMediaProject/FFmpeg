@@ -20,7 +20,7 @@
 
 #include "libavutil/internal.h"
 #include "avfilter.h"
-#include "internal.h"
+#include "filters.h"
 
 static int null_filter_frame(AVFilterLink *link, AVFrame *frame)
 {

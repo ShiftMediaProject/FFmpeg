@@ -27,10 +27,10 @@
 
 #include <zmq.h>
 #include "libavutil/avstring.h"
-#include "libavutil/bprint.h"
+#include "libavutil/mem.h"
 #include "libavutil/opt.h"
 #include "avfilter.h"
-#include "internal.h"
+#include "filters.h"
 #include "audio.h"
 #include "video.h"
 
@@ -176,7 +176,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *ref)
         av_log(ctx, AV_LOG_VERBOSE,
                "Processing command #%d target:%s command:%s arg:%s\n",
                zmq->command_count, cmd.target, cmd.command, cmd.arg);
-        ret = avfilter_graph_send_command(inlink->graph,
+        ret = avfilter_graph_send_command(ff_filter_link(inlink)->graph,
                                           cmd.target, cmd.command, cmd.arg,
                                           cmd_buf, sizeof(cmd_buf),
                                           AVFILTER_CMD_FLAG_ONE);

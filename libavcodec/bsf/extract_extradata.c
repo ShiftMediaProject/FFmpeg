@@ -19,6 +19,7 @@
 #include <stdint.h>
 
 #include "libavutil/log.h"
+#include "libavutil/mem.h"
 #include "libavutil/opt.h"
 
 #include "av1.h"
@@ -28,10 +29,11 @@
 #include "bytestream.h"
 #include "h2645_parse.h"
 #include "h264.h"
-#include "hevc.h"
 #include "startcode.h"
 #include "vc1_common.h"
 #include "vvc.h"
+
+#include "hevc/hevc.h"
 
 typedef struct ExtractExtradataContext {
     const AVClass *class;
@@ -191,7 +193,7 @@ static int extract_extradata_h2645(AVBSFContext *ctx, AVPacket *pkt,
     }
 
     ret = ff_h2645_packet_split(&s->h2645_pkt, pkt->data, pkt->size,
-                                ctx, 0, 0, ctx->par_in->codec_id, 1, 0);
+                                ctx, 0, ctx->par_in->codec_id, H2645_FLAG_SMALL_PADDING);
     if (ret < 0)
         return ret;
 

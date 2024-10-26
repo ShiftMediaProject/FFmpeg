@@ -30,7 +30,8 @@
 
 #include "libavutil/opt.h"
 #include "libavutil/pixdesc.h"
-#include "internal.h"
+
+#include "filters.h"
 #include "video.h"
 
 #define LB_MASK       0x00FEFEFE

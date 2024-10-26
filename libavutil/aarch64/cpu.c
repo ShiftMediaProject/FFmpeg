@@ -20,7 +20,7 @@
 #include "libavutil/cpu_internal.h"
 #include "config.h"
 
-#if (defined(__linux__) || defined(__ANDROID__)) && HAVE_GETAUXVAL
+#if HAVE_GETAUXVAL || HAVE_ELF_AUX_INFO
 #include <stdint.h>
 #include <sys/auxv.h>
 
@@ -31,8 +31,8 @@ static int detect_flags(void)
 {
     int flags = 0;
 
-    unsigned long hwcap = getauxval(AT_HWCAP);
-    unsigned long hwcap2 = getauxval(AT_HWCAP2);
+    unsigned long hwcap = ff_getauxval(AT_HWCAP);
+    unsigned long hwcap2 = ff_getauxval(AT_HWCAP2);
 
     if (hwcap & HWCAP_AARCH64_ASIMDDP)
         flags |= AV_CPU_FLAG_DOTPROD;
@@ -45,22 +45,23 @@ static int detect_flags(void)
 #elif defined(__APPLE__) && HAVE_SYSCTLBYNAME
 #include <sys/sysctl.h>
 
+static int have_feature(const char *feature) {
+    uint32_t value = 0;
+    size_t size = sizeof(value);
+    if (!sysctlbyname(feature, &value, &size, NULL, 0))
+        return value;
+    return 0;
+}
+
 static int detect_flags(void)
 {
-    uint32_t value = 0;
-    size_t size;
     int flags = 0;
 
-    size = sizeof(value);
-    if (!sysctlbyname("hw.optional.arm.FEAT_DotProd", &value, &size, NULL, 0)) {
-        if (value)
-            flags |= AV_CPU_FLAG_DOTPROD;
-    }
-    size = sizeof(value);
-    if (!sysctlbyname("hw.optional.arm.FEAT_I8MM", &value, &size, NULL, 0)) {
-        if (value)
-            flags |= AV_CPU_FLAG_I8MM;
-    }
+    if (have_feature("hw.optional.arm.FEAT_DotProd"))
+        flags |= AV_CPU_FLAG_DOTPROD;
+    if (have_feature("hw.optional.arm.FEAT_I8MM"))
+        flags |= AV_CPU_FLAG_I8MM;
+
     return flags;
 }
 

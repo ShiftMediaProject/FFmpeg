@@ -26,8 +26,6 @@
 #include <stdint.h>
 #include <sys/types.h>
 
-#include <mfxvideo.h>
-
 #include "libavutil/common.h"
 #include "libavutil/hwcontext.h"
 #include "libavutil/hwcontext_qsv.h"
@@ -64,7 +62,8 @@
 { "slower",      NULL, 0, AV_OPT_TYPE_CONST, { .i64 = MFX_TARGETUSAGE_2  },            INT_MIN, INT_MAX, VE, .unit = "preset" },                                          \
 { "veryslow",    NULL, 0, AV_OPT_TYPE_CONST, { .i64 = MFX_TARGETUSAGE_BEST_QUALITY  }, INT_MIN, INT_MAX, VE, .unit = "preset" },                                          \
 { "forced_idr",     "Forcing I frames as IDR frames",         OFFSET(qsv.forced_idr),     AV_OPT_TYPE_BOOL,{ .i64 = 0  },  0,          1, VE },                         \
-{ "low_power", "enable low power mode(experimental: many limitations by mfx version, BRC modes, etc.)", OFFSET(qsv.low_power), AV_OPT_TYPE_BOOL, { .i64 = -1}, -1, 1, VE},
+{ "low_power", "enable low power mode(experimental: many limitations by mfx version, BRC modes, etc.)", OFFSET(qsv.low_power), AV_OPT_TYPE_BOOL, { .i64 = -1}, -1, 1, VE},\
+{ "qsv_params", "Set QSV encoder parameters as key1=value1:key2=value2:...", OFFSET(qsv.qsv_params), AV_OPT_TYPE_DICT, { 0 }, 0, 0, VE },
 
 #if QSV_HAVE_HE
 #define QSV_HE_OPTIONS \
@@ -195,7 +194,11 @@ typedef struct QSVEncContext {
     mfxExtBuffer  *extparam_internal[5 + (QSV_HAVE_MF * 2) + (QSV_HAVE_EXT_AV1_PARAM * 2) + QSV_HAVE_HE];
     int         nb_extparam_internal;
 
+    mfxExtBuffer  **extparam_str;
+    int         nb_extparam_str;
+
     mfxExtBuffer **extparam;
+    int         nb_extparam;
 
     AVFifo *async_fifo;
 
@@ -314,6 +317,8 @@ typedef struct QSVEncContext {
     int skip_frame;
     // This is used for Hyper Encode
     int dual_gfx;
+
+    AVDictionary *qsv_params;
 } QSVEncContext;
 
 int ff_qsv_enc_init(AVCodecContext *avctx, QSVEncContext *q);

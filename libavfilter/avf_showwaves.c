@@ -29,6 +29,7 @@
 #include "libavutil/avstring.h"
 #include "libavutil/channel_layout.h"
 #include "libavutil/intreadwrite.h"
+#include "libavutil/mem.h"
 #include "libavutil/opt.h"
 #include "libavutil/parseutils.h"
 #include "avfilter.h"
@@ -36,7 +37,6 @@
 #include "formats.h"
 #include "audio.h"
 #include "video.h"
-#include "internal.h"
 
 enum ShowWavesMode {
     MODE_POINT,
@@ -408,6 +408,7 @@ static void draw_sample_cline_gray(uint8_t *buf, int height, int linesize,
 
 static int config_output(AVFilterLink *outlink)
 {
+    FilterLink *l = ff_filter_link(outlink);
     AVFilterContext *ctx = outlink->src;
     AVFilterLink *inlink = ctx->inputs[0];
     ShowWavesContext *showwaves = ctx->priv;
@@ -421,14 +422,14 @@ static int config_output(AVFilterLink *outlink)
 
     if (showwaves->single_pic) {
         showwaves->n = av_make_q(1, 1);
-        outlink->frame_rate = av_make_q(1, 1);
+        l->frame_rate = av_make_q(1, 1);
     } else {
         if (!showwaves->n.num || !showwaves->n.den) {
             showwaves->n = av_mul_q(av_make_q(inlink->sample_rate,
                                               showwaves->w), av_inv_q(showwaves->rate));
-            outlink->frame_rate = showwaves->rate;
+            l->frame_rate = showwaves->rate;
         } else {
-            outlink->frame_rate = av_div_q(av_make_q(inlink->sample_rate, showwaves->w), showwaves->n);
+            l->frame_rate = av_div_q(av_make_q(inlink->sample_rate, showwaves->w), showwaves->n);
         }
     }
 
@@ -447,13 +448,13 @@ static int config_output(AVFilterLink *outlink)
     if (!showwaves->history)
         return AVERROR(ENOMEM);
 
-    outlink->time_base = av_inv_q(outlink->frame_rate);
+    outlink->time_base = av_inv_q(l->frame_rate);
     outlink->w = showwaves->w;
     outlink->h = showwaves->h;
     outlink->sample_aspect_ratio = (AVRational){1,1};
 
     av_log(ctx, AV_LOG_VERBOSE, "s:%dx%d r:%f n:%f\n",
-           showwaves->w, showwaves->h, av_q2d(outlink->frame_rate), av_q2d(showwaves->n));
+           showwaves->w, showwaves->h, av_q2d(l->frame_rate), av_q2d(showwaves->n));
 
     switch (outlink->format) {
     case AV_PIX_FMT_GRAY8:

@@ -26,11 +26,12 @@
  * temporal field interlace filter, ported from MPlayer/libmpcodecs
  */
 
+#include "libavutil/mem.h"
 #include "libavutil/opt.h"
 #include "libavutil/imgutils.h"
 #include "libavutil/avassert.h"
 #include "avfilter.h"
-#include "internal.h"
+#include "filters.h"
 #include "tinterlace.h"
 #include "video.h"
 
@@ -211,6 +212,8 @@ static int config_out_props(AVFilterLink *outlink)
 {
     AVFilterContext *ctx = outlink->src;
     AVFilterLink *inlink = outlink->src->inputs[0];
+    FilterLink *il = ff_filter_link(inlink);
+    FilterLink *ol = ff_filter_link(outlink);
     const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(outlink->format);
     TInterlaceContext *tinterlace = ctx->priv;
     int ret, i;
@@ -255,13 +258,13 @@ static int config_out_props(AVFilterLink *outlink)
     tinterlace->preout_time_base = inlink->time_base;
     if (tinterlace->mode == MODE_INTERLACEX2) {
         tinterlace->preout_time_base.den *= 2;
-        outlink->frame_rate = av_mul_q(inlink->frame_rate, (AVRational){2,1});
+        ol->frame_rate = av_mul_q(il->frame_rate, (AVRational){2,1});
         outlink->time_base  = av_mul_q(inlink->time_base , (AVRational){1,2});
     } else if (tinterlace->mode == MODE_MERGEX2) {
-        outlink->frame_rate = inlink->frame_rate;
+        ol->frame_rate = il->frame_rate;
         outlink->time_base  = inlink->time_base;
     } else if (tinterlace->mode != MODE_PAD) {
-        outlink->frame_rate = av_mul_q(inlink->frame_rate, (AVRational){1,2});
+        ol->frame_rate = av_mul_q(il->frame_rate, (AVRational){1,2});
         outlink->time_base  = av_mul_q(inlink->time_base , (AVRational){2,1});
     }
 
@@ -292,7 +295,7 @@ static int config_out_props(AVFilterLink *outlink)
 #endif
     }
 
-    ret = ff_ccfifo_init(&tinterlace->cc_fifo, outlink->frame_rate, ctx);
+    ret = ff_ccfifo_init(&tinterlace->cc_fifo, ol->frame_rate, ctx);
     if (ret < 0) {
         av_log(ctx, AV_LOG_ERROR, "Failure to setup CC FIFO queue\n");
         return ret;
@@ -372,8 +375,10 @@ void copy_picture_field(TInterlaceContext *tinterlace,
 
 static int filter_frame(AVFilterLink *inlink, AVFrame *picref)
 {
+    FilterLink *inl = ff_filter_link(inlink);
     AVFilterContext *ctx = inlink->dst;
     AVFilterLink *outlink = ctx->outputs[0];
+    FilterLink *l = ff_filter_link(outlink);
     TInterlaceContext *tinterlace = ctx->priv;
     AVFrame *cur, *next, *out;
     int field, tff, full, ret;
@@ -413,12 +418,12 @@ FF_ENABLE_DEPRECATION_WARNINGS
         copy_picture_field(tinterlace, out->data, out->linesize,
                            (const uint8_t **)cur->data, cur->linesize,
                            inlink->format, inlink->w, inlink->h,
-                           FIELD_UPPER_AND_LOWER, 1, tinterlace->mode == MODE_MERGEX2 ? (1 + inlink->frame_count_out) & 1 ? FIELD_LOWER : FIELD_UPPER : FIELD_UPPER, tinterlace->flags);
+                           FIELD_UPPER_AND_LOWER, 1, tinterlace->mode == MODE_MERGEX2 ? (1 + inl->frame_count_out) & 1 ? FIELD_LOWER : FIELD_UPPER : FIELD_UPPER, tinterlace->flags);
         /* write even frame lines into the lower field of the new frame */
         copy_picture_field(tinterlace, out->data, out->linesize,
                            (const uint8_t **)next->data, next->linesize,
                            inlink->format, inlink->w, inlink->h,
-                           FIELD_UPPER_AND_LOWER, 1, tinterlace->mode == MODE_MERGEX2 ? (1 + inlink->frame_count_out) & 1 ? FIELD_UPPER : FIELD_LOWER : FIELD_LOWER, tinterlace->flags);
+                           FIELD_UPPER_AND_LOWER, 1, tinterlace->mode == MODE_MERGEX2 ? (1 + inl->frame_count_out) & 1 ? FIELD_UPPER : FIELD_LOWER : FIELD_LOWER, tinterlace->flags);
         if (tinterlace->mode != MODE_MERGEX2)
             av_frame_free(&tinterlace->next);
         break;
@@ -440,7 +445,7 @@ FF_ENABLE_DEPRECATION_WARNINGS
         out->height = outlink->h;
         out->sample_aspect_ratio = av_mul_q(cur->sample_aspect_ratio, av_make_q(2, 1));
 
-        field = (1 + outlink->frame_count_in) & 1 ? FIELD_UPPER : FIELD_LOWER;
+        field = (1 + l->frame_count_in) & 1 ? FIELD_UPPER : FIELD_LOWER;
         full = out->color_range == AVCOL_RANGE_JPEG || ff_fmt_is_in(out->format, full_scale_yuvj_pix_fmts);
         /* copy upper and lower fields */
         copy_picture_field(tinterlace, out->data, out->linesize,
@@ -559,7 +564,7 @@ FF_ENABLE_DEPRECATION_WARNINGS
     }
 
     out->pts = av_rescale_q(out->pts, tinterlace->preout_time_base, outlink->time_base);
-    out->duration = av_rescale_q(1, av_inv_q(outlink->frame_rate), outlink->time_base);
+    out->duration = av_rescale_q(1, av_inv_q(l->frame_rate), outlink->time_base);
     ff_ccfifo_inject(&tinterlace->cc_fifo, out);
     ret = ff_filter_frame(outlink, out);
 

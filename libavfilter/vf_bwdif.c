@@ -34,7 +34,7 @@
 #include "avfilter.h"
 #include "bwdifdsp.h"
 #include "ccfifo.h"
-#include "internal.h"
+#include "filters.h"
 #include "yadif.h"
 
 typedef struct BWDIFContext {

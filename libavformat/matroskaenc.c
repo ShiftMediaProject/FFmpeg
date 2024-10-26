@@ -33,6 +33,7 @@
 #include "flacenc.h"
 #include "internal.h"
 #include "isom.h"
+#include "nal.h"
 #include "matroska.h"
 #include "mux.h"
 #include "riff.h"
@@ -50,6 +51,7 @@
 #include "libavutil/lfg.h"
 #include "libavutil/mastering_display_metadata.h"
 #include "libavutil/mathematics.h"
+#include "libavutil/mem.h"
 #include "libavutil/opt.h"
 #include "libavutil/parseutils.h"
 #include "libavutil/pixdesc.h"
@@ -1249,7 +1251,9 @@ static int mkv_assemble_codecprivate(AVFormatContext *s, AVIOContext *dyn_cp,
             par->codec_tag = tag;
 
         /* Same comment as for ff_put_bmp_header applies here. */
-        ff_put_wav_header(s, dyn_cp, par, FF_PUT_WAV_HEADER_FORCE_WAVEFORMATEX);
+        ret = ff_put_wav_header(s, dyn_cp, par, FF_PUT_WAV_HEADER_FORCE_WAVEFORMATEX);
+        if (ret < 0)
+            return ret;
 #endif
     }
 
@@ -1365,7 +1369,7 @@ static void mkv_write_video_color(EbmlWriter *writer, const AVStream *st,
                              (ypos >> 7) + 1);
     }
 
-    side_data = av_packet_side_data_get(st->codecpar->coded_side_data, st->codecpar->nb_coded_side_data,
+    side_data = av_packet_side_data_get(par->coded_side_data, par->nb_coded_side_data,
                                         AV_PKT_DATA_CONTENT_LIGHT_LEVEL);
     if (side_data) {
         const AVContentLightMetadata *metadata = (AVContentLightMetadata *)side_data->data;
@@ -1375,7 +1379,7 @@ static void mkv_write_video_color(EbmlWriter *writer, const AVStream *st,
                              metadata->MaxFALL);
     }
 
-    side_data = av_packet_side_data_get(st->codecpar->coded_side_data, st->codecpar->nb_coded_side_data,
+    side_data = av_packet_side_data_get(par->coded_side_data, par->nb_coded_side_data,
                                         AV_PKT_DATA_MASTERING_DISPLAY_METADATA);
     if (side_data) {
         const AVMasteringDisplayMetadata *metadata = (AVMasteringDisplayMetadata *)side_data->data;
@@ -1411,12 +1415,12 @@ static void mkv_write_video_color(EbmlWriter *writer, const AVStream *st,
 }
 
 #define MAX_VIDEO_PROJECTION_ELEMS 6
-static void mkv_handle_rotation(void *logctx, const AVStream *st,
+static void mkv_handle_rotation(void *logctx, const AVCodecParameters *par,
                                 double *yaw, double *roll)
 {
     const int32_t *matrix;
     const AVPacketSideData *side_data =
-        av_packet_side_data_get(st->codecpar->coded_side_data, st->codecpar->nb_coded_side_data,
+        av_packet_side_data_get(par->coded_side_data, par->nb_coded_side_data,
                                 AV_PKT_DATA_DISPLAYMATRIX);
 
     if (!side_data)
@@ -1467,11 +1471,11 @@ ignore:
 }
 
 static int mkv_handle_spherical(void *logctx, EbmlWriter *writer,
-                                const AVStream *st, uint8_t private[],
+                                const AVCodecParameters *par, uint8_t private[],
                                 double *yaw, double *pitch, double *roll)
 {
-    const AVPacketSideData *sd = av_packet_side_data_get(st->codecpar->coded_side_data,
-                                                         st->codecpar->nb_coded_side_data,
+    const AVPacketSideData *sd = av_packet_side_data_get(par->coded_side_data,
+                                                         par->nb_coded_side_data,
                                                          AV_PKT_DATA_SPHERICAL);
     const AVSphericalMapping *spherical;
 
@@ -1527,16 +1531,17 @@ static int mkv_handle_spherical(void *logctx, EbmlWriter *writer,
 }
 
 static void mkv_write_video_projection(void *logctx, EbmlWriter *wr,
-                                       const AVStream *st, uint8_t private[])
+                                       const AVCodecParameters *par,
+                                       uint8_t private[])
 {
     double yaw = 0, pitch = 0, roll = 0;
     int ret;
 
     ebml_writer_open_master(wr, MATROSKA_ID_VIDEOPROJECTION);
 
-    ret = mkv_handle_spherical(logctx, wr, st, private, &yaw, &pitch, &roll);
+    ret = mkv_handle_spherical(logctx, wr, par, private, &yaw, &pitch, &roll);
     if (!ret)
-        mkv_handle_rotation(logctx, st, &yaw, &roll);
+        mkv_handle_rotation(logctx, par, &yaw, &roll);
 
     if (yaw)
         ebml_writer_add_float(wr, MATROSKA_ID_VIDEOPROJECTIONPOSEYAW, yaw);
@@ -1590,6 +1595,7 @@ static void mkv_write_field_order(EbmlWriter *writer, int is_webm,
 
 #define MAX_STEREO_MODE_ELEMS 1
 static int mkv_write_stereo_mode(AVFormatContext *s, EbmlWriter *writer,
+                                 const AVCodecParameters *par,
                                  const AVStream *st, int is_webm,
                                  int *h_width, int *h_height)
 {
@@ -1650,7 +1656,7 @@ static int mkv_write_stereo_mode(AVFormatContext *s, EbmlWriter *writer,
         };
         int fmt;
 
-        sd = av_packet_side_data_get(st->codecpar->coded_side_data, st->codecpar->nb_coded_side_data,
+        sd = av_packet_side_data_get(par->coded_side_data, par->nb_coded_side_data,
                                      AV_PKT_DATA_STEREO3D);
         if (!sd)
             return 0;
@@ -1711,7 +1717,7 @@ static void mkv_write_blockadditionmapping(AVFormatContext *s, const MatroskaMux
         }
     }
 
-    sd = av_packet_side_data_get(st->codecpar->coded_side_data, st->codecpar->nb_coded_side_data,
+    sd = av_packet_side_data_get(par->coded_side_data, par->nb_coded_side_data,
                                  AV_PKT_DATA_DOVI_CONF);
 
     if (!sd)
@@ -1752,8 +1758,10 @@ static int mkv_write_track_video(AVFormatContext *s, MatroskaMuxContext *mkv,
     const AVDictionaryEntry *tag;
     int display_width_div = 1, display_height_div = 1;
     uint8_t color_space[4], projection_private[20];
+    const AVPacketSideData *sd;
     EBML_WRITER(MAX_FIELD_ORDER_ELEMS + MAX_STEREO_MODE_ELEMS      +
-                MAX_VIDEO_COLOR_ELEMS + MAX_VIDEO_PROJECTION_ELEMS + 8);
+                MAX_VIDEO_COLOR_ELEMS + MAX_VIDEO_PROJECTION_ELEMS + 12);
+    int cropped_width = par->width, cropped_height = par->height;
     int ret;
 
     ebml_writer_open_master(&writer, MATROSKA_ID_TRACKVIDEO);
@@ -1765,7 +1773,7 @@ static int mkv_write_track_video(AVFormatContext *s, MatroskaMuxContext *mkv,
 
     // check both side data and metadata for stereo information,
     // write the result to the bitstream if any is found
-    ret = mkv_write_stereo_mode(s, &writer, st, IS_WEBM(mkv),
+    ret = mkv_write_stereo_mode(s, &writer, par, st, IS_WEBM(mkv),
                                 &display_width_div,
                                 &display_height_div);
     if (ret < 0)
@@ -1776,25 +1784,55 @@ static int mkv_write_track_video(AVFormatContext *s, MatroskaMuxContext *mkv,
          (tag = av_dict_get( s->metadata, "alpha_mode", NULL, 0))) && strtol(tag->value, NULL, 0))
         ebml_writer_add_uint(&writer, MATROSKA_ID_VIDEOALPHAMODE, 1);
 
+    sd = av_packet_side_data_get(par->coded_side_data,
+                                 par->nb_coded_side_data,
+                                 AV_PKT_DATA_FRAME_CROPPING);
+    if (sd && sd->size == sizeof(uint32_t) * 4) {
+        uint64_t top, bottom, left, right;
+
+        top    = AV_RL32(sd->data +  0);
+        bottom = AV_RL32(sd->data +  4);
+        left   = AV_RL32(sd->data +  8);
+        right  = AV_RL32(sd->data + 12);
+
+        if ((left + right) >= par->width ||
+            (top + bottom) >= par->height) {
+            av_log(s, AV_LOG_ERROR, "Invalid cropping dimensions in stream side data\n");
+            return AVERROR(EINVAL);
+        }
+
+        if (bottom)
+            ebml_writer_add_uint(&writer, MATROSKA_ID_VIDEOPIXELCROPB, bottom);
+        if (top)
+            ebml_writer_add_uint(&writer, MATROSKA_ID_VIDEOPIXELCROPT, top);
+        if (left)
+            ebml_writer_add_uint(&writer, MATROSKA_ID_VIDEOPIXELCROPL, left);
+        if (right)
+            ebml_writer_add_uint(&writer, MATROSKA_ID_VIDEOPIXELCROPR, right);
+
+        cropped_width  -= left + right;
+        cropped_height -= top + bottom;
+    }
+
     // write DisplayWidth and DisplayHeight, they contain the size of
     // a single source view and/or the display aspect ratio
     if (st->sample_aspect_ratio.num) {
-        int64_t d_width = av_rescale(par->width, st->sample_aspect_ratio.num, st->sample_aspect_ratio.den);
+        int64_t d_width = av_rescale(cropped_width, st->sample_aspect_ratio.num, st->sample_aspect_ratio.den);
         if (d_width > INT_MAX) {
             av_log(s, AV_LOG_ERROR, "Overflow in display width\n");
             return AVERROR(EINVAL);
         }
-        if (d_width != par->width || display_width_div != 1 || display_height_div != 1) {
+        if (d_width != cropped_width || display_width_div != 1 || display_height_div != 1) {
             if (IS_WEBM(mkv) || display_width_div != 1 || display_height_div != 1) {
                 ebml_writer_add_uint(&writer, MATROSKA_ID_VIDEODISPLAYWIDTH,
                                      d_width / display_width_div);
                 ebml_writer_add_uint(&writer, MATROSKA_ID_VIDEODISPLAYHEIGHT,
-                                     par->height / display_height_div);
+                                     cropped_height / display_height_div);
             } else {
                 AVRational display_aspect_ratio;
                 av_reduce(&display_aspect_ratio.num, &display_aspect_ratio.den,
-                            par->width  * (int64_t)st->sample_aspect_ratio.num,
-                            par->height * (int64_t)st->sample_aspect_ratio.den,
+                            cropped_width  * (int64_t)st->sample_aspect_ratio.num,
+                            cropped_height * (int64_t)st->sample_aspect_ratio.den,
                             1024 * 1024);
                 ebml_writer_add_uint(&writer, MATROSKA_ID_VIDEODISPLAYWIDTH,
                                      display_aspect_ratio.num);
@@ -1806,9 +1844,9 @@ static int mkv_write_track_video(AVFormatContext *s, MatroskaMuxContext *mkv,
         }
     } else if (display_width_div != 1 || display_height_div != 1) {
         ebml_writer_add_uint(&writer, MATROSKA_ID_VIDEODISPLAYWIDTH,
-                             par->width / display_width_div);
+                             cropped_width / display_width_div);
         ebml_writer_add_uint(&writer, MATROSKA_ID_VIDEODISPLAYHEIGHT,
-                             par->height / display_height_div);
+                             cropped_height / display_height_div);
     } else if (!IS_WEBM(mkv))
         ebml_writer_add_uint(&writer, MATROSKA_ID_VIDEODISPLAYUNIT,
                              MATROSKA_VIDEO_DISPLAYUNIT_UNKNOWN);
@@ -1819,7 +1857,7 @@ static int mkv_write_track_video(AVFormatContext *s, MatroskaMuxContext *mkv,
                             color_space, sizeof(color_space));
     }
     mkv_write_video_color(&writer, st, par);
-    mkv_write_video_projection(s, &writer, st, projection_private);
+    mkv_write_video_projection(s, &writer, par, projection_private);
 
     return ebml_writer_write(&writer, pb);
 }
@@ -3499,20 +3537,20 @@ static const AVCodecTag additional_subtitle_tags[] = {
 #define OFFSET(x) offsetof(MatroskaMuxContext, x)
 #define FLAGS AV_OPT_FLAG_ENCODING_PARAM
 static const AVOption options[] = {
-    { "reserve_index_space", "Reserve a given amount of space (in bytes) at the beginning of the file for the index (cues).", OFFSET(reserve_cues_space), AV_OPT_TYPE_INT,   { .i64 = 0 },   0, INT_MAX,   FLAGS },
-    { "cues_to_front", "Move Cues (the index) to the front by shifting data if necessary", OFFSET(move_cues_to_front), AV_OPT_TYPE_BOOL, { .i64 = 0}, 0, 1, FLAGS },
-    { "cluster_size_limit",  "Store at most the provided amount of bytes in a cluster. ",                                     OFFSET(cluster_size_limit), AV_OPT_TYPE_INT  , { .i64 = -1 }, -1, INT_MAX,   FLAGS },
-    { "cluster_time_limit",  "Store at most the provided number of milliseconds in a cluster.",                               OFFSET(cluster_time_limit), AV_OPT_TYPE_INT64, { .i64 = -1 }, -1, INT64_MAX, FLAGS },
-    { "dash", "Create a WebM file conforming to WebM DASH specification", OFFSET(is_dash), AV_OPT_TYPE_BOOL, { .i64 = 0 }, 0, 1, FLAGS },
-    { "dash_track_number", "Track number for the DASH stream", OFFSET(dash_track_number), AV_OPT_TYPE_INT, { .i64 = 1 }, 1, INT_MAX, FLAGS },
-    { "live", "Write files assuming it is a live stream.", OFFSET(is_live), AV_OPT_TYPE_BOOL, { .i64 = 0 }, 0, 1, FLAGS },
-    { "allow_raw_vfw", "allow RAW VFW mode", OFFSET(allow_raw_vfw), AV_OPT_TYPE_BOOL, { .i64 = 0 }, 0, 1, FLAGS },
-    { "flipped_raw_rgb", "Raw RGB bitmaps in VFW mode are stored bottom-up", OFFSET(flipped_raw_rgb), AV_OPT_TYPE_BOOL, { .i64 = 0 }, 0, 1, FLAGS },
+    { "reserve_index_space", "reserve a given amount of space (in bytes) at the beginning of the file for the index (cues)", OFFSET(reserve_cues_space), AV_OPT_TYPE_INT,   { .i64 = 0 },   0, INT_MAX,   FLAGS },
+    { "cues_to_front", "move Cues (the index) to the front by shifting data if necessary", OFFSET(move_cues_to_front), AV_OPT_TYPE_BOOL, { .i64 = 0}, 0, 1, FLAGS },
+    { "cluster_size_limit",  "store at most the provided amount of bytes in a cluster",                                     OFFSET(cluster_size_limit), AV_OPT_TYPE_INT  , { .i64 = -1 }, -1, INT_MAX,   FLAGS },
+    { "cluster_time_limit",  "store at most the provided number of milliseconds in a cluster",                               OFFSET(cluster_time_limit), AV_OPT_TYPE_INT64, { .i64 = -1 }, -1, INT64_MAX, FLAGS },
+    { "dash", "create a WebM file conforming to WebM DASH specification", OFFSET(is_dash), AV_OPT_TYPE_BOOL, { .i64 = 0 }, 0, 1, FLAGS },
+    { "dash_track_number", "track number for the DASH stream", OFFSET(dash_track_number), AV_OPT_TYPE_INT, { .i64 = 1 }, 1, INT_MAX, FLAGS },
+    { "live", "write files assuming it is a live stream", OFFSET(is_live), AV_OPT_TYPE_BOOL, { .i64 = 0 }, 0, 1, FLAGS },
+    { "allow_raw_vfw", "allow raw VFW mode", OFFSET(allow_raw_vfw), AV_OPT_TYPE_BOOL, { .i64 = 0 }, 0, 1, FLAGS },
+    { "flipped_raw_rgb", "store raw RGB bitmaps in VFW mode in bottom-up mode", OFFSET(flipped_raw_rgb), AV_OPT_TYPE_BOOL, { .i64 = 0 }, 0, 1, FLAGS },
     { "write_crc32", "write a CRC32 element inside every Level 1 element", OFFSET(write_crc), AV_OPT_TYPE_BOOL, { .i64 = 1 }, 0, 1, FLAGS },
-    { "default_mode", "Controls how a track's FlagDefault is inferred", OFFSET(default_mode), AV_OPT_TYPE_INT, { .i64 = DEFAULT_MODE_PASSTHROUGH }, DEFAULT_MODE_INFER, DEFAULT_MODE_PASSTHROUGH, FLAGS, .unit = "default_mode" },
-    { "infer", "For each track type, mark each track of disposition default as default; if none exists, mark the first track as default.", 0, AV_OPT_TYPE_CONST, { .i64 = DEFAULT_MODE_INFER }, 0, 0, FLAGS, .unit = "default_mode" },
-    { "infer_no_subs", "For each track type, mark each track of disposition default as default; for audio and video: if none exists, mark the first track as default.", 0, AV_OPT_TYPE_CONST, { .i64 = DEFAULT_MODE_INFER_NO_SUBS }, 0, 0, FLAGS, .unit = "default_mode" },
-    { "passthrough", "Use the disposition flag as-is", 0, AV_OPT_TYPE_CONST, { .i64 = DEFAULT_MODE_PASSTHROUGH }, 0, 0, FLAGS, .unit = "default_mode" },
+    { "default_mode", "control how a track's FlagDefault is inferred", OFFSET(default_mode), AV_OPT_TYPE_INT, { .i64 = DEFAULT_MODE_PASSTHROUGH }, DEFAULT_MODE_INFER, DEFAULT_MODE_PASSTHROUGH, FLAGS, .unit = "default_mode" },
+    { "infer", "for each track type, mark each track of disposition default as default; if none exists, mark the first track as default", 0, AV_OPT_TYPE_CONST, { .i64 = DEFAULT_MODE_INFER }, 0, 0, FLAGS, .unit = "default_mode" },
+    { "infer_no_subs", "for each track type, mark each track of disposition default as default; for audio and video: if none exists, mark the first track as default", 0, AV_OPT_TYPE_CONST, { .i64 = DEFAULT_MODE_INFER_NO_SUBS }, 0, 0, FLAGS, .unit = "default_mode" },
+    { "passthrough", "use the disposition flag as-is", 0, AV_OPT_TYPE_CONST, { .i64 = DEFAULT_MODE_PASSTHROUGH }, 0, 0, FLAGS, .unit = "default_mode" },
     { NULL },
 };
 

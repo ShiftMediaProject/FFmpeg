@@ -29,13 +29,12 @@
 #include "codec_internal.h"
 #include "decode.h"
 #include "get_bits.h"
-#include "internal.h"
 #include "raw.h"
 #include "libavutil/avassert.h"
 #include "libavutil/buffer.h"
-#include "libavutil/common.h"
 #include "libavutil/intreadwrite.h"
 #include "libavutil/imgutils.h"
+#include "libavutil/mem.h"
 #include "libavutil/opt.h"
 
 typedef struct RawVideoContext {
@@ -225,9 +224,6 @@ static int raw_decode(AVCodecContext *avctx, AVFrame *frame,
         return context->frame_size;
 
     need_copy = !avpkt->buf || context->is_1_2_4_8_bpp || context->is_yuv2 || context->is_lt_16bpp;
-
-    frame->pict_type        = AV_PICTURE_TYPE_I;
-    frame->flags |= AV_FRAME_FLAG_KEY;
 
     res = ff_decode_frame_props(avctx, frame);
     if (res < 0)

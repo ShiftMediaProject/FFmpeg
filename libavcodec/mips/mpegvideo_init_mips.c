@@ -36,8 +36,6 @@ av_cold void ff_mpv_common_init_mips(MpegEncContext *s)
         if (!(s->avctx->flags & AV_CODEC_FLAG_BITEXACT))
             if (!s->q_scale_type)
                 s->dct_unquantize_mpeg2_intra = ff_dct_unquantize_mpeg2_intra_mmi;
-
-        s->denoise_dct= ff_denoise_dct_mmi;
     }
 
     if (have_msa(cpu_flags)) {

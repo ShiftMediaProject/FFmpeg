@@ -22,10 +22,10 @@
  */
 
 #include "libavutil/file_open.h"
+#include "libavutil/mem.h"
 #include "libavutil/opt.h"
 #include "filters.h"
 #include "dnn_filter_common.h"
-#include "internal.h"
 #include "video.h"
 #include "libavutil/time.h"
 #include "libavutil/avstring.h"
@@ -69,7 +69,6 @@ static const AVOption dnn_detect_options[] = {
 #if (CONFIG_LIBOPENVINO == 1)
     { "openvino",    "openvino backend flag",      0,                        AV_OPT_TYPE_CONST,     { .i64 = DNN_OV },    0, 0, FLAGS, .unit = "backend" },
 #endif
-    DNN_COMMON_OPTIONS
     { "confidence",  "threshold of confidence",    OFFSET2(confidence),      AV_OPT_TYPE_FLOAT,     { .dbl = 0.5 },  0, 1, FLAGS},
     { "labels",      "path to labels file",        OFFSET2(labels_filename), AV_OPT_TYPE_STRING,    { .str = NULL }, 0, 0, FLAGS },
     { "model_type",  "DNN detection model type",   OFFSET2(model_type),      AV_OPT_TYPE_INT,       { .i64 = DDMT_SSD },    INT_MIN, INT_MAX, FLAGS, .unit = "model_type" },
@@ -84,7 +83,7 @@ static const AVOption dnn_detect_options[] = {
     { NULL }
 };
 
-AVFILTER_DEFINE_CLASS(dnn_detect);
+AVFILTER_DNN_DEFINE_CLASS(dnn_detect, DNN_TF | DNN_OV);
 
 static inline float sigmoid(float x) {
     return 1.f / (1.f + exp(-x));
@@ -807,11 +806,13 @@ static av_cold void dnn_detect_uninit(AVFilterContext *context)
     DnnDetectContext *ctx = context->priv;
     AVDetectionBBox *bbox;
     ff_dnn_uninit(&ctx->dnnctx);
-    while(av_fifo_can_read(ctx->bboxes_fifo)) {
-        av_fifo_read(ctx->bboxes_fifo, &bbox, 1);
-        av_freep(&bbox);
+    if (ctx->bboxes_fifo) {
+        while (av_fifo_can_read(ctx->bboxes_fifo)) {
+            av_fifo_read(ctx->bboxes_fifo, &bbox, 1);
+            av_freep(&bbox);
+        }
+        av_fifo_freep2(&ctx->bboxes_fifo);
     }
-    av_fifo_freep2(&ctx->bboxes_fifo);
     av_freep(&ctx->anchors);
     free_detect_labels(ctx);
 }
@@ -850,6 +851,7 @@ const AVFilter ff_vf_dnn_detect = {
     .name          = "dnn_detect",
     .description   = NULL_IF_CONFIG_SMALL("Apply DNN detect filter to the input."),
     .priv_size     = sizeof(DnnDetectContext),
+    .preinit       = ff_dnn_filter_init_child_class,
     .init          = dnn_detect_init,
     .uninit        = dnn_detect_uninit,
     FILTER_INPUTS(dnn_detect_inputs),

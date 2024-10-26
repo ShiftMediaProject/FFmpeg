@@ -26,7 +26,7 @@
 #include "libavutil/opt.h"
 #include "libavutil/pixdesc.h"
 #include "avfilter.h"
-#include "internal.h"
+#include "filters.h"
 #include "video.h"
 
 #define WIDTH 512
@@ -274,6 +274,7 @@ static av_cold int init(AVFilterContext *ctx)
 static int config_props(AVFilterLink *outlink)
 {
     AVFilterContext *ctx = outlink->src;
+    FilterLink *l = ff_filter_link(outlink);
     MPTestContext *test = ctx->priv;
     const AVPixFmtDescriptor *pix_desc = av_pix_fmt_desc_get(outlink->format);
 
@@ -283,19 +284,20 @@ static int config_props(AVFilterLink *outlink)
     outlink->w = WIDTH;
     outlink->h = HEIGHT;
     outlink->time_base = av_inv_q(test->frame_rate);
-    outlink->frame_rate = test->frame_rate;
+    l->frame_rate = test->frame_rate;
 
     return 0;
 }
 
 static int request_frame(AVFilterLink *outlink)
 {
+    FilterLink *outl = ff_filter_link(outlink);
     MPTestContext *test = outlink->src->priv;
     AVFrame *picref;
     int w = WIDTH, h = HEIGHT,
         cw = AV_CEIL_RSHIFT(w, test->hsub), ch = AV_CEIL_RSHIFT(h, test->vsub);
-    uint64_t frame = outlink->frame_count_in / test->max_frames;
-    uint64_t mod = outlink->frame_count_in % test->max_frames;
+    uint64_t frame = outl->frame_count_in / test->max_frames;
+    uint64_t mod = outl->frame_count_in % test->max_frames;
     enum test_type tt = test->test;
     int i;
 

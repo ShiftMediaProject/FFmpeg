@@ -18,6 +18,8 @@
 
 #include "dnn_filter_common.h"
 #include "libavutil/avstring.h"
+#include "libavutil/mem.h"
+#include "libavutil/opt.h"
 
 #define MAX_SUPPORTED_OUTPUTS_NB 4
 
@@ -49,6 +51,23 @@ static char **separate_output_names(const char *expr, const char *val_sep, int *
     *separated_nb = val_num;
 
     return parsed_vals;
+}
+
+typedef struct DnnFilterBase {
+    const AVClass *class;
+    DnnContext dnnctx;
+} DnnFilterBase;
+
+int ff_dnn_filter_init_child_class(AVFilterContext *filter) {
+    DnnFilterBase *base = filter->priv;
+    ff_dnn_init_child_class(&base->dnnctx);
+    return 0;
+}
+
+void *ff_dnn_filter_child_next(void *obj, void *prev)
+{
+    DnnFilterBase *base = obj;
+    return ff_dnn_child_next(&base->dnnctx, prev);
 }
 
 int ff_dnn_init(DnnContext *ctx, DNNFunctionType func_type, AVFilterContext *filter_ctx)
@@ -90,7 +109,25 @@ int ff_dnn_init(DnnContext *ctx, DNNFunctionType func_type, AVFilterContext *fil
         return AVERROR(EINVAL);
     }
 
-    ctx->model = (ctx->dnn_module->load_model)(ctx->model_filename, func_type, ctx->backend_options, filter_ctx);
+    if (ctx->backend_options) {
+        void *child = NULL;
+
+        av_log(filter_ctx, AV_LOG_WARNING,
+               "backend_configs is deprecated, please set backend options directly\n");
+        while (child = ff_dnn_child_next(ctx, child)) {
+            if (*(const AVClass **)child == &ctx->dnn_module->clazz) {
+                int ret = av_opt_set_from_string(child, ctx->backend_options,
+                                                 NULL, "=", "&");
+                if (ret < 0) {
+                    av_log(filter_ctx, AV_LOG_ERROR, "failed to parse options \"%s\"\n",
+                           ctx->backend_options);
+                    return ret;
+                }
+            }
+        }
+    }
+
+    ctx->model = (ctx->dnn_module->load_model)(ctx, func_type, filter_ctx);
     if (!ctx->model) {
         av_log(filter_ctx, AV_LOG_ERROR, "could not load DNN model\n");
         return AVERROR(EINVAL);
@@ -120,15 +157,15 @@ int ff_dnn_set_classify_post_proc(DnnContext *ctx, ClassifyPostProc post_proc)
 
 int ff_dnn_get_input(DnnContext *ctx, DNNData *input)
 {
-    return ctx->model->get_input(ctx->model->model, input, ctx->model_inputname);
+    return ctx->model->get_input(ctx->model, input, ctx->model_inputname);
 }
 
 int ff_dnn_get_output(DnnContext *ctx, int input_width, int input_height, int *output_width, int *output_height)
 {
     char * output_name = ctx->model_outputnames && ctx->backend_type != DNN_TH ?
                          ctx->model_outputnames[0] : NULL;
-    return ctx->model->get_output(ctx->model->model, ctx->model_inputname, input_width, input_height,
-                                    (const char *)output_name, output_width, output_height);
+    return ctx->model->get_output(ctx->model, ctx->model_inputname, input_width, input_height,
+                                  (const char *)output_name, output_width, output_height);
 }
 
 int ff_dnn_execute_model(DnnContext *ctx, AVFrame *in_frame, AVFrame *out_frame)

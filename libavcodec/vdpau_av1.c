@@ -91,9 +91,7 @@ static int vdpau_av1_start_frame(AVCodecContext *avctx,
     info->show_frame                   = frame_header->show_frame;
     info->disable_cdf_update           = frame_header->disable_cdf_update;
     info->allow_screen_content_tools   = frame_header->allow_screen_content_tools;
-    info->force_integer_mv             = frame_header->force_integer_mv ||
-                                    frame_header->frame_type == AV1_FRAME_INTRA_ONLY ||
-                                    frame_header->frame_type == AV1_FRAME_KEY;
+    info->force_integer_mv             = s->cur_frame.force_integer_mv;
     info->coded_denom                  = frame_header->coded_denom;
     info->allow_intrabc                = frame_header->allow_intrabc;
     info->allow_high_precision_mv      = frame_header->allow_high_precision_mv;
@@ -219,7 +217,8 @@ static int vdpau_av1_start_frame(AVCodecContext *avctx,
         info->loop_filter_ref_deltas[i] = frame_header->loop_filter_ref_deltas[i];
 
         /* Reference Frames */
-        info->ref_frame_map[i] = ff_vdpau_get_surface_id(s->ref[i].f) ? ff_vdpau_get_surface_id(s->ref[i].f) : VDP_INVALID_HANDLE;
+        info->ref_frame_map[i] = s->ref[i].f && ff_vdpau_get_surface_id(s->ref[i].f) ?
+                                     ff_vdpau_get_surface_id(s->ref[i].f) : VDP_INVALID_HANDLE;
     }
 
     if (frame_header->primary_ref_frame == AV1_PRIMARY_REF_NONE) {
@@ -235,8 +234,8 @@ static int vdpau_av1_start_frame(AVCodecContext *avctx,
         AVFrame *ref_frame = s->ref[ref_idx].f;
 
         info->ref_frame[i].index = info->ref_frame_map[ref_idx];
-        info->ref_frame[i].width = ref_frame->width;
-        info->ref_frame[i].height = ref_frame->height;
+        info->ref_frame[i].width  = ref_frame ? ref_frame->width  : 0;
+        info->ref_frame[i].height = ref_frame ? ref_frame->height : 0;
 
         /* Global Motion */
         info->global_motion[i].invalid = !frame_header->is_global[AV1_REF_FRAME_LAST + i];

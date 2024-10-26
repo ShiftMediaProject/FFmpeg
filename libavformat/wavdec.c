@@ -33,6 +33,7 @@
 #include "libavutil/intreadwrite.h"
 #include "libavutil/log.h"
 #include "libavutil/mathematics.h"
+#include "libavutil/mem.h"
 #include "libavutil/opt.h"
 #include "libavcodec/internal.h"
 #include "avformat.h"
@@ -873,8 +874,7 @@ static int w64_read_header(AVFormatContext *s)
     uint8_t guid[16];
     int ret;
 
-    avio_read(pb, guid, 16);
-    if (memcmp(guid, ff_w64_guid_riff, 16))
+    if (avio_read(pb, guid, 16) != 16 || memcmp(guid, ff_w64_guid_riff, 16))
         return AVERROR_INVALIDDATA;
 
     /* riff + wave + fmt + sizes */

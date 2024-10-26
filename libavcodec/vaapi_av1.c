@@ -19,6 +19,7 @@
  */
 
 #include "libavutil/frame.h"
+#include "libavutil/mem.h"
 #include "hwaccel_internal.h"
 #include "vaapi_decode.h"
 #include "internal.h"
@@ -42,11 +43,14 @@ typedef struct VAAPIAV1DecContext {
     */
     VAAPIAV1FrameRef ref_tab[AV1_NUM_REF_FRAMES];
     AVFrame *tmp_frame;
+
+    int nb_slice_params;
+    VASliceParameterBufferAV1 *slice_params;
 } VAAPIAV1DecContext;
 
 static VASurfaceID vaapi_av1_surface_id(AV1Frame *vf)
 {
-    if (vf)
+    if (vf->f)
         return ff_vaapi_get_surface_id(vf->f);
     else
         return VA_INVALID_SURFACE;
@@ -97,6 +101,8 @@ static int vaapi_av1_decode_uninit(AVCodecContext *avctx)
     for (int i = 0; i < FF_ARRAY_ELEMS(ctx->ref_tab); i++)
         av_frame_free(&ctx->ref_tab[i].frame);
 
+    av_freep(&ctx->slice_params);
+
     return ff_vaapi_decode_uninit(avctx);
 }
 
@@ -132,7 +138,7 @@ static int vaapi_av1_start_frame(AVCodecContext *avctx,
             goto fail;
         pic->output_surface = ff_vaapi_get_surface_id(ctx->tmp_frame);
     } else {
-        pic->output_surface = vaapi_av1_surface_id(&s->cur_frame);
+        pic->output_surface = ff_vaapi_get_surface_id(s->cur_frame.f);
     }
 
     memset(&pic_param, 0, sizeof(VADecPictureParameterBufferAV1));
@@ -142,7 +148,7 @@ static int vaapi_av1_start_frame(AVCodecContext *avctx,
         .bit_depth_idx              = bit_depth_idx,
         .matrix_coefficients        = seq->color_config.matrix_coefficients,
         .current_frame              = pic->output_surface,
-        .current_display_picture    = vaapi_av1_surface_id(&s->cur_frame),
+        .current_display_picture    = ff_vaapi_get_surface_id(s->cur_frame.f),
         .frame_width_minus1         = frame_header->frame_width_minus_1,
         .frame_height_minus1        = frame_header->frame_height_minus_1,
         .primary_ref_frame          = frame_header->primary_ref_frame,
@@ -393,13 +399,25 @@ static int vaapi_av1_decode_slice(AVCodecContext *avctx,
 {
     const AV1DecContext *s = avctx->priv_data;
     VAAPIDecodePicture *pic = s->cur_frame.hwaccel_picture_private;
-    VASliceParameterBufferAV1 slice_param;
-    int err = 0;
+    VAAPIAV1DecContext *ctx = avctx->internal->hwaccel_priv_data;
+    int err, nb_params;
+
+    nb_params = s->tg_end - s->tg_start + 1;
+    if (ctx->nb_slice_params < nb_params) {
+        VASliceParameterBufferAV1 *tmp = av_realloc_array(ctx->slice_params,
+                                                          nb_params,
+                                                          sizeof(*ctx->slice_params));
+        if (!tmp) {
+            ctx->nb_slice_params = 0;
+            err = AVERROR(ENOMEM);
+            goto fail;
+        }
+        ctx->slice_params    = tmp;
+        ctx->nb_slice_params = nb_params;
+    }
 
     for (int i = s->tg_start; i <= s->tg_end; i++) {
-        memset(&slice_param, 0, sizeof(VASliceParameterBufferAV1));
-
-        slice_param = (VASliceParameterBufferAV1) {
+        ctx->slice_params[i - s->tg_start] = (VASliceParameterBufferAV1) {
             .slice_data_size   = s->tile_group_info[i].tile_size,
             .slice_data_offset = s->tile_group_info[i].tile_offset,
             .slice_data_flag   = VA_SLICE_DATA_FLAG_ALL,
@@ -408,18 +426,20 @@ static int vaapi_av1_decode_slice(AVCodecContext *avctx,
             .tg_start          = s->tg_start,
             .tg_end            = s->tg_end,
         };
-
-        err = ff_vaapi_decode_make_slice_buffer(avctx, pic, &slice_param,
-                                                sizeof(VASliceParameterBufferAV1),
-                                                buffer,
-                                                size);
-        if (err) {
-            ff_vaapi_decode_cancel(avctx, pic);
-            return err;
-        }
     }
 
+    err = ff_vaapi_decode_make_slice_buffer(avctx, pic, ctx->slice_params, nb_params,
+                                            sizeof(VASliceParameterBufferAV1),
+                                            buffer,
+                                            size);
+    if (err)
+        goto fail;
+
     return 0;
+
+fail:
+    ff_vaapi_decode_cancel(avctx, pic);
+    return err;
 }
 
 const FFHWAccel ff_av1_vaapi_hwaccel = {

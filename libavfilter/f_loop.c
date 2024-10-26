@@ -22,11 +22,11 @@
 
 #include "libavutil/audio_fifo.h"
 #include "libavutil/internal.h"
+#include "libavutil/mem.h"
 #include "libavutil/opt.h"
 #include "avfilter.h"
 #include "audio.h"
 #include "filters.h"
-#include "internal.h"
 #include "video.h"
 
 typedef struct LoopContext {
@@ -143,6 +143,7 @@ static int push_samples(AVFilterContext *ctx, int nb_samples)
 
 static int afilter_frame(AVFilterLink *inlink, AVFrame *frame)
 {
+    FilterLink *inl = ff_filter_link(inlink);
     AVFilterContext *ctx = inlink->dst;
     AVFilterLink *outlink = ctx->outputs[0];
     LoopContext *s = ctx->priv;
@@ -157,7 +158,7 @@ static int afilter_frame(AVFilterLink *inlink, AVFrame *frame)
             int drain = 0;
 
             if (s->start < 0)
-                s->start = inlink->sample_count_out - written;
+                s->start = inl->sample_count_out - written;
 
             ret = av_audio_fifo_write(s->fifo, (void **)frame->extended_data, written);
             if (ret < 0)
@@ -373,13 +374,15 @@ static int push_frame(AVFilterContext *ctx)
 
 static int filter_frame(AVFilterLink *inlink, AVFrame *frame)
 {
+    FilterLink *inl = ff_filter_link(inlink);
     AVFilterContext *ctx = inlink->dst;
     AVFilterLink *outlink = ctx->outputs[0];
+    FilterLink *outl = ff_filter_link(outlink);
     LoopContext *s = ctx->priv;
     int64_t duration;
     int ret = 0;
 
-    if (((s->start >= 0 && inlink->frame_count_out >= s->start) ||
+    if (((s->start >= 0 && inl->frame_count_out >= s->start) ||
          (s->time_pts != AV_NOPTS_VALUE &&
           frame->pts >= s->time_pts)) &&
         s->size > 0 && s->loop != 0) {
@@ -393,7 +396,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *frame)
             if (frame->duration)
                 duration = frame->duration;
             else
-                duration = av_rescale_q(1, av_inv_q(outlink->frame_rate), outlink->time_base);
+                duration = av_rescale_q(1, av_inv_q(outl->frame_rate), outlink->time_base);
             s->duration += duration;
             s->pts_offset = s->duration;
             ret = ff_filter_frame(outlink, frame);

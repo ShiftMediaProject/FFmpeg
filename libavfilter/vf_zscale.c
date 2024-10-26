@@ -31,18 +31,17 @@
 #include <zimg.h>
 
 #include "avfilter.h"
+#include "filters.h"
 #include "formats.h"
-#include "internal.h"
 #include "video.h"
-#include "libavutil/avstring.h"
 #include "libavutil/eval.h"
 #include "libavutil/internal.h"
 #include "libavutil/intreadwrite.h"
 #include "libavutil/mathematics.h"
+#include "libavutil/mem.h"
 #include "libavutil/opt.h"
 #include "libavutil/parseutils.h"
 #include "libavutil/pixdesc.h"
-#include "libavutil/imgutils.h"
 
 #define ZIMG_ALIGNMENT 64
 #define MIN_TILESIZE 64
@@ -108,11 +107,6 @@ typedef struct ZScaleContext {
 
     char *w_expr;               ///< width  expression string
     char *h_expr;               ///< height expression string
-
-    int out_h_chr_pos;
-    int out_v_chr_pos;
-    int in_h_chr_pos;
-    int in_v_chr_pos;
 
     int first_time;
     int force_original_aspect_ratio;

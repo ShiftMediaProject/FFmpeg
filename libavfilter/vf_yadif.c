@@ -22,7 +22,7 @@
 #include "libavutil/common.h"
 #include "libavutil/pixdesc.h"
 #include "avfilter.h"
-#include "internal.h"
+#include "filters.h"
 #include "yadif.h"
 
 typedef struct ThreadData {

@@ -24,6 +24,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include "libavutil/mem.h"
 #include "libavutil/mem_internal.h"
 #include "libavutil/pixdesc.h"
 
@@ -654,8 +655,6 @@ decode_coding_unit:
     if (first_field) {
         if ((ret = ff_thread_get_buffer(avctx, picture, 0)) < 0)
             return ret;
-        picture->pict_type = AV_PICTURE_TYPE_I;
-        picture->flags |= AV_FRAME_FLAG_KEY;
     }
 
     ctx->buf_size = buf_size - ctx->data_offset;

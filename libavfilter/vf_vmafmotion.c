@@ -25,11 +25,12 @@
  */
 
 #include "libavutil/file_open.h"
+#include "libavutil/mem.h"
 #include "libavutil/opt.h"
 #include "libavutil/pixdesc.h"
 #include "avfilter.h"
+#include "filters.h"
 #include "formats.h"
-#include "internal.h"
 #include "video.h"
 #include "vmaf_motion.h"
 
@@ -89,11 +90,10 @@ static void convolution_x(const uint16_t *filter, int filt_w, const uint16_t *sr
     int borders_left = radius;
     int borders_right = w - (filt_w - radius);
     int i, j, k;
-    int sum = 0;
 
     for (i = 0; i < h; i++) {
         for (j = 0; j < borders_left; j++) {
-            sum = 0;
+            int sum = 0;
             for (k = 0; k < filt_w; k++) {
                 int j_tap = FFABS(j - radius + k);
                 if (j_tap >= w) {
@@ -113,7 +113,7 @@ static void convolution_x(const uint16_t *filter, int filt_w, const uint16_t *sr
         }
 
         for (j = borders_right; j < w; j++) {
-            sum = 0;
+            int sum = 0;
             for (k = 0; k < filt_w; k++) {
                 int j_tap = FFABS(j - radius + k);
                 if (j_tap >= w) {
@@ -317,10 +317,8 @@ static av_cold int init(AVFilterContext *ctx)
             s->stats_file = avpriv_fopen_utf8(s->stats_file_str, "w");
             if (!s->stats_file) {
                 int err = AVERROR(errno);
-                char buf[128];
-                av_strerror(err, buf, sizeof(buf));
                 av_log(ctx, AV_LOG_ERROR, "Could not open stats file %s: %s\n",
-                       s->stats_file_str, buf);
+                       s->stats_file_str, av_err2str(err));
                 return err;
             }
         }

@@ -105,8 +105,8 @@ static const AVOption options[] = {
                                                             OFFSET(async_depth),  AV_OPT_TYPE_INT,   { .i64 = INT_MAX }, 0, INT_MAX, VE },
     { "rc-lookahead", "Number of frames to look ahead for rate-control",
                                                             OFFSET(rc_lookahead), AV_OPT_TYPE_INT,   { .i64 = 0 }, 0, INT_MAX, VE },
-    { "cq",           "Set target quality level (0 to 51, 0 means automatic) for constant quality mode in VBR rate control",
-                                                            OFFSET(quality),      AV_OPT_TYPE_FLOAT, { .dbl = 0.}, 0., 51., VE },
+    { "cq",           "Set target quality level (0 to 63, 0 means automatic) for constant quality mode in VBR rate control",
+                                                            OFFSET(quality),      AV_OPT_TYPE_FLOAT, { .dbl = 0.}, 0., 63., VE },
     { "init_qpP",     "Initial QP value for P frame",       OFFSET(init_qp_p),    AV_OPT_TYPE_INT,   { .i64 = -1 }, -1, 255, VE },
     { "init_qpB",     "Initial QP value for B frame",       OFFSET(init_qp_b),    AV_OPT_TYPE_INT,   { .i64 = -1 }, -1, 255, VE },
     { "init_qpI",     "Initial QP value for I frame",       OFFSET(init_qp_i),    AV_OPT_TYPE_INT,   { .i64 = -1 }, -1, 255, VE },
@@ -149,6 +149,23 @@ static const AVOption options[] = {
                                                             OFFSET(extra_sei),    AV_OPT_TYPE_BOOL,  { .i64 = 1 }, 0, 1, VE },
     { "a53cc",        "Use A53 Closed Captions (if available)", OFFSET(a53_cc),   AV_OPT_TYPE_BOOL,  { .i64 = 1 }, 0, 1, VE },
     { "s12m_tc",      "Use timecode (if available)",        OFFSET(s12m_tc),      AV_OPT_TYPE_BOOL,  { .i64 = 1 }, 0, 1, VE },
+#ifdef NVENC_HAVE_LOOKAHEAD_LEVEL
+    { "lookahead_level", "Specifies the lookahead level. Higher level may improve quality at the expense of performance.",
+                                                            OFFSET(lookahead_level), AV_OPT_TYPE_INT, { .i64 = -1 }, -1, NV_ENC_LOOKAHEAD_LEVEL_AUTOSELECT, VE, .unit = "lookahead_level" },
+    { "auto",         "",                                   0,                    AV_OPT_TYPE_CONST, { .i64 = NV_ENC_LOOKAHEAD_LEVEL_AUTOSELECT }, 0, 0, VE, .unit = "lookahead_level" },
+    { "0",            "",                                   0,                    AV_OPT_TYPE_CONST, { .i64 = NV_ENC_LOOKAHEAD_LEVEL_0 }, 0, 0, VE, .unit = "lookahead_level" },
+    { "1",            "",                                   0,                    AV_OPT_TYPE_CONST, { .i64 = NV_ENC_LOOKAHEAD_LEVEL_1 }, 0, 0, VE, .unit = "lookahead_level" },
+    { "2",            "",                                   0,                    AV_OPT_TYPE_CONST, { .i64 = NV_ENC_LOOKAHEAD_LEVEL_2 }, 0, 0, VE, .unit = "lookahead_level" },
+    { "3",            "",                                   0,                    AV_OPT_TYPE_CONST, { .i64 = NV_ENC_LOOKAHEAD_LEVEL_3 }, 0, 0, VE, .unit = "lookahead_level" },
+#endif
+#ifdef NVENC_HAVE_SPLIT_FRAME_ENCODING
+    { "split_encode_mode", "Specifies the split encoding mode", OFFSET(split_encode_mode), AV_OPT_TYPE_INT, { .i64 = NV_ENC_SPLIT_AUTO_MODE }, 0, NV_ENC_SPLIT_DISABLE_MODE, VE, .unit = "split_encode_mode" },
+    { "disabled",          "Disabled for all configurations",                                                0, AV_OPT_TYPE_CONST, { .i64 = NV_ENC_SPLIT_DISABLE_MODE },      0, 0, VE, .unit = "split_encode_mode" },
+    { "auto",              "Enabled or disabled depending on the preset and tuning info",                    0, AV_OPT_TYPE_CONST, { .i64 = NV_ENC_SPLIT_AUTO_MODE },         0, 0, VE, .unit = "split_encode_mode" },
+    { "forced",            "Enabled with number of horizontal strips selected by the driver",                0, AV_OPT_TYPE_CONST, { .i64 = NV_ENC_SPLIT_AUTO_FORCED_MODE },  0, 0, VE, .unit = "split_encode_mode" },
+    { "2",                 "Enabled with number of horizontal strips forced to 2 when number of NVENCs > 1", 0, AV_OPT_TYPE_CONST, { .i64 = NV_ENC_SPLIT_TWO_FORCED_MODE },   0, 0, VE, .unit = "split_encode_mode" },
+    { "3",                 "Enabled with number of horizontal strips forced to 3 when number of NVENCs > 2", 0, AV_OPT_TYPE_CONST, { .i64 = NV_ENC_SPLIT_THREE_FORCED_MODE }, 0, 0, VE, .unit = "split_encode_mode" },
+#endif
     { NULL }
 };
 
@@ -185,6 +202,7 @@ const FFCodec ff_av1_nvenc_encoder = {
     .p.priv_class   = &av1_nvenc_class,
     .defaults       = defaults,
     .p.pix_fmts     = ff_nvenc_pix_fmts,
+    .color_ranges   = AVCOL_RANGE_MPEG | AVCOL_RANGE_JPEG,
     .p.capabilities = AV_CODEC_CAP_DELAY | AV_CODEC_CAP_HARDWARE |
                       AV_CODEC_CAP_ENCODER_FLUSH | AV_CODEC_CAP_DR1 |
                       AV_CODEC_CAP_ENCODER_REORDERED_OPAQUE,

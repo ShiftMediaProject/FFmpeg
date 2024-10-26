@@ -5,7 +5,7 @@ FATE_LAVF_CONTAINER-$(call ENCDEC,  FLV,                   FLV)                +
 FATE_LAVF_CONTAINER-$(call ENCDEC,  RAWVIDEO,              FILMSTRIP)          += flm
 FATE_LAVF_CONTAINER-$(call ENCDEC2, MPEG2VIDEO, PCM_S16LE, GXF)                += gxf gxf_pal gxf_ntsc
 FATE_LAVF_CONTAINER-$(call ENCDEC2, MPEG4,      MP2,       MATROSKA)           += mkv mkv_attachment
-FATE_LAVF_CONTAINER-$(call ENCDEC2, MPEG4,      PCM_ALAW,  MOV)                += mov mov_rtphint ismv
+FATE_LAVF_CONTAINER-$(call ENCDEC2, MPEG4,      PCM_ALAW,  MOV)                += mov mov_rtphint mov_hybrid_frag ismv
 FATE_LAVF_CONTAINER-$(call ENCDEC,  MPEG4,                 MOV)                += mp4
 FATE_LAVF_CONTAINER-$(call ENCDEC2, MPEG1VIDEO, MP2,       MPEG1SYSTEM MPEGPS) += mpg
 FATE_LAVF_CONTAINER-$(call ENCDEC , FFV1,                  MXF)                += mxf_ffv1
@@ -30,7 +30,7 @@ FATE_LAVF_CONTAINER_SCALE := dv dv_pal dv_ntsc flm gxf gxf_pal gxf_ntsc \
 FATE_LAVF_CONTAINER-$(!CONFIG_SCALE_FILTER) := $(filter-out $(FATE_LAVF_CONTAINER_SCALE),$(FATE_LAVF_CONTAINER-yes))
 
 FATE_LAVF_CONTAINER = $(FATE_LAVF_CONTAINER-yes:%=fate-lavf-%)
-FATE_LAVF_CONTAINER := $(if $(call ENCDEC2, RAWVIDEO PGMYUV, PCM_S16LE, CRC IMAGE2, PCM_S16LE_DEMUXER PIPE_PROTOCOL), $(FATE_LAVF_CONTAINER))
+FATE_LAVF_CONTAINER := $(if $(call ENCDEC2, RAWVIDEO PGMYUV, PCM_S16LE, CRC IMAGE2, PCM_S16LE_DEMUXER PIPE_PROTOCOL FFMPEG), $(FATE_LAVF_CONTAINER))
 
 $(FATE_LAVF_CONTAINER): CMD = lavf_container
 $(FATE_LAVF_CONTAINER): REF = $(SRC_PATH)/tests/ref/lavf/$(@:fate-lavf-%=%)
@@ -51,6 +51,7 @@ fate-lavf-mkv: CMD = lavf_container "" "-c:a mp2 -c:v mpeg4 -ar 44100 -threads 1
 fate-lavf-mkv_attachment: CMD = lavf_container_attach "-c:a mp2 -c:v mpeg4 -threads 1 -f matroska"
 fate-lavf-mov: CMD = lavf_container_timecode "-movflags +faststart -c:a pcm_alaw -c:v mpeg4 -threads 1"
 fate-lavf-mov_rtphint: CMD = lavf_container "" "-movflags +rtphint -c:a pcm_alaw -c:v mpeg4 -threads 1 -f mov"
+fate-lavf-mov_hybrid_frag: CMD = lavf_container "" "-movflags +hybrid_fragmented -c:a pcm_alaw -c:v mpeg4 -threads 1 -f mov"
 fate-lavf-mp4: CMD = lavf_container_timecode "-c:v mpeg4 -an -threads 1"
 fate-lavf-mpg: CMD = lavf_container_timecode "-ar 44100 -threads 1"
 fate-lavf-mxf: CMD = lavf_container_timecode "-af aresample=48000:tsf=s16p -bf 2 -threads 1"
@@ -74,6 +75,9 @@ FATE_LAVF_CONTAINER_FATE-$(call ALLYES, IVF_DEMUXER AV1_DECODER AV1_PARSER MOV_M
 FATE_LAVF_CONTAINER_FATE-$(call ALLYES, IVF_DEMUXER AV1_DECODER AV1_PARSER MATROSKA_MUXER) += av1.mkv
 FATE_LAVF_CONTAINER_FATE-$(call ALLYES, EVC_DEMUXER EVC_PARSER MOV_MUXER)      += evc.mp4
 FATE_LAVF_CONTAINER_FATE-$(call ALLYES, H264_DEMUXER H264_PARSER MOV_MUXER)    += h264.mp4
+FATE_LAVF_CONTAINER_FATE-$(call ALLYES, HEVC_DEMUXER HEVC_PARSER EXTRACT_EXTRADATA_BSF MOV_MUXER) += hevc.mp4
+FATE_LAVF_CONTAINER_FATE-$(call ALLYES, MOV_DEMUXER MOV_MUXER)                 += mv_hevc.mov
+FATE_LAVF_CONTAINER_FATE-$(call ALLYES, VVC_DEMUXER VVC_PARSER MOV_MUXER)      += vvc.mp4
 FATE_LAVF_CONTAINER_FATE-$(call ALLYES, MATROSKA_DEMUXER   OGG_MUXER)          += vp3.ogg
 FATE_LAVF_CONTAINER_FATE-$(call ALLYES, MATROSKA_DEMUXER   OGV_MUXER)          += vp8.ogg
 FATE_LAVF_CONTAINER_FATE-$(call ALLYES, MOV_DEMUXER        LATM_MUXER)         += latm
@@ -91,9 +95,12 @@ fate-lavf-fate-av1.mp4: CMD = lavf_container_fate "av1-test-vectors/av1-1-b8-05-
 fate-lavf-fate-av1.mkv: CMD = lavf_container_fate "av1-test-vectors/av1-1-b8-05-mv.ivf" "-c:v av1" "-c:v copy"
 fate-lavf-fate-evc.mp4: CMD = lavf_container_fate "evc/akiyo_cif.evc" "" "-c:v copy"
 fate-lavf-fate-h264.mp4: CMD = lavf_container_fate "h264/intra_refresh.h264" "" "-c:v copy"
+fate-lavf-fate-hevc.mp4: CMD = lavf_container_fate "hevc-conformance/HRD_A_Fujitsu_2.bit" "" "-c:v copy"
+fate-lavf-fate-vvc.mp4: CMD = lavf_container_fate "vvc-conformance/VPS_A_3.bit" "" "-c:v copy"
 fate-lavf-fate-vp3.ogg: CMD = lavf_container_fate "vp3/coeff_level64.mkv" "-idct auto"
 fate-lavf-fate-vp8.ogg: CMD = lavf_container_fate "vp8/RRSF49-short.webm" "" "-acodec copy"
 fate-lavf-fate-latm: CMD = lavf_container_fate "aac/al04_44.mp4" "" "-acodec copy"
+fate-lavf-fate-mv_hevc.mov: CMD = lavf_container_fate "hevc/multiview.mov" "" "-c:v copy"
 fate-lavf-fate-mp3: CMD = lavf_container_fate "mp3-conformance/he_32khz.bit" "" "-acodec copy"
 fate-lavf-fate-qtrle_mace6.mov: CMD = lavf_container_fate "qtrle/Animation-16Greys.mov" "-idct auto"
 fate-lavf-fate-cram.avi: CMD = lavf_container_fate "cram/toon.avi" "-idct auto"

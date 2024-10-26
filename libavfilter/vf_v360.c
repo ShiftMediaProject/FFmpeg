@@ -36,12 +36,12 @@
 #include <math.h>
 
 #include "libavutil/avassert.h"
-#include "libavutil/imgutils.h"
+#include "libavutil/mem.h"
 #include "libavutil/pixdesc.h"
 #include "libavutil/opt.h"
 #include "avfilter.h"
+#include "filters.h"
 #include "formats.h"
-#include "internal.h"
 #include "video.h"
 #include "v360.h"
 
@@ -285,6 +285,8 @@ static int remap##ws##_##bits##bit_slice(AVFilterContext *ctx, void *arg, int jo
     const SliceXYRemap *r = &s->slice_remap[jobnr];                                                        \
     const AVFrame *in = td->in;                                                                            \
     AVFrame *out = td->out;                                                                                \
+                                                                                                           \
+    av_assert1(s->nb_planes <= AV_VIDEO_MAX_PLANES);                                                       \
                                                                                                            \
     for (int stereo = 0; stereo < 1 + s->out_stereo > STEREO_2D; stereo++) {                               \
         for (int plane = 0; plane < s->nb_planes; plane++) {                                               \
@@ -3787,6 +3789,8 @@ static int barrelsplit_to_xyz(const V360Context *s,
         case 3: // back bottom
             vf = (y * 2.f - 1.5f) / scaleh + 3.f - facef;
             break;
+        default:
+            av_assert0(0);
         }
         l_x = (0.5f - uf) / scalew;
         l_y =  0.5f * dir_vert;

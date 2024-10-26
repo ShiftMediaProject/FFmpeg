@@ -20,10 +20,8 @@
 
 #include "config_components.h"
 
-#include "float.h"
-
+#include "libavutil/mem.h"
 #include "libavutil/pixdesc.h"
-#include "libavutil/eval.h"
 #include "libavutil/intreadwrite.h"
 #include "libavutil/opt.h"
 #include "libavutil/timestamp.h"
@@ -32,7 +30,6 @@
 #include "avfilter.h"
 #include "filters.h"
 #include "formats.h"
-#include "internal.h"
 #include "video.h"
 
 typedef struct CacheItem {
@@ -260,8 +257,9 @@ static int draw_items(AVFilterContext *ctx,
                       size_t frames)
 {
     GraphMonitorContext *s = ctx->priv;
+    FilterLink *fl = ff_filter_link(l);
     int64_t previous_pts_us = s->cache[s->cache_index].previous_pts_us;
-    int64_t current_pts_us = l->current_pts_us;
+    int64_t current_pts_us = fl->current_pts_us;
     const int flags = s->flags;
     const int mode = s->mode;
     char buffer[1024] = { 0 };
@@ -289,7 +287,7 @@ static int draw_items(AVFilterContext *ctx,
     }
     if (flags & FLAG_RATE) {
         if (l->type == AVMEDIA_TYPE_VIDEO) {
-            len = snprintf(buffer, sizeof(buffer)-1, " | fps: %d/%d", l->frame_rate.num, l->frame_rate.den);
+            len = snprintf(buffer, sizeof(buffer)-1, " | fps: %d/%d", fl->frame_rate.num, fl->frame_rate.den);
         } else if (l->type == AVMEDIA_TYPE_AUDIO) {
             len = snprintf(buffer, sizeof(buffer)-1, " | samplerate: %d", l->sample_rate);
         }
@@ -309,33 +307,33 @@ static int draw_items(AVFilterContext *ctx,
         drawtext(out, xpos, ypos, buffer, len, frames > 0 ? frames >= 10 ? frames >= 50 ? s->red : s->yellow : s->green : s->white);
         xpos += len * 8;
     }
-    if ((flags & FLAG_FCIN) && (!(mode & MODE_NOZERO) || l->frame_count_in)) {
-        len = snprintf(buffer, sizeof(buffer)-1, " | in: %"PRId64, l->frame_count_in);
+    if ((flags & FLAG_FCIN) && (!(mode & MODE_NOZERO) || fl->frame_count_in)) {
+        len = snprintf(buffer, sizeof(buffer)-1, " | in: %"PRId64, fl->frame_count_in);
         drawtext(out, xpos, ypos, buffer, len, s->white);
         xpos += len * 8;
     }
-    if ((flags & FLAG_FCOUT) && (!(mode & MODE_NOZERO) || l->frame_count_out)) {
-        len = snprintf(buffer, sizeof(buffer)-1, " | out: %"PRId64, l->frame_count_out);
+    if ((flags & FLAG_FCOUT) && (!(mode & MODE_NOZERO) || fl->frame_count_out)) {
+        len = snprintf(buffer, sizeof(buffer)-1, " | out: %"PRId64, fl->frame_count_out);
         drawtext(out, xpos, ypos, buffer, len, s->white);
         xpos += len * 8;
     }
-    if ((flags & FLAG_FC_DELTA) && (!(mode & MODE_NOZERO) || (l->frame_count_in - l->frame_count_out))) {
-        len = snprintf(buffer, sizeof(buffer)-1, " | delta: %"PRId64, l->frame_count_in - l->frame_count_out);
+    if ((flags & FLAG_FC_DELTA) && (!(mode & MODE_NOZERO) || (fl->frame_count_in - fl->frame_count_out))) {
+        len = snprintf(buffer, sizeof(buffer)-1, " | delta: %"PRId64, fl->frame_count_in - fl->frame_count_out);
         drawtext(out, xpos, ypos, buffer, len, s->white);
         xpos += len * 8;
     }
-    if ((flags & FLAG_SCIN) && (!(mode & MODE_NOZERO) || l->sample_count_in)) {
-        len = snprintf(buffer, sizeof(buffer)-1, " | sin: %"PRId64, l->sample_count_in);
+    if ((flags & FLAG_SCIN) && (!(mode & MODE_NOZERO) || fl->sample_count_in)) {
+        len = snprintf(buffer, sizeof(buffer)-1, " | sin: %"PRId64, fl->sample_count_in);
         drawtext(out, xpos, ypos, buffer, len, s->white);
         xpos += len * 8;
     }
-    if ((flags & FLAG_SCOUT) && (!(mode & MODE_NOZERO) || l->sample_count_out)) {
-        len = snprintf(buffer, sizeof(buffer)-1, " | sout: %"PRId64, l->sample_count_out);
+    if ((flags & FLAG_SCOUT) && (!(mode & MODE_NOZERO) || fl->sample_count_out)) {
+        len = snprintf(buffer, sizeof(buffer)-1, " | sout: %"PRId64, fl->sample_count_out);
         drawtext(out, xpos, ypos, buffer, len, s->white);
         xpos += len * 8;
     }
-    if ((flags & FLAG_SC_DELTA) && (!(mode & MODE_NOZERO) || (l->sample_count_in - l->sample_count_out))) {
-        len = snprintf(buffer, sizeof(buffer)-1, " | sdelta: %"PRId64, l->sample_count_in - l->sample_count_out);
+    if ((flags & FLAG_SC_DELTA) && (!(mode & MODE_NOZERO) || (fl->sample_count_in - fl->sample_count_out))) {
+        len = snprintf(buffer, sizeof(buffer)-1, " | sdelta: %"PRId64, fl->sample_count_in - fl->sample_count_out);
         drawtext(out, xpos, ypos, buffer, len, s->white);
         xpos += len * 8;
     }
@@ -370,7 +368,7 @@ static int draw_items(AVFilterContext *ctx,
         xpos += len * 8;
     }
 
-    s->cache[s->cache_index].previous_pts_us = l->current_pts_us;
+    s->cache[s->cache_index].previous_pts_us = current_pts_us;
 
     if (s->cache_index + 1 >= s->cache_size / sizeof(*(s->cache))) {
         void *ptr = av_fast_realloc(s->cache, &s->cache_size, s->cache_size * 2);
@@ -539,6 +537,7 @@ static int activate(AVFilterContext *ctx)
 
 static int config_output(AVFilterLink *outlink)
 {
+    FilterLink *l = ff_filter_link(outlink);
     GraphMonitorContext *s = outlink->src->priv;
 
     s->white[0] = s->white[1] = s->white[2] = 255;
@@ -552,7 +551,7 @@ static int config_output(AVFilterLink *outlink)
     outlink->w = s->w;
     outlink->h = s->h;
     outlink->sample_aspect_ratio = (AVRational){1,1};
-    outlink->frame_rate = s->frame_rate;
+    l->frame_rate = s->frame_rate;
     outlink->time_base = av_inv_q(s->frame_rate);
 
     return 0;

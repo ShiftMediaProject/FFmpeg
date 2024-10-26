@@ -29,14 +29,15 @@
 #include "libavutil/hwcontext_cuda_internal.h"
 #include "libavutil/cuda_check.h"
 #include "libavutil/internal.h"
+#include "libavutil/mem.h"
 #include "libavutil/opt.h"
 #include "libavutil/parseutils.h"
 #include "libavutil/eval.h"
 #include "libavutil/pixdesc.h"
 
 #include "avfilter.h"
+#include "filters.h"
 #include "formats.h"
-#include "internal.h"
 #include "scale_eval.h"
 #include "video.h"
 
@@ -535,6 +536,8 @@ static int init_processing_chain(AVFilterContext *ctx, int in_width, int in_heig
                                  int out_width, int out_height)
 {
     NPPScaleContext *s = ctx->priv;
+    FilterLink    *inl = ff_filter_link(ctx->inputs[0]);
+    FilterLink   *outl = ff_filter_link(ctx->outputs[0]);
 
     AVHWFramesContext *in_frames_ctx;
 
@@ -546,11 +549,11 @@ static int init_processing_chain(AVFilterContext *ctx, int in_width, int in_heig
     int i, ret, last_stage = -1;
 
     /* check that we have a hw context */
-    if (!ctx->inputs[0]->hw_frames_ctx) {
+    if (!inl->hw_frames_ctx) {
         av_log(ctx, AV_LOG_ERROR, "No hw context provided on input\n");
         return AVERROR(EINVAL);
     }
-    in_frames_ctx = (AVHWFramesContext*)ctx->inputs[0]->hw_frames_ctx->data;
+    in_frames_ctx = (AVHWFramesContext*)inl->hw_frames_ctx->data;
     in_format     = in_frames_ctx->sw_format;
     out_format    = (s->format == AV_PIX_FMT_NONE) ? in_format : s->format;
 
@@ -628,11 +631,11 @@ static int init_processing_chain(AVFilterContext *ctx, int in_width, int in_heig
     }
 
     if (last_stage >= 0)
-        ctx->outputs[0]->hw_frames_ctx = av_buffer_ref(s->stages[last_stage].frames_ctx);
+        outl->hw_frames_ctx = av_buffer_ref(s->stages[last_stage].frames_ctx);
     else
-        ctx->outputs[0]->hw_frames_ctx = av_buffer_ref(ctx->inputs[0]->hw_frames_ctx);
+        outl->hw_frames_ctx = av_buffer_ref(inl->hw_frames_ctx);
 
-    if (!ctx->outputs[0]->hw_frames_ctx)
+    if (!outl->hw_frames_ctx)
         return AVERROR(ENOMEM);
 
     return 0;
@@ -685,16 +688,18 @@ fail:
 
 static int config_props_ref(AVFilterLink *outlink)
 {
+    FilterLink     *outl = ff_filter_link(outlink);
     AVFilterLink *inlink = outlink->src->inputs[1];
-    AVFilterContext *ctx = outlink->src;
+    FilterLink      *inl = ff_filter_link(inlink);
+    FilterLink       *ol = ff_filter_link(outlink);
 
     outlink->w = inlink->w;
     outlink->h = inlink->h;
     outlink->sample_aspect_ratio = inlink->sample_aspect_ratio;
     outlink->time_base = inlink->time_base;
-    outlink->frame_rate = inlink->frame_rate;
+    ol->frame_rate = inl->frame_rate;
 
-    ctx->outputs[1]->hw_frames_ctx = av_buffer_ref(ctx->inputs[1]->hw_frames_ctx);
+    outl->hw_frames_ctx = av_buffer_ref(inl->hw_frames_ctx);
 
     return 0;
 }
@@ -785,6 +790,7 @@ static int (*const nppscale_process[])(AVFilterContext *ctx, NPPScaleStageContex
 
 static int nppscale_scale(AVFilterLink *link, AVFrame *out, AVFrame *in)
 {
+    FilterLink *inl = ff_filter_link(link);
     AVFilterContext *ctx = link->dst;
     NPPScaleContext *s = ctx->priv;
     AVFilterLink *outlink = ctx->outputs[0];
@@ -834,7 +840,7 @@ static int nppscale_scale(AVFilterLink *link, AVFrame *out, AVFrame *in)
         }
 
         if (ctx->filter == &ff_vf_scale2ref_npp) {
-            s->var_values[VAR_S2R_MAIN_N] = link->frame_count_out;
+            s->var_values[VAR_S2R_MAIN_N] = inl->frame_count_out;
             s->var_values[VAR_S2R_MAIN_T] = TS2T(in->pts, link->time_base);
 #if FF_API_FRAME_PKT
 FF_DISABLE_DEPRECATION_WARNINGS
@@ -842,7 +848,7 @@ FF_DISABLE_DEPRECATION_WARNINGS
 FF_ENABLE_DEPRECATION_WARNINGS
 #endif
         } else {
-            s->var_values[VAR_N] = link->frame_count_out;
+            s->var_values[VAR_N] = inl->frame_count_out;
             s->var_values[VAR_T] = TS2T(in->pts, link->time_base);
 #if FF_API_FRAME_PKT
 FF_DISABLE_DEPRECATION_WARNINGS
@@ -899,7 +905,8 @@ static int nppscale_filter_frame(AVFilterLink *link, AVFrame *in)
     AVFilterContext              *ctx = link->dst;
     NPPScaleContext                *s = ctx->priv;
     AVFilterLink             *outlink = ctx->outputs[0];
-    AVHWFramesContext     *frames_ctx = (AVHWFramesContext*)outlink->hw_frames_ctx->data;
+    FilterLink                     *l = ff_filter_link(outlink);
+    AVHWFramesContext     *frames_ctx = (AVHWFramesContext*)l->hw_frames_ctx->data;
     AVCUDADeviceContext *device_hwctx = frames_ctx->device_ctx->hwctx;
 
     AVFrame *out = NULL;
@@ -940,6 +947,7 @@ fail:
 
 static int nppscale_filter_frame_ref(AVFilterLink *link, AVFrame *in)
 {
+    FilterLink *inl = ff_filter_link(link);
     NPPScaleContext *scale = link->dst->priv;
     AVFilterLink *outlink = link->dst->outputs[1];
     int frame_changed;
@@ -961,7 +969,7 @@ static int nppscale_filter_frame_ref(AVFilterLink *link, AVFrame *in)
     }
 
     if (scale->eval_mode == EVAL_MODE_FRAME) {
-        scale->var_values[VAR_N] = link->frame_count_out;
+        scale->var_values[VAR_N] = inl->frame_count_out;
         scale->var_values[VAR_T] = TS2T(in->pts, link->time_base);
 #if FF_API_FRAME_PKT
 FF_DISABLE_DEPRECATION_WARNINGS

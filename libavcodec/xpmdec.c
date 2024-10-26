@@ -22,6 +22,7 @@
  */
 
 #include "libavutil/avstring.h"
+#include "libavutil/mem.h"
 #include "avcodec.h"
 #include "codec_internal.h"
 #include "decode.h"
@@ -427,9 +428,6 @@ static int xpm_decode_frame(AVCodecContext *avctx, AVFrame *p,
         }
         ptr += mod_strcspn(ptr, ",") + 1;
     }
-
-    p->flags |= AV_FRAME_FLAG_KEY;
-    p->pict_type = AV_PICTURE_TYPE_I;
 
     *got_frame = 1;
 

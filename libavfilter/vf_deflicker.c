@@ -19,6 +19,7 @@
  */
 
 #include "libavutil/imgutils.h"
+#include "libavutil/mem.h"
 #include "libavutil/opt.h"
 #include "libavutil/pixdesc.h"
 #include "libavutil/qsort.h"
@@ -27,7 +28,7 @@
 #define FF_BUFQUEUE_SIZE 129
 #include "bufferqueue.h"
 
-#include "internal.h"
+#include "filters.h"
 #include "video.h"
 
 #define SIZE FF_BUFQUEUE_SIZE

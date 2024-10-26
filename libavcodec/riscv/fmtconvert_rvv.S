@@ -20,7 +20,8 @@
 
 #include "libavutil/riscv/asm.S"
 
-func ff_int32_to_float_fmul_scalar_rvv, zve32f
+func ff_int32_to_float_fmul_scalar_rvv, zve32f, zba
+        lpad    0
 NOHWF   fmv.w.x     fa0, a2
 NOHWF   mv          a2, a3
 1:
@@ -37,7 +38,8 @@ NOHWF   mv          a2, a3
         ret
 endfunc
 
-func ff_int32_to_float_fmul_array8_rvv, zve32f
+func ff_int32_to_float_fmul_array8_rvv, zve32f, zba
+        lpad    0
         srai        a4, a4, 3
 
 1:      vsetvli     t0, a4, e32, m1, ta, ma

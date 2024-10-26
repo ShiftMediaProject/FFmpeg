@@ -34,8 +34,8 @@
 #include "libavutil/pixdesc.h"
 #include "avfilter.h"
 #include "audio.h"
+#include "filters.h"
 #include "formats.h"
-#include "internal.h"
 #include "video.h"
 #include "scene_sad.h"
 
@@ -90,6 +90,11 @@ static const char *const var_names[] = {
 
     "concatdec_select",  ///< frame is within the interval set by the concat demuxer
 
+    "ih",                ///< ih: Represents the height of the input video frame.
+    "iw",                ///< iw: Represents the width of the input video frame.
+
+    "view",
+
     NULL
 };
 
@@ -143,6 +148,11 @@ enum var_name {
     VAR_SCENE,
 
     VAR_CONCATDEC_SELECT,
+
+    VAR_IH,
+    VAR_IW,
+
+    VAR_VIEW,
 
     VAR_VARS_NB
 };
@@ -264,6 +274,9 @@ static int config_input(AVFilterLink *inlink)
     select->var_values[VAR_CONSUMED_SAMPLES_N] = NAN;
     select->var_values[VAR_SAMPLES_N]          = NAN;
 
+    select->var_values[VAR_IH] = NAN;
+    select->var_values[VAR_IW] = NAN;
+
     select->var_values[VAR_SAMPLE_RATE] =
         inlink->type == AVMEDIA_TYPE_AUDIO ? inlink->sample_rate : NAN;
 
@@ -333,6 +346,8 @@ static void select_frame(AVFilterContext *ctx, AVFrame *frame)
 {
     SelectContext *select = ctx->priv;
     AVFilterLink *inlink = ctx->inputs[0];
+    FilterLink      *inl = ff_filter_link(inlink);
+    const AVFrameSideData *sd;
     double res;
 
     if (isnan(select->var_values[VAR_START_PTS]))
@@ -340,7 +355,7 @@ static void select_frame(AVFilterContext *ctx, AVFrame *frame)
     if (isnan(select->var_values[VAR_START_T]))
         select->var_values[VAR_START_T] = TS2D(frame->pts) * av_q2d(inlink->time_base);
 
-    select->var_values[VAR_N  ] = inlink->frame_count_out;
+    select->var_values[VAR_N  ] = inl->frame_count_out;
     select->var_values[VAR_PTS] = TS2D(frame->pts);
     select->var_values[VAR_T  ] = TS2D(frame->pts) * av_q2d(inlink->time_base);
 #if FF_API_FRAME_PKT
@@ -357,6 +372,9 @@ FF_ENABLE_DEPRECATION_WARNINGS
         break;
 
     case AVMEDIA_TYPE_VIDEO:
+        select->var_values[VAR_IH] = frame->height;
+        select->var_values[VAR_IW] = frame->width;
+
         select->var_values[VAR_INTERLACE_TYPE] =
             !(frame->flags & AV_FRAME_FLAG_INTERLACED) ? INTERLACE_TYPE_P :
         (frame->flags & AV_FRAME_FLAG_TOP_FIELD_FIRST) ? INTERLACE_TYPE_T : INTERLACE_TYPE_B;
@@ -368,6 +386,10 @@ FF_ENABLE_DEPRECATION_WARNINGS
             snprintf(buf, sizeof(buf), "%f", select->var_values[VAR_SCENE]);
             av_dict_set(&frame->metadata, "lavfi.scene_score", buf, 0);
         }
+
+        sd = av_frame_side_data_get(frame->side_data, frame->nb_side_data,
+                                    AV_FRAME_DATA_VIEW_ID);
+        select->var_values[VAR_VIEW] = sd ? *(int*)sd->data : NAN;
         break;
     }
 

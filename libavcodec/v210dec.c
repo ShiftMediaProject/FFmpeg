@@ -29,6 +29,7 @@
 #include "libavutil/imgutils.h"
 #include "libavutil/internal.h"
 #include "libavutil/intreadwrite.h"
+#include "libavutil/mem.h"
 #include "thread.h"
 
 typedef struct ThreadData {
@@ -185,9 +186,6 @@ static int decode_frame(AVCodecContext *avctx, AVFrame *pic,
 
     if ((ret = ff_thread_get_buffer(avctx, pic, 0)) < 0)
         return ret;
-
-    pic->pict_type = AV_PICTURE_TYPE_I;
-    pic->flags |= AV_FRAME_FLAG_KEY;
 
     if (stride) {
         td.stride = stride;

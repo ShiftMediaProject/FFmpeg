@@ -31,6 +31,7 @@
 #endif
 
 #include "libavutil/log.h"
+#include "libavutil/mem.h"
 #include "libavutil/opt.h"
 #include "libavutil/pixdesc.h"
 #include "avcodec.h"
@@ -588,5 +589,6 @@ const FFCodec ff_tiff_encoder = {
         AV_PIX_FMT_YUV410P, AV_PIX_FMT_YUV411P,
         AV_PIX_FMT_NONE
     },
+    .color_ranges   = AVCOL_RANGE_MPEG,
     .p.priv_class   = &tiffenc_class,
 };

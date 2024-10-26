@@ -23,18 +23,20 @@
 #include <stdint.h>
 #include <EbSvtAv1ErrorCodes.h>
 #include <EbSvtAv1Enc.h>
+#include <EbSvtAv1Metadata.h>
 
 #include "libavutil/common.h"
 #include "libavutil/frame.h"
 #include "libavutil/imgutils.h"
 #include "libavutil/intreadwrite.h"
 #include "libavutil/mastering_display_metadata.h"
+#include "libavutil/mem.h"
 #include "libavutil/opt.h"
 #include "libavutil/pixdesc.h"
 #include "libavutil/avassert.h"
 
 #include "codec_internal.h"
-#include "internal.h"
+#include "dovi_rpu.h"
 #include "encode.h"
 #include "packet_internal.h"
 #include "avcodec.h"
@@ -61,6 +63,8 @@ typedef struct SvtContext {
     AVBufferPool *pool;
 
     EOS_STATUS eos_flag;
+
+    DOVIContext dovi;
 
     // User options.
     AVDictionary *svtav1_opts;
@@ -206,7 +210,7 @@ static int config_enc_params(EbSvtAv1EncConfiguration *param,
 {
     SvtContext *svt_enc = avctx->priv_data;
     const AVPixFmtDescriptor *desc;
-    AVDictionaryEntry *en = NULL;
+    const AVDictionaryEntry av_unused *en = NULL;
 
     // Update param from options
     if (svt_enc->enc_mode >= -1)
@@ -322,7 +326,7 @@ FF_ENABLE_DEPRECATION_WARNINGS
     handle_side_data(avctx, param);
 
 #if SVT_AV1_CHECK_VERSION(0, 9, 1)
-    while ((en = av_dict_get(svt_enc->svtav1_opts, "", en, AV_DICT_IGNORE_SUFFIX))) {
+    while ((en = av_dict_iterate(svt_enc->svtav1_opts, en))) {
         EbErrorType ret = svt_av1_enc_parse_parameter(param, en->key, en->value);
         if (ret != EB_ErrorNone) {
             int level = (avctx->err_recognition & AV_EF_EXPLODE) ? AV_LOG_ERROR : AV_LOG_WARNING;
@@ -332,7 +336,7 @@ FF_ENABLE_DEPRECATION_WARNINGS
         }
     }
 #else
-    if ((en = av_dict_get(svt_enc->svtav1_opts, "", NULL, AV_DICT_IGNORE_SUFFIX))) {
+    if (av_dict_count(svt_enc->svtav1_opts)) {
         int level = (avctx->err_recognition & AV_EF_EXPLODE) ? AV_LOG_ERROR : AV_LOG_WARNING;
         av_log(avctx, level, "svt-params needs libavcodec to be compiled with SVT-AV1 "
                              "headers >= 0.9.1.\n");
@@ -418,6 +422,7 @@ static int read_in_data(EbSvtAv1EncConfiguration *param, const AVFrame *frame,
     in_data->cr_stride = AV_CEIL_RSHIFT(frame->linesize[2], bytes_shift);
 
     header_ptr->n_filled_len = frame_size;
+    svt_metadata_array_free(&header_ptr->metadata);
 
     return 0;
 }
@@ -450,6 +455,11 @@ static av_cold int eb_enc_init(AVCodecContext *avctx)
     if (svt_ret != EB_ErrorNone) {
         return svt_print_error(avctx, svt_ret, "Error initializing encoder");
     }
+
+    svt_enc->dovi.logctx = avctx;
+    ret = ff_dovi_configure(&svt_enc->dovi, avctx);
+    if (ret < 0)
+        return ret;
 
     if (avctx->flags & AV_CODEC_FLAG_GLOBAL_HEADER) {
         EbBufferHeaderType *headerPtr = NULL;
@@ -486,6 +496,8 @@ static int eb_send_frame(AVCodecContext *avctx, const AVFrame *frame)
 {
     SvtContext           *svt_enc = avctx->priv_data;
     EbBufferHeaderType  *headerPtr = svt_enc->in_buf;
+    AVFrameSideData *sd;
+    EbErrorType svt_ret;
     int ret;
 
     if (!frame) {
@@ -524,7 +536,28 @@ static int eb_send_frame(AVCodecContext *avctx, const AVFrame *frame)
     if (avctx->gop_size == 1)
         headerPtr->pic_type = EB_AV1_KEY_PICTURE;
 
-    svt_av1_enc_send_picture(svt_enc->svt_handle, headerPtr);
+    sd = av_frame_get_side_data(frame, AV_FRAME_DATA_DOVI_METADATA);
+    if (svt_enc->dovi.cfg.dv_profile && sd) {
+        const AVDOVIMetadata *metadata = (const AVDOVIMetadata *)sd->data;
+        uint8_t *t35;
+        int size;
+        if ((ret = ff_dovi_rpu_generate(&svt_enc->dovi, metadata, FF_DOVI_WRAP_T35,
+                                        &t35, &size)) < 0)
+            return ret;
+        ret = svt_add_metadata(headerPtr, EB_AV1_METADATA_TYPE_ITUT_T35, t35, size);
+        av_free(t35);
+        if (ret < 0)
+            return AVERROR(ENOMEM);
+    } else if (svt_enc->dovi.cfg.dv_profile) {
+        av_log(avctx, AV_LOG_ERROR, "Dolby Vision enabled, but received frame "
+               "without AV_FRAME_DATA_DOVI_METADATA\n");
+        return AVERROR_INVALIDDATA;
+    }
+
+
+    svt_ret = svt_av1_enc_send_picture(svt_enc->svt_handle, headerPtr);
+    if (svt_ret != EB_ErrorNone)
+        return svt_print_error(avctx, svt_ret, "Error sending a frame to encoder");
 
     return 0;
 }
@@ -579,6 +612,8 @@ static int eb_receive_packet(AVCodecContext *avctx, AVPacket *pkt)
     svt_ret = svt_av1_enc_get_packet(svt_enc->svt_handle, &headerPtr, svt_enc->eos_flag);
     if (svt_ret == EB_NoErrorEmptyQueue)
         return AVERROR(EAGAIN);
+    else if (svt_ret != EB_ErrorNone)
+        return svt_print_error(avctx, svt_ret, "Error getting an output packet from encoder");
 
 #if SVT_AV1_CHECK_VERSION(2, 0, 0)
     if (headerPtr->flags & EB_BUFFERFLAG_EOS) {
@@ -644,11 +679,13 @@ static av_cold int eb_enc_close(AVCodecContext *avctx)
     }
     if (svt_enc->in_buf) {
         av_free(svt_enc->in_buf->p_buffer);
+        svt_metadata_array_free(&svt_enc->in_buf->metadata);
         av_freep(&svt_enc->in_buf);
     }
 
     av_buffer_pool_uninit(&svt_enc->pool);
     av_frame_free(&svt_enc->frame);
+    ff_dovi_ctx_unref(&svt_enc->dovi);
 
     return 0;
 }
@@ -695,6 +732,9 @@ static const AVOption options[] = {
       AV_OPT_TYPE_INT, { .i64 = 0 }, 0, 63, VE },
     { "svtav1-params", "Set the SVT-AV1 configuration using a :-separated list of key=value parameters", OFFSET(svtav1_opts), AV_OPT_TYPE_DICT, { 0 }, 0, 0, VE },
 
+    { "dolbyvision", "Enable Dolby Vision RPU coding", OFFSET(dovi.enable), AV_OPT_TYPE_BOOL, {.i64 = FF_DOVI_AUTOMATIC }, -1, 1, VE, .unit = "dovi" },
+    {   "auto", NULL, 0, AV_OPT_TYPE_CONST, {.i64 = FF_DOVI_AUTOMATIC}, .flags = VE, .unit = "dovi" },
+
     {NULL},
 };
 
@@ -729,6 +769,7 @@ const FFCodec ff_libsvtav1_encoder = {
     .p.pix_fmts     = (const enum AVPixelFormat[]){ AV_PIX_FMT_YUV420P,
                                                     AV_PIX_FMT_YUV420P10,
                                                     AV_PIX_FMT_NONE },
+    .color_ranges   = AVCOL_RANGE_MPEG | AVCOL_RANGE_JPEG,
     .p.priv_class   = &class,
     .defaults       = eb_enc_defaults,
     .p.wrapper_name = "libsvtav1",

@@ -26,15 +26,13 @@
 #include "libavutil/attributes.h"
 #include "libavutil/channel_layout.h"
 #include "libavutil/internal.h"
+#include "libavutil/mem.h"
 #include "libavutil/opt.h"
 
 #include "audio.h"
 #include "avfilter.h"
 #include "filters.h"
 #include "formats.h"
-#include "internal.h"
-
-#define MAX_CH 64
 
 typedef struct ChannelSplitContext {
     const AVClass *class;
@@ -42,7 +40,7 @@ typedef struct ChannelSplitContext {
     AVChannelLayout channel_layout;
     char    *channels_str;
 
-    int      map[64];
+    int     *map;
 } ChannelSplitContext;
 
 #define OFFSET(x) offsetof(ChannelSplitContext, x)
@@ -71,10 +69,9 @@ static av_cold int init(AVFilterContext *ctx)
             goto fail;
     }
 
-    if (channel_layout.nb_channels > MAX_CH) {
-        av_log(ctx, AV_LOG_ERROR, "Too many channels\n");
-        goto fail;
-    }
+    s->map = av_calloc(channel_layout.nb_channels, sizeof(*s->map));
+    if (!s->map)
+        return AVERROR(ENOMEM);
 
     for (i = 0; i < channel_layout.nb_channels; i++) {
         enum AVChannel channel = av_channel_layout_channel_from_index(&channel_layout, i);
@@ -118,20 +115,23 @@ static av_cold void uninit(AVFilterContext *ctx)
     ChannelSplitContext *s = ctx->priv;
 
     av_channel_layout_uninit(&s->channel_layout);
+    av_freep(&s->map);
 }
 
-static int query_formats(AVFilterContext *ctx)
+static int query_formats(const AVFilterContext *ctx,
+                         AVFilterFormatsConfig **cfg_in,
+                         AVFilterFormatsConfig **cfg_out)
 {
     ChannelSplitContext *s = ctx->priv;
     AVFilterChannelLayouts *in_layouts = NULL;
     int i, ret;
 
-    if ((ret = ff_set_common_formats(ctx, ff_planar_sample_fmts())) < 0 ||
-        (ret = ff_set_common_all_samplerates(ctx)) < 0)
+    ret = ff_set_common_formats2(ctx, cfg_in, cfg_out, ff_planar_sample_fmts());
+    if (ret < 0)
         return ret;
 
     if ((ret = ff_add_channel_layout(&in_layouts, &s->channel_layout)) < 0 ||
-        (ret = ff_channel_layouts_ref(in_layouts, &ctx->inputs[0]->outcfg.channel_layouts)) < 0)
+        (ret = ff_channel_layouts_ref(in_layouts, &cfg_in[0]->channel_layouts)) < 0)
         return ret;
 
     for (i = 0; i < ctx->nb_outputs; i++) {
@@ -139,9 +139,27 @@ static int query_formats(AVFilterContext *ctx)
         AVFilterChannelLayouts *out_layouts = NULL;
         enum AVChannel channel = av_channel_layout_channel_from_index(&s->channel_layout, s->map[i]);
 
-        if ((ret = av_channel_layout_from_mask(&channel_layout, 1ULL << channel)) < 0 ||
-            (ret = ff_add_channel_layout(&out_layouts, &channel_layout)) < 0 ||
-            (ret = ff_channel_layouts_ref(out_layouts, &ctx->outputs[i]->incfg.channel_layouts)) < 0)
+        channel_layout.u.map = av_mallocz(sizeof(*channel_layout.u.map));
+        if (!channel_layout.u.map)
+            return AVERROR(ENOMEM);
+
+        channel_layout.u.map[0].id = channel;
+        channel_layout.nb_channels = 1;
+        channel_layout.order       = AV_CHANNEL_ORDER_CUSTOM;
+
+        ret = av_channel_layout_retype(&channel_layout, 0, AV_CHANNEL_LAYOUT_RETYPE_FLAG_CANONICAL);
+        if (ret < 0) {
+            av_channel_layout_uninit(&channel_layout);
+            return ret;
+        }
+
+        ret = ff_add_channel_layout(&out_layouts, &channel_layout);
+        av_channel_layout_uninit(&channel_layout);
+        if (ret < 0)
+            return ret;
+
+        ret = ff_channel_layouts_ref(out_layouts, &cfg_out[i]->channel_layouts);
+        if (ret < 0)
             return ret;
     }
 
@@ -150,22 +168,24 @@ static int query_formats(AVFilterContext *ctx)
 
 static int filter_frame(AVFilterLink *outlink, AVFrame *buf)
 {
+    AVFrame *buf_out;
     AVFilterContext *ctx = outlink->src;
     ChannelSplitContext *s = ctx->priv;
     const int i = FF_OUTLINK_IDX(outlink);
-    enum AVChannel channel = av_channel_layout_channel_from_index(&buf->ch_layout, s->map[i]);
     int ret;
 
-    av_assert1(channel >= 0);
-
-    AVFrame *buf_out = av_frame_clone(buf);
+    buf_out = av_frame_clone(buf);
     if (!buf_out)
         return AVERROR(ENOMEM);
 
     buf_out->data[0] = buf_out->extended_data[0] = buf_out->extended_data[s->map[i]];
-    ret = av_channel_layout_from_mask(&buf_out->ch_layout, 1ULL << channel);
-    if (ret < 0)
+
+    av_channel_layout_uninit(&buf_out->ch_layout);
+    ret = av_channel_layout_copy(&buf_out->ch_layout, &outlink->ch_layout);
+    if (ret < 0) {
+        av_frame_free(&buf_out);
         return ret;
+    }
 
     return ff_filter_frame(ctx->outputs[i], buf_out);
 }
@@ -231,6 +251,6 @@ const AVFilter ff_af_channelsplit = {
     .uninit         = uninit,
     FILTER_INPUTS(ff_audio_default_filterpad),
     .outputs        = NULL,
-    FILTER_QUERY_FUNC(query_formats),
+    FILTER_QUERY_FUNC2(query_formats),
     .flags          = AVFILTER_FLAG_DYNAMIC_OUTPUTS,
 };

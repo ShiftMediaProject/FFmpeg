@@ -26,12 +26,12 @@
 #include "libavutil/avstring.h"
 #include "libavutil/bprint.h"
 #include "libavutil/channel_layout.h"
+#include "libavutil/mem.h"
 #include "libavutil/opt.h"
 #include "avfilter.h"
 #include "filters.h"
 #include "audio.h"
 #include "formats.h"
-#include "internal.h"
 
 #define SWR_CH_MAX 64
 

@@ -23,7 +23,7 @@
 #include "vulkan_filter.h"
 #include "vulkan_spirv.h"
 #include "scale_eval.h"
-#include "internal.h"
+#include "filters.h"
 #include "colorspace.h"
 #include "video.h"
 

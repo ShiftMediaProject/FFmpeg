@@ -34,6 +34,25 @@
 #include "mpegvideo.h"
 
 #define UNI_AC_ENC_INDEX(run,level) ((run)*128 + (level))
+#define INPLACE_OFFSET 16
+
+/* MB types for encoding */
+#define CANDIDATE_MB_TYPE_INTRA      (1 <<  0)
+#define CANDIDATE_MB_TYPE_INTER      (1 <<  1)
+#define CANDIDATE_MB_TYPE_INTER4V    (1 <<  2)
+#define CANDIDATE_MB_TYPE_SKIPPED    (1 <<  3)
+
+#define CANDIDATE_MB_TYPE_DIRECT     (1 <<  4)
+#define CANDIDATE_MB_TYPE_FORWARD    (1 <<  5)
+#define CANDIDATE_MB_TYPE_BACKWARD   (1 <<  6)
+#define CANDIDATE_MB_TYPE_BIDIR      (1 <<  7)
+
+#define CANDIDATE_MB_TYPE_INTER_I    (1 <<  8)
+#define CANDIDATE_MB_TYPE_FORWARD_I  (1 <<  9)
+#define CANDIDATE_MB_TYPE_BACKWARD_I (1 << 10)
+#define CANDIDATE_MB_TYPE_BIDIR_I    (1 << 11)
+
+#define CANDIDATE_MB_TYPE_DIRECT0    (1 << 12)
 
 /* mpegvideo_enc common options */
 #define FF_MPV_FLAG_SKIP_RD      0x0001
@@ -126,14 +145,14 @@ int ff_mpv_reallocate_putbitbuffer(MpegEncContext *s, size_t threshold, size_t s
 
 void ff_write_quant_matrix(PutBitContext *pb, uint16_t *matrix);
 
-int ff_dct_encode_init(MpegEncContext *s);
+void ff_dct_encode_init(MpegEncContext *s);
+void ff_mpvenc_dct_init_mips(MpegEncContext *s);
 void ff_dct_encode_init_x86(MpegEncContext *s);
 
-int ff_dct_quantize_c(MpegEncContext *s, int16_t *block, int n, int qscale, int *overflow);
 void ff_convert_matrix(MpegEncContext *s, int (*qmat)[64], uint16_t (*qmat16)[2][64],
                        const uint16_t *quant_matrix, int bias, int qmin, int qmax, int intra);
 
-void ff_block_permute(int16_t *block, uint8_t *permutation,
+void ff_block_permute(int16_t *block, const uint8_t *permutation,
                       const uint8_t *scantable, int last);
 
 static inline int get_bits_diff(MpegEncContext *s)

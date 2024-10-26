@@ -24,11 +24,48 @@
 #include "libswscale/rgb2rgb.h"
 #include "libavutil/loongarch/cpu.h"
 
+av_cold void ff_sws_init_range_convert_loongarch(SwsContext *c)
+{
+    int cpu_flags = av_get_cpu_flags();
+
+    if (have_lsx(cpu_flags)) {
+        if (c->srcRange != c->dstRange && !isAnyRGB(c->dstFormat)) {
+            if (c->dstBpc <= 14) {
+                if (c->srcRange) {
+                    c->lumConvertRange = lumRangeFromJpeg_lsx;
+                    c->chrConvertRange = chrRangeFromJpeg_lsx;
+                } else {
+                    c->lumConvertRange = lumRangeToJpeg_lsx;
+                    c->chrConvertRange = chrRangeToJpeg_lsx;
+                }
+            }
+        }
+    }
+#if HAVE_LASX
+    if (have_lasx(cpu_flags)) {
+        if (c->srcRange != c->dstRange && !isAnyRGB(c->dstFormat)) {
+            if (c->dstBpc <= 14) {
+                if (c->srcRange) {
+                    c->lumConvertRange = lumRangeFromJpeg_lasx;
+                    c->chrConvertRange = chrRangeFromJpeg_lasx;
+                } else {
+                    c->lumConvertRange = lumRangeToJpeg_lasx;
+                    c->chrConvertRange = chrRangeToJpeg_lasx;
+                }
+            }
+        }
+    }
+#endif // #if HAVE_LASX
+}
+
 av_cold void ff_sws_init_swscale_loongarch(SwsContext *c)
 {
     int cpu_flags = av_get_cpu_flags();
     if (have_lsx(cpu_flags)) {
-        ff_sws_init_output_lsx(c);
+        ff_sws_init_output_lsx(c, &c->yuv2plane1, &c->yuv2planeX,
+                               &c->yuv2nv12cX, &c->yuv2packed1,
+                               &c->yuv2packed2, &c->yuv2packedX, &c->yuv2anyX);
+        ff_sws_init_input_lsx(c);
         if (c->srcBpc == 8) {
             if (c->dstBpc <= 14) {
                 c->hyScale = c->hcScale = ff_hscale_8_to_15_lsx;
@@ -39,21 +76,13 @@ av_cold void ff_sws_init_swscale_loongarch(SwsContext *c)
             c->hyScale = c->hcScale = c->dstBpc > 14 ? ff_hscale_16_to_19_lsx
                                                      : ff_hscale_16_to_15_lsx;
         }
-        switch (c->srcFormat) {
-        case AV_PIX_FMT_GBRAP:
-        case AV_PIX_FMT_GBRP:
-            {
-                c->readChrPlanar = planar_rgb_to_uv_lsx;
-                c->readLumPlanar = planar_rgb_to_y_lsx;
-            }
-            break;
-        }
-        if (c->dstBpc == 8)
-            c->yuv2planeX = ff_yuv2planeX_8_lsx;
     }
 #if HAVE_LASX
     if (have_lasx(cpu_flags)) {
-        ff_sws_init_output_lasx(c);
+        ff_sws_init_output_lasx(c, &c->yuv2plane1, &c->yuv2planeX,
+                                &c->yuv2nv12cX, &c->yuv2packed1,
+                                &c->yuv2packed2, &c->yuv2packedX, &c->yuv2anyX);
+        ff_sws_init_input_lasx(c);
         if (c->srcBpc == 8) {
             if (c->dstBpc <= 14) {
                 c->hyScale = c->hcScale = ff_hscale_8_to_15_lasx;
@@ -64,19 +93,9 @@ av_cold void ff_sws_init_swscale_loongarch(SwsContext *c)
             c->hyScale = c->hcScale = c->dstBpc > 14 ? ff_hscale_16_to_19_lasx
                                                      : ff_hscale_16_to_15_lasx;
         }
-        switch (c->srcFormat) {
-        case AV_PIX_FMT_GBRAP:
-        case AV_PIX_FMT_GBRP:
-            {
-                c->readChrPlanar = planar_rgb_to_uv_lasx;
-                c->readLumPlanar = planar_rgb_to_y_lasx;
-            }
-            break;
-        }
-        if (c->dstBpc == 8)
-            c->yuv2planeX = ff_yuv2planeX_8_lasx;
     }
 #endif // #if HAVE_LASX
+    ff_sws_init_range_convert_loongarch(c);
 }
 
 av_cold void rgb2rgb_init_loongarch(void)

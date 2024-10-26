@@ -52,7 +52,7 @@
 #include "libavutil/opt.h"
 #include "libavcodec/avcodec.h"
 #include "avfilter.h"
-#include "internal.h"
+#include "filters.h"
 #include "video.h"
 
 enum MCDeintMode {

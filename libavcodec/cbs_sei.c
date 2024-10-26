@@ -16,6 +16,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include "libavutil/mem.h"
 #include "cbs.h"
 #include "cbs_internal.h"
 #include "cbs_h264.h"
@@ -40,7 +41,6 @@ int ff_cbs_sei_alloc_message_payload(SEIRawMessage *message,
                                      const SEIMessageTypeDescriptor *desc)
 {
     void (*free_func)(FFRefStructOpaque, void*);
-    unsigned flags = 0;
 
     av_assert0(message->payload     == NULL &&
                message->payload_ref == NULL);
@@ -52,10 +52,9 @@ int ff_cbs_sei_alloc_message_payload(SEIRawMessage *message,
         free_func = &cbs_free_user_data_unregistered;
     else {
         free_func = NULL;
-        flags = FF_REFSTRUCT_FLAG_NO_ZEROING;
     }
 
-    message->payload_ref = ff_refstruct_alloc_ext(desc->size, flags,
+    message->payload_ref = ff_refstruct_alloc_ext(desc->size, 0,
                                                   NULL, free_func);
     if (!message->payload_ref)
         return AVERROR(ENOMEM);

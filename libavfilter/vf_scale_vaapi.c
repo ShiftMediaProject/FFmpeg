@@ -22,7 +22,7 @@
 #include "libavutil/pixdesc.h"
 
 #include "avfilter.h"
-#include "internal.h"
+#include "filters.h"
 #include "scale_eval.h"
 #include "video.h"
 #include "vaapi_vpp.h"

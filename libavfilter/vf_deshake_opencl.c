@@ -58,7 +58,6 @@
 #include "framequeue.h"
 #include "filters.h"
 #include "transform.h"
-#include "internal.h"
 #include "opencl.h"
 #include "opencl_source.h"
 #include "video.h"
@@ -1112,6 +1111,7 @@ static int deshake_opencl_init(AVFilterContext *avctx)
     DeshakeOpenCLContext *ctx = avctx->priv;
     AVFilterLink *outlink = avctx->outputs[0];
     AVFilterLink *inlink = avctx->inputs[0];
+    FilterLink      *inl = ff_filter_link(inlink);
     // Pointer to the host-side pattern buffer to be initialized and then copied
     // to the GPU
     PointPair *pattern_host = NULL;
@@ -1146,7 +1146,7 @@ static int deshake_opencl_init(AVFilterContext *avctx)
     const int descriptor_buf_size = image_grid_32 * (BREIFN / 8);
     const int features_buf_size = image_grid_32 * sizeof(cl_float2);
 
-    const AVHWFramesContext *hw_frames_ctx = (AVHWFramesContext*)inlink->hw_frames_ctx->data;
+    const AVHWFramesContext *hw_frames_ctx = (AVHWFramesContext*)inl->hw_frames_ctx->data;
     const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(hw_frames_ctx->sw_format);
 
     av_assert0(hw_frames_ctx);
@@ -1155,7 +1155,7 @@ static int deshake_opencl_init(AVFilterContext *avctx)
     ff_framequeue_global_init(&fqg);
     ff_framequeue_init(&ctx->fq, &fqg);
     ctx->eof = 0;
-    ctx->smooth_window = (int)(av_q2d(avctx->inputs[0]->frame_rate) * ctx->smooth_window_multiplier);
+    ctx->smooth_window = (int)(av_q2d(inl->frame_rate) * ctx->smooth_window_multiplier);
     ctx->curr_frame = 0;
 
     memset(&zeroed_ulong8, 0, sizeof(cl_ulong8));
@@ -1369,6 +1369,7 @@ static int filter_frame(AVFilterLink *link, AVFrame *input_frame)
 {
     AVFilterContext *avctx = link->dst;
     AVFilterLink *outlink = avctx->outputs[0];
+    FilterLink      *outl = ff_filter_link(outlink);
     DeshakeOpenCLContext *deshake_ctx = avctx->priv;
     AVFrame *cropped_frame = NULL, *transformed_frame = NULL;
     int err;
@@ -1387,8 +1388,8 @@ static int filter_frame(AVFilterLink *link, AVFrame *input_frame)
     size_t global_work[2];
     int64_t duration;
     cl_mem src, transformed, dst;
-    cl_mem transforms[3];
-    CropInfo crops[3];
+    cl_mem transforms[AV_VIDEO_MAX_PLANES];
+    CropInfo crops[AV_VIDEO_MAX_PLANES];
     cl_event transform_event, crop_upscale_event;
     DebugMatches debug_matches;
     cl_int num_model_matches;
@@ -1415,7 +1416,7 @@ static int filter_frame(AVFilterLink *link, AVFrame *input_frame)
     if (input_frame->duration) {
         duration = input_frame->duration;
     } else {
-        duration = av_rescale_q(1, av_inv_q(outlink->frame_rate), outlink->time_base);
+        duration = av_rescale_q(1, av_inv_q(outl->frame_rate), outlink->time_base);
     }
     deshake_ctx->duration = input_frame->pts + duration;
 
@@ -1518,7 +1519,7 @@ static int filter_frame(AVFilterLink *link, AVFrame *input_frame)
     transforms[0] = deshake_ctx->transform_y;
     transforms[1] = transforms[2] = deshake_ctx->transform_uv;
 
-    for (int p = 0; p < FF_ARRAY_ELEMS(transformed_frame->data); p++) {
+    for (int p = 0; p < AV_VIDEO_MAX_PLANES; p++) {
         // Transform all of the planes appropriately
         src = (cl_mem)input_frame->data[p];
         transformed = (cl_mem)transformed_frame->data[p];
@@ -1619,7 +1620,7 @@ static int filter_frame(AVFilterLink *link, AVFrame *input_frame)
         crops[0] = deshake_ctx->crop_y;
         crops[1] = crops[2] = deshake_ctx->crop_uv;
 
-        for (int p = 0; p < FF_ARRAY_ELEMS(cropped_frame->data); p++) {
+        for (int p = 0; p < AV_VIDEO_MAX_PLANES; p++) {
             // Crop all of the planes appropriately
             dst = (cl_mem)cropped_frame->data[p];
             transformed = (cl_mem)transformed_frame->data[p];

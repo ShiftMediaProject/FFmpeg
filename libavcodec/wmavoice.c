@@ -29,6 +29,7 @@
 
 #include "libavutil/channel_layout.h"
 #include "libavutil/float_dsp.h"
+#include "libavutil/mem.h"
 #include "libavutil/mem_internal.h"
 #include "libavutil/thread.h"
 #include "libavutil/tx.h"
@@ -654,7 +655,7 @@ static void calc_input_response(WMAVoiceContext *s, float *lpcs_src,
         lpcs[n] = angle_mul * pwr;
 
         /* 70.57 =~ 1/log10(1.0331663) */
-        idx = av_clipf((pwr * gain_mul - 0.0295) * 70.570526123, 0, INT_MAX / 2);
+        idx = av_clipd((pwr * gain_mul - 0.0295) * 70.570526123, 0, INT_MAX / 2);
 
         if (idx > 127) { // fall back if index falls outside table range
             coeffs[n] = wmavoice_energy_table[127] *
@@ -1505,6 +1506,8 @@ static int synth_frame(AVCodecContext *ctx, GetBitContext *gb, int frame_idx,
     /* Parse frame type ("frame header"), see frame_descs */
     int bd_idx = s->vbm_tree[get_vlc2(gb, frame_type_vlc, 6, 3)], block_nsamples;
 
+    pitch[0] = INT_MAX;
+
     if (bd_idx < 0) {
         av_log(ctx, AV_LOG_ERROR,
                "Invalid frame type VLC code, skipping\n");
@@ -1621,6 +1624,9 @@ static int synth_frame(AVCodecContext *ctx, GetBitContext *gb, int frame_idx,
     if (s->do_apf) {
         double i_lsps[MAX_LSPS];
         float lpcs[MAX_LSPS];
+
+        if(frame_descs[bd_idx].fcb_type >= FCB_TYPE_AW_PULSES && pitch[0] == INT_MAX)
+            return AVERROR_INVALIDDATA;
 
         for (n = 0; n < s->lsps; n++) // LSF -> LSP
             i_lsps[n] = cos(0.5 * (prev_lsps[n] + lsps[n]));

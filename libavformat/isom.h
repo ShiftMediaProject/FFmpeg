@@ -212,9 +212,13 @@ typedef struct MOVStreamContext {
     unsigned drefs_count;
     MOVDref *drefs;
     int dref_id;
+    unsigned tref_flags;
+    int tref_id;
     int timecode_track;
     int width;            ///< tkhd width
     int height;           ///< tkhd height
+    int h_spacing;        ///< pasp hSpacing
+    int v_spacing;        ///< pasp vSpacing
     int dts_shift;        ///< dts shift when ctts is negative
     uint32_t palette[256];
     int has_palette;
@@ -247,9 +251,11 @@ typedef struct MOVStreamContext {
 
     int32_t *display_matrix;
     AVStereo3D *stereo3d;
+    size_t stereo3d_size;
     AVSphericalMapping *spherical;
     size_t spherical_size;
     AVMasteringDisplayMetadata *mastering;
+    size_t mastering_size;
     AVContentLightMetadata *coll;
     size_t coll_size;
     AVAmbientViewingEnvironment *ambient;
@@ -359,8 +365,8 @@ typedef struct MOVContext {
 } MOVContext;
 
 int ff_mp4_read_descr_len(AVIOContext *pb);
-int ff_mp4_read_descr(AVFormatContext *fc, AVIOContext *pb, int *tag);
-int ff_mp4_read_dec_config_descr(AVFormatContext *fc, AVStream *st, AVIOContext *pb);
+int ff_mp4_read_descr(void *logctx, AVIOContext *pb, int *tag);
+int ff_mp4_read_dec_config_descr(void *logctx, AVStream *st, AVIOContext *pb);
 void ff_mp4_parse_es_descr(AVIOContext *pb, int *es_id);
 
 #define MP4ODescrTag                    0x01
@@ -404,6 +410,7 @@ void ff_mp4_parse_es_descr(AVIOContext *pb, int *es_id);
 #define MOV_SAMPLE_DEPENDENCY_YES     0x1
 #define MOV_SAMPLE_DEPENDENCY_NO      0x2
 
+#define MOV_TREF_FLAG_ENHANCEMENT     0x1
 
 #define TAG_IS_AVCI(tag)                    \
     ((tag) == MKTAG('a', 'i', '5', 'p') ||  \

@@ -178,7 +178,14 @@ HEVC_SAMPLES_444_12BIT =        \
     PERSIST_RPARAM_A_RExt_Sony_3\
     $(if $(CONFIG_LARGE_TESTS), $(HEVC_SAMPLES_444_12BIT_LARGE))
 
-FATE_HEVC_VARS := 8BIT 10BIT 422_10BIT 422_10BIN 444_8BIT 444_12BIT
+HEVC_SAMPLES_MULTIVIEW =    \
+    MVHEVCS_A               \
+    MVHEVCS_B               \
+    MVHEVCS_E               \
+    MVHEVCS_F               \
+
+
+FATE_HEVC_VARS := 8BIT 10BIT 422_10BIT 422_10BIN 444_8BIT 444_12BIT MULTIVIEW
 $(foreach VAR,$(FATE_HEVC_VARS), $(eval HEVC_TESTS_$(VAR) := $(addprefix fate-hevc-conformance-, $(HEVC_SAMPLES_$(VAR)))))
 
 # equivalent bitstreams
@@ -200,8 +207,10 @@ $(HEVC_TESTS_444_8BIT): SCALE_OPTS := -pix_fmt yuv444p
 $(HEVC_TESTS_10BIT): SCALE_OPTS := -pix_fmt yuv420p10le -vf scale
 $(HEVC_TESTS_422_10BIT) $(HEVC_TESTS_422_10BIN): SCALE_OPTS := -pix_fmt yuv422p10le -vf scale
 $(HEVC_TESTS_444_12BIT): SCALE_OPTS := -pix_fmt yuv444p12le -vf scale
-fate-hevc-conformance-%: CMD = framecrc -flags unaligned -i $(TARGET_SAMPLES)/hevc-conformance/$(subst fate-hevc-conformance-,,$(@)).bit $(SCALE_OPTS)
-$(HEVC_TESTS_422_10BIN): CMD = framecrc -flags unaligned -i $(TARGET_SAMPLES)/hevc-conformance/$(subst fate-hevc-conformance-,,$(@)).bin $(SCALE_OPTS)
+fate-hevc-conformance-%: CMD = framecrc -i $(TARGET_SAMPLES)/hevc-conformance/$(subst fate-hevc-conformance-,,$(@)).bit $(SCALE_OPTS)
+$(HEVC_TESTS_422_10BIN): CMD = framecrc -i $(TARGET_SAMPLES)/hevc-conformance/$(subst fate-hevc-conformance-,,$(@)).bin $(SCALE_OPTS)
+$(HEVC_TESTS_MULTIVIEW): CMD = framecrc -i $(TARGET_SAMPLES)/hevc-conformance/$(subst fate-hevc-conformance-,,$(@)).bit \
+	-pix_fmt yuv420p -map "0:view:0" -map "0:view:1" -vf setpts=N
 
 FATE_HEVC-$(call FRAMECRC, HEVC, HEVC, HEVC_PARSER) += $(HEVC_TESTS_8BIT) $(HEVC_TESTS_444_8BIT)
 FATE_HEVC-$(call FRAMECRC, HEVC, HEVC, HEVC_PARSER SCALE_FILTER) +=         \
@@ -209,6 +218,8 @@ FATE_HEVC-$(call FRAMECRC, HEVC, HEVC, HEVC_PARSER SCALE_FILTER) +=         \
                                                     $(HEVC_TESTS_422_10BIT) \
                                                     $(HEVC_TESTS_422_10BIN) \
                                                     $(HEVC_TESTS_444_12BIT) \
+
+FATE_HEVC-$(call FRAMECRC, HEVC, HEVC, HEVC_PARSER SCALE_FILTER) += $(HEVC_TESTS_MULTIVIEW)
 
 fate-hevc-paramchange-yuv420p-yuv420p10: CMD = framecrc -i $(TARGET_SAMPLES)/hevc/paramchange_yuv420p_yuv420p10.hevc -fps_mode passthrough -sws_flags area+accurate_rnd+bitexact
 FATE_HEVC-$(call FRAMECRC, HEVC, HEVC, HEVC_PARSER SCALE_FILTER LARGE_TESTS) += fate-hevc-paramchange-yuv420p-yuv420p10
@@ -252,11 +263,33 @@ FATE_HEVC_FFPROBE-$(call DEMDEC, MOV, HEVC) += fate-hevc-dv-rpu
 fate-hevc-two-first-slice: CMD = threads=2 framemd5 -i $(TARGET_SAMPLES)/hevc/two_first_slice.mp4 -sws_flags bitexact -t 00:02.00 -an
 FATE_HEVC-$(call FRAMEMD5, MOV, HEVC) += fate-hevc-two-first-slice
 
-fate-hevc-cabac-tudepth: CMD = framecrc -flags unaligned -i $(TARGET_SAMPLES)/hevc/cbf_cr_cb_TUDepth_4_circle.h265 -pix_fmt yuv444p
+fate-hevc-cabac-tudepth: CMD = framecrc -i $(TARGET_SAMPLES)/hevc/cbf_cr_cb_TUDepth_4_circle.h265 -pix_fmt yuv444p
 FATE_HEVC-$(call FRAMECRC, HEVC, HEVC) += fate-hevc-cabac-tudepth
 
-fate-hevc-small422chroma: CMD = framecrc -flags unaligned -i $(TARGET_SAMPLES)/hevc/food.hevc -pix_fmt yuv422p10le -vf scale
+fate-hevc-small422chroma: CMD = framecrc -i $(TARGET_SAMPLES)/hevc/food.hevc -pix_fmt yuv422p10le -vf scale
 FATE_HEVC-$(call FRAMECRC, HEVC, HEVC, HEVC_PARSER SCALE_FILTER) += fate-hevc-small422chroma
+
+fate-hevc-pir: CMD = framecrc -i $(TARGET_SAMPLES)/hevc/pir.hevc
+FATE_HEVC-$(call FRAMECRC, HEVC, HEVC) += fate-hevc-pir
+
+# multiview stream, where the secondary layer has a nontrivial nuh_layer_id=6
+fate-hevc-mv-nuh-layer-id: CMD = framecrc -i $(TARGET_SAMPLES)/hevc/mv_nuh_layer_id.bit -map 0:view:all
+FATE_HEVC-$(call FRAMECRC, HEVC, HEVC) += fate-hevc-mv-nuh-layer-id
+
+# NB: $\ at the end of line joins lines without adding whitespace;
+# this trick is recommended by GNU make manual
+fate-hevc-mv-switch: INPUT = \
+$(TARGET_SAMPLES)/hevc-conformance/LS_A_Orange_2.bit|$\
+$(TARGET_SAMPLES)/hevc/mv_nuh_layer_id.bit|$\
+$(TARGET_SAMPLES)/hevc-conformance/NoOutPrior_B_Qualcomm_1.bit|$\
+$(TARGET_SAMPLES)/hevc-conformance/MVHEVCS_A.bit
+fate-hevc-mv-switch: CMD = framecrc -i "concat:$(INPUT)" -fps_mode passthrough -map 0:vidx:0 -map 0:vidx:1 -sws_flags +accurate_rnd+bitexact
+FATE_HEVC-$(call FRAMECRC, HEVC, HEVC, CONCAT_PROTOCOL) += fate-hevc-mv-switch
+
+# multiview stream, select view by position
+# (depends on Three Dimensional Reference Displays Information SEI)
+fate-hevc-mv-position: CMD = framecrc -i $(TARGET_SAMPLES)/hevc/multiview.mov -map 0:v:vpos:left -map 0:v:vpos:right
+FATE_HEVC-$(call FRAMECRC, MOV, HEVC) += fate-hevc-mv-position
 
 FATE_SAMPLES_AVCONV += $(FATE_HEVC-yes)
 FATE_SAMPLES_FFPROBE += $(FATE_HEVC_FFPROBE-yes)

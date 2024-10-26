@@ -89,10 +89,8 @@ int ff_flac_parse_picture(AVFormatContext *s, uint8_t **bufp, int buf_size,
         mime++;
     }
     if (id == AV_CODEC_ID_NONE) {
-        av_log(s, AV_LOG_ERROR, "Unknown attached picture mimetype: %s.\n",
+        av_log(s, AV_LOG_WARNING, "Unknown attached picture mimetype: %s.\n",
                mimetype);
-        if (s->error_recognition & AV_EF_EXPLODE)
-            return AVERROR_INVALIDDATA;
         return 0;
     }
 

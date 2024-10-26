@@ -28,6 +28,7 @@
 #include "libavutil/cpu.h"
 #include "libavutil/emms.h"
 #include "libavutil/intreadwrite.h"
+#include "libavutil/mem.h"
 #include "libavutil/mem_internal.h"
 #include "libavutil/pixdesc.h"
 #include "config.h"
@@ -223,7 +224,7 @@ static void lumRangeFromJpeg16_c(int16_t *_dst, int width)
     int i;
     int32_t *dst = (int32_t *) _dst;
     for (i = 0; i < width; i++)
-        dst[i] = (dst[i]*(14071/4) + (33561947<<4)/4)>>12;
+        dst[i] = ((int)(dst[i]*(14071U/4) + (33561947<<4)/4)) >> 12;
 }
 
 
@@ -601,6 +602,8 @@ void ff_sws_init_scale(SwsContext *c)
     ff_sws_init_swscale_arm(c);
 #elif ARCH_LOONGARCH64
     ff_sws_init_swscale_loongarch(c);
+#elif ARCH_RISCV
+    ff_sws_init_swscale_riscv(c);
 #endif
 }
 

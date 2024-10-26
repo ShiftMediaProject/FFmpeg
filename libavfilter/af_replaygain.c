@@ -30,8 +30,8 @@
 #include "libavutil/opt.h"
 #include "audio.h"
 #include "avfilter.h"
+#include "filters.h"
 #include "formats.h"
-#include "internal.h"
 
 #define HISTOGRAM_SLOTS 12000
 #define BUTTER_ORDER        2
@@ -326,29 +326,43 @@ typedef struct ReplayGainContext {
     float butter_hist_b[256];
 } ReplayGainContext;
 
-static int query_formats(AVFilterContext *ctx)
+static int query_formats(const AVFilterContext *ctx,
+                         AVFilterFormatsConfig **cfg_in,
+                         AVFilterFormatsConfig **cfg_out)
 {
-    AVFilterFormats *formats = NULL;
-    AVFilterChannelLayouts *layout = NULL;
+    static const enum AVSampleFormat formats[] = {
+        AV_SAMPLE_FMT_FLT,
+        AV_SAMPLE_FMT_NONE,
+    };
+    static const AVChannelLayout layouts[] = {
+        AV_CHANNEL_LAYOUT_STEREO,
+        { .nb_channels = 0 },
+    };
+
+    AVFilterFormats *rates;
+
     int i, ret;
 
-    if ((ret = ff_add_format                 (&formats, AV_SAMPLE_FMT_FLT  )) < 0 ||
-        (ret = ff_set_common_formats         (ctx     , formats            )) < 0 ||
-        (ret = ff_add_channel_layout         (&layout , &(AVChannelLayout)AV_CHANNEL_LAYOUT_STEREO)) < 0 ||
-        (ret = ff_set_common_channel_layouts (ctx     , layout             )) < 0)
+    ret = ff_set_common_formats_from_list2(ctx, cfg_in, cfg_out, formats);
+    if (ret < 0)
         return ret;
 
-    formats = NULL;
+    ret = ff_set_common_channel_layouts_from_list2(ctx, cfg_in, cfg_out, layouts);
+    if (ret < 0)
+        return ret;
+
+    rates = NULL;
     for (i = 0; i < FF_ARRAY_ELEMS(freqinfos); i++) {
-        if ((ret = ff_add_format(&formats, freqinfos[i].sample_rate)) < 0)
+        if ((ret = ff_add_format(&rates, freqinfos[i].sample_rate)) < 0)
             return ret;
     }
 
-    return ff_set_common_samplerates(ctx, formats);
+    return ff_set_common_samplerates2(ctx, cfg_in, cfg_out, rates);
 }
 
 static int config_input(AVFilterLink *inlink)
 {
+    FilterLink *l = ff_filter_link(inlink);
     AVFilterContext *ctx = inlink->dst;
     ReplayGainContext *s = ctx->priv;
     int i;
@@ -366,8 +380,8 @@ static int config_input(AVFilterLink *inlink)
 
     s->yule_hist_i   = 20;
     s->butter_hist_i = 4;
-    inlink->min_samples =
-    inlink->max_samples = inlink->sample_rate / 20;
+    l->min_samples =
+    l->max_samples = inlink->sample_rate / 20;
 
     return 0;
 }
@@ -637,5 +651,5 @@ const AVFilter ff_af_replaygain = {
     .flags         = AVFILTER_FLAG_METADATA_ONLY,
     FILTER_INPUTS(replaygain_inputs),
     FILTER_OUTPUTS(replaygain_outputs),
-    FILTER_QUERY_FUNC(query_formats),
+    FILTER_QUERY_FUNC2(query_formats),
 };

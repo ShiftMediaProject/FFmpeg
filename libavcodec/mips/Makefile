@@ -1,5 +1,4 @@
-ARCH_HEADERS                               = aacsbr_mips.h aacpsy_mips.h   \
-                                             cabac.h compute_antialias_fixed.h \
+ARCH_HEADERS                               = cabac.h compute_antialias_fixed.h \
                                              compute_antialias_float.h     \
 
 MIPSFPU-OBJS-$(CONFIG_AMRNB_DECODER)      += mips/acelp_filters_mips.o     \
@@ -15,10 +14,6 @@ MIPSFPU-OBJS-$(CONFIG_MPEGAUDIODSP)       += mips/mpegaudiodsp_mips_float.o
 MIPSDSP-OBJS-$(CONFIG_MPEGAUDIODSP)       += mips/mpegaudiodsp_mips_fixed.o
 MIPSFPU-OBJS-$(CONFIG_FMTCONVERT)         += mips/fmtconvert_mips.o
 OBJS-$(CONFIG_AC3DSP)                     += mips/ac3dsp_mips.o
-OBJS-$(CONFIG_AAC_DECODER)                += mips/aacdec_mips.o            \
-                                             mips/aacsbr_mips.o            \
-                                             mips/sbrdsp_mips.o            \
-                                             mips/aacpsdsp_mips.o
 MIPSFPU-OBJS-$(CONFIG_AAC_ENCODER)        += mips/iirfilter_mips.o
 OBJS-$(CONFIG_HEVC_DECODER)               += mips/hevcdsp_init_mips.o      \
                                              mips/hevcpred_init_mips.o
@@ -36,7 +31,8 @@ OBJS-$(CONFIG_BLOCKDSP)                   += mips/blockdsp_init_mips.o
 OBJS-$(CONFIG_PIXBLOCKDSP)                += mips/pixblockdsp_init_mips.o
 OBJS-$(CONFIG_IDCTDSP)                    += mips/idctdsp_init_mips.o
 OBJS-$(CONFIG_MPEGVIDEO)                  += mips/mpegvideo_init_mips.o
-OBJS-$(CONFIG_MPEGVIDEOENC)               += mips/mpegvideoencdsp_init_mips.o
+OBJS-$(CONFIG_MPEGVIDEOENC)               += mips/mpegvideoenc_init_mips.o \
+                                             mips/mpegvideoencdsp_init_mips.o
 OBJS-$(CONFIG_ME_CMP)                     += mips/me_cmp_init_mips.o
 OBJS-$(CONFIG_MPEG4_DECODER)              += mips/xvididct_init_mips.o
 OBJS-$(CONFIG_VC1DSP)                     += mips/vc1dsp_init_mips.o
@@ -81,6 +77,7 @@ MMI-OBJS-$(CONFIG_H264DSP)                += mips/h264dsp_mmi.o
 MMI-OBJS-$(CONFIG_H264CHROMA)             += mips/h264chroma_mmi.o
 MMI-OBJS-$(CONFIG_H264PRED)               += mips/h264pred_mmi.o
 MMI-OBJS-$(CONFIG_MPEGVIDEO)              += mips/mpegvideo_mmi.o
+MMI-OBJS-$(CONFIG_MPEGVIDEOENC)           += mips/mpegvideoenc_mmi.o
 MMI-OBJS-$(CONFIG_IDCTDSP)                += mips/idctdsp_mmi.o           \
                                              mips/simple_idct_mmi.o
 MMI-OBJS-$(CONFIG_MPEG4_DECODER)          += mips/xvid_idct_mmi.o

@@ -30,6 +30,7 @@
 #include "texturedsp.h"
 #include "vbn.h"
 #include "libavutil/imgutils.h"
+#include "libavutil/mem.h"
 
 typedef struct VBNContext {
     TextureDSPContext texdsp;
@@ -149,9 +150,6 @@ static int vbn_decode_frame(AVCodecContext *avctx,
     ret = ff_get_buffer(avctx, frame, 0);
     if (ret < 0)
         goto out;
-
-    frame->pict_type = AV_PICTURE_TYPE_I;
-    frame->flags |= AV_FRAME_FLAG_KEY;
 
     if (format == VBN_FORMAT_RAW) {
         uint8_t *flipped = frame->data[0] + frame->linesize[0] * (frame->height - 1);

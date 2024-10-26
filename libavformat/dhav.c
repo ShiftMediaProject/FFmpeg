@@ -22,6 +22,7 @@
 
 #include <time.h>
 
+#include "libavutil/mem.h"
 #include "libavutil/parseutils.h"
 #include "avio_internal.h"
 #include "avformat.h"
@@ -272,9 +273,14 @@ static int dhav_read_header(AVFormatContext *s)
 {
     DHAVContext *dhav = s->priv_data;
     uint8_t signature[5];
+    int ret = ffio_ensure_seekback(s->pb, 5);
 
-    ffio_ensure_seekback(s->pb, 5);
-    avio_read(s->pb, signature, sizeof(signature));
+    if (ret < 0)
+        return ret;
+
+    ret = ffio_read_size(s->pb, signature, sizeof(signature));
+    if (ret < 0)
+        return ret;
     if (!memcmp(signature, "DAHUA", 5)) {
         avio_skip(s->pb, 0x400 - 5);
         dhav->last_good_pos = avio_tell(s->pb);

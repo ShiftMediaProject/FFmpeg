@@ -23,6 +23,7 @@
 #include <inttypes.h>
 
 #include "libavutil/dict.h"
+#include "libavutil/mem.h"
 #include "avformat.h"
 #include "avio_internal.h"
 #include "apetag.h"
@@ -120,7 +121,8 @@ int64_t ff_ape_parse_tag(AVFormatContext *s)
 
     avio_seek(pb, file_size - APE_TAG_FOOTER_BYTES, SEEK_SET);
 
-    avio_read(pb, buf, 8);     /* APETAGEX */
+    if(avio_read(pb, buf, 8) != 8)     /* APETAGEX */
+        return 0;
     if (strncmp(buf, APE_TAG_PREAMBLE, 8)) {
         return 0;
     }

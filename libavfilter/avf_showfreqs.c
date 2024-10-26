@@ -21,6 +21,7 @@
 #include <float.h>
 #include <math.h>
 
+#include "libavutil/mem.h"
 #include "libavutil/tx.h"
 #include "libavutil/avassert.h"
 #include "libavutil/avstring.h"
@@ -33,7 +34,6 @@
 #include "formats.h"
 #include "video.h"
 #include "avfilter.h"
-#include "internal.h"
 #include "window_func.h"
 
 enum DataMode       { MAGNITUDE, PHASE, DELAY, NB_DATA };
@@ -149,6 +149,7 @@ static int query_formats(AVFilterContext *ctx)
 
 static int config_output(AVFilterLink *outlink)
 {
+    FilterLink *l = ff_filter_link(outlink);
     AVFilterContext *ctx = outlink->src;
     AVFilterLink *inlink = ctx->inputs[0];
     ShowFreqsContext *s = ctx->priv;
@@ -222,8 +223,8 @@ static int config_output(AVFilterLink *outlink)
     if (!s->window)
         return AVERROR(ENOMEM);
 
-    outlink->frame_rate = s->frame_rate;
-    outlink->time_base = av_inv_q(outlink->frame_rate);
+    l->frame_rate = s->frame_rate;
+    outlink->time_base = av_inv_q(l->frame_rate);
     outlink->sample_aspect_ratio = (AVRational){1,1};
     outlink->w = s->w;
     outlink->h = s->h;
@@ -296,6 +297,7 @@ static inline void plot_freq(ShowFreqsContext *s, int ch,
                              double a, int f, uint8_t fg[4], int *prev_y,
                              AVFrame *out, AVFilterLink *outlink)
 {
+    FilterLink *outl = ff_filter_link(outlink);
     const int w = s->w;
     const float min = s->minamp;
     const float avg = s->avg_data[ch][f];
@@ -335,12 +337,12 @@ static inline void plot_freq(ShowFreqsContext *s, int ch,
 
     switch (s->avg) {
     case 0:
-        y = s->avg_data[ch][f] = !outlink->frame_count_in ? y : FFMIN(0, y);
+        y = s->avg_data[ch][f] = !outl->frame_count_in ? y : FFMIN(0, y);
         break;
     case 1:
         break;
     default:
-        s->avg_data[ch][f] = avg + y * (y - avg) / (FFMIN(outlink->frame_count_in + 1, s->avg) * (float)y);
+        s->avg_data[ch][f] = avg + y * (y - avg) / (FFMIN(outl->frame_count_in + 1, s->avg) * (float)y);
         y = av_clip(s->avg_data[ch][f], 0, outlink->h - 1);
         break;
     }

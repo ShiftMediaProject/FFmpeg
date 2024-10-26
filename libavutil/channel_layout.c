@@ -33,6 +33,7 @@
 #include "common.h"
 #include "error.h"
 #include "macros.h"
+#include "mem.h"
 #include "opt.h"
 
 #define CHAN_IS_AMBI(x) ((x) >= AV_CHAN_AMBISONIC_BASE &&\
@@ -74,6 +75,10 @@ static const struct channel_name channel_names[] = {
     [AV_CHAN_BOTTOM_FRONT_CENTER  ] = { "BFC",       "bottom front center"   },
     [AV_CHAN_BOTTOM_FRONT_LEFT    ] = { "BFL",       "bottom front left"     },
     [AV_CHAN_BOTTOM_FRONT_RIGHT   ] = { "BFR",       "bottom front right"    },
+    [AV_CHAN_SIDE_SURROUND_LEFT   ] = { "SSL",       "side surround left"    },
+    [AV_CHAN_SIDE_SURROUND_RIGHT  ] = { "SSR",       "side surround right"   },
+    [AV_CHAN_TOP_SURROUND_LEFT    ] = { "TTL",       "top surround left"     },
+    [AV_CHAN_TOP_SURROUND_RIGHT   ] = { "TTR",       "top surround right"    },
 };
 
 void av_channel_name_bprint(AVBPrint *bp, enum AVChannel channel_id)
@@ -472,14 +477,13 @@ static int has_channel_names(const AVChannelLayout *channel_layout)
     return 0;
 }
 
-/**
- * If the layout is n-th order standard-order ambisonic, with optional
- * extra non-diegetic channels at the end, return the order.
- * Return a negative error code otherwise.
- */
-static int ambisonic_order(const AVChannelLayout *channel_layout)
+int av_channel_layout_ambisonic_order(const AVChannelLayout *channel_layout)
 {
     int i, highest_ambi, order;
+
+    if (channel_layout->order != AV_CHANNEL_ORDER_AMBISONIC &&
+        channel_layout->order != AV_CHANNEL_ORDER_CUSTOM)
+        return AVERROR(EINVAL);
 
     highest_ambi = -1;
     if (channel_layout->order == AV_CHANNEL_ORDER_AMBISONIC)
@@ -535,7 +539,7 @@ static enum AVChannelOrder canonical_order(AVChannelLayout *channel_layout)
     if (masked_description(channel_layout, 0) > 0)
         return AV_CHANNEL_ORDER_NATIVE;
 
-    order = ambisonic_order(channel_layout);
+    order = av_channel_layout_ambisonic_order(channel_layout);
     if (order >= 0 && masked_description(channel_layout, (order + 1) * (order + 1)) >= 0)
         return AV_CHANNEL_ORDER_AMBISONIC;
 
@@ -550,7 +554,7 @@ static enum AVChannelOrder canonical_order(AVChannelLayout *channel_layout)
 static int try_describe_ambisonic(AVBPrint *bp, const AVChannelLayout *channel_layout)
 {
     int nb_ambi_channels;
-    int order = ambisonic_order(channel_layout);
+    int order = av_channel_layout_ambisonic_order(channel_layout);
     if (order < 0)
         return order;
 
@@ -944,7 +948,7 @@ int av_channel_layout_retype(AVChannelLayout *channel_layout, enum AVChannelOrde
         if (channel_layout->order == AV_CHANNEL_ORDER_CUSTOM) {
             int64_t mask;
             int nb_channels = channel_layout->nb_channels;
-            int order = ambisonic_order(channel_layout);
+            int order = av_channel_layout_ambisonic_order(channel_layout);
             if (order < 0)
                 return AVERROR(ENOSYS);
             mask = masked_description(channel_layout, (order + 1) * (order + 1));

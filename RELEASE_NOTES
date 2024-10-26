@@ -1,10 +1,10 @@
 
-            ┌─────────────────────────────────────────┐
-            │ RELEASE NOTES for FFmpeg 7.0 "Dijkstra" │
-            └─────────────────────────────────────────┘
+            ┌──────────────────────────────────────┐
+            │ RELEASE NOTES for FFmpeg 7.1 "Péter" │
+            └──────────────────────────────────────┘
 
-   The FFmpeg Project proudly presents FFmpeg 7.0 "Dijkstra", about 6
-   months after the release of FFmpeg 6.1.
+   The FFmpeg Project proudly presents FFmpeg 7.1 "Péter", about 6
+   months after the release of FFmpeg 7.0.
 
    A complete Changelog is available at the root of the project, and the
    complete Git history on https://git.ffmpeg.org/gitweb/ffmpeg.git

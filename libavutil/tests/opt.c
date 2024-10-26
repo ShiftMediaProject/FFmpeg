@@ -30,7 +30,9 @@
 
 typedef struct TestContext {
     const AVClass *class;
+    struct ChildContext *child;
     int num;
+    int unum;
     int toggle;
     char *string;
     int flags;
@@ -85,7 +87,8 @@ static const AVOptionArrayDef array_dict = {
 };
 
 static const AVOption test_options[]= {
-    {"num",        "set num",            OFFSET(num),            AV_OPT_TYPE_INT,            { .i64 = 0 },                      0,       100, 1 },
+    {"num",        "set num",            OFFSET(num),            AV_OPT_TYPE_INT,            { .i64 = 0 },                     -1,       100, 1 },
+    {"unum",       "set unum",           OFFSET(unum),           AV_OPT_TYPE_UINT,           { .i64 = 1U << 31 },               0,  1U << 31, 1 },
     {"toggle",     "set toggle",         OFFSET(toggle),         AV_OPT_TYPE_INT,            { .i64 = 1 },                      0,         1, 1 },
     {"rational",   "set rational",       OFFSET(rational),       AV_OPT_TYPE_RATIONAL,       { .dbl = 1 },                      0,        10, 1 },
     {"string",     "set string",         OFFSET(string),         AV_OPT_TYPE_STRING,         { .str = "default" },       CHAR_MIN,  CHAR_MAX, 1 },
@@ -104,7 +107,7 @@ static const AVOption test_options[]= {
     {"bin",        "set binary value",   OFFSET(binary),         AV_OPT_TYPE_BINARY,         { .str="62696e00" },               0,         0, 1 },
     {"bin1",       "set binary value",   OFFSET(binary1),        AV_OPT_TYPE_BINARY,         { .str=NULL },                     0,         0, 1 },
     {"bin2",       "set binary value",   OFFSET(binary2),        AV_OPT_TYPE_BINARY,         { .str="" },                       0,         0, 1 },
-    {"num64",      "set num 64bit",      OFFSET(num64),          AV_OPT_TYPE_INT64,          { .i64 = 1 },                      0,       100, 1 },
+    {"num64",      "set num 64bit",      OFFSET(num64),          AV_OPT_TYPE_INT64,          { .i64 = 1LL << 32 },             -1, 1LL << 32, 1 },
     {"flt",        "set float",          OFFSET(flt),            AV_OPT_TYPE_FLOAT,          { .dbl = 1.0 / 3 },                0,       100, 1 },
     {"dbl",        "set double",         OFFSET(dbl),            AV_OPT_TYPE_DOUBLE,         { .dbl = 1.0 / 3 },                0,       100, 1 },
     {"bool1",      "set boolean value",  OFFSET(bool1),          AV_OPT_TYPE_BOOL,           { .i64 = -1 },                    -1,         1, 1 },
@@ -123,10 +126,46 @@ static const char *test_get_name(void *ctx)
     return "test";
 }
 
+typedef struct ChildContext {
+    const AVClass *class;
+    int64_t child_num64;
+    int child_num;
+} ChildContext;
+
+#undef OFFSET
+#define OFFSET(x) offsetof(ChildContext, x)
+
+static const AVOption child_options[]= {
+    {"child_num64", "set num 64bit", OFFSET(child_num64), AV_OPT_TYPE_INT64, { .i64 = 0 }, 0, 100, 1 },
+    {"child_num",   "set child_num", OFFSET(child_num),   AV_OPT_TYPE_INT,   { .i64 = 1 }, 0, 100, 1 },
+    { NULL },
+};
+
+static const char *child_get_name(void *ctx)
+{
+    return "child";
+}
+
+static const AVClass child_class = {
+    .class_name = "ChildContext",
+    .item_name  = child_get_name,
+    .option     = child_options,
+    .version    = LIBAVUTIL_VERSION_INT,
+};
+
+static void *test_child_next(void *obj, void *prev)
+{
+    TestContext *test_ctx = obj;
+    if (!prev)
+        return test_ctx->child;
+    return NULL;
+}
+
 static const AVClass test_class = {
     .class_name = "TestContext",
     .item_name  = test_get_name,
     .option     = test_options,
+    .child_next = test_child_next,
     .version    = LIBAVUTIL_VERSION_INT,
 };
 
@@ -149,6 +188,7 @@ int main(void)
         av_opt_set_defaults(&test_ctx);
 
         printf("num=%d\n", test_ctx.num);
+        printf("unum=%u\n", test_ctx.unum);
         printf("toggle=%d\n", test_ctx.toggle);
         printf("string=%s\n", test_ctx.string);
         printf("escape=%s\n", test_ctx.escape);
@@ -260,6 +300,69 @@ int main(void)
         av_opt_free(&test2_ctx);
     }
 
+    printf("\nTesting av_opt_get_array()\n");
+    {
+        static const int int_array[] = { 5, 0, 42, 137, INT_MAX };
+
+        TestContext test_ctx = { 0 };
+
+        int     out_int   [FF_ARRAY_ELEMS(int_array)] = { 0 };
+        double  out_double[FF_ARRAY_ELEMS(int_array)] = { 0. };
+        char   *out_str   [FF_ARRAY_ELEMS(int_array)] = { NULL };
+        AVDictionary *out_dict[2] = { NULL };
+
+        int ret;
+
+        test_ctx.class = &test_class;
+
+        av_log_set_level(AV_LOG_QUIET);
+
+        av_opt_set_defaults(&test_ctx);
+
+        test_ctx.array_int    = av_memdup(int_array, sizeof(int_array));
+        test_ctx.nb_array_int = FF_ARRAY_ELEMS(int_array);
+
+        // retrieve as int
+        ret = av_opt_get_array(&test_ctx, "array_int", 0,
+                               1, 3, AV_OPT_TYPE_INT, out_int);
+        printf("av_opt_get_array(\"array_int\", 1, 3, INT)=%d -> [ %d, %d, %d ]\n",
+               ret, out_int[0], out_int[1], out_int[2]);
+
+        // retrieve as double
+        ret = av_opt_get_array(&test_ctx, "array_int", 0,
+                               3, 2, AV_OPT_TYPE_DOUBLE, out_double);
+        printf("av_opt_get_array(\"array_int\", 3, 2, DOUBLE)=%d -> [ %.2f, %.2f ]\n",
+               ret, out_double[0], out_double[1]);
+
+        // retrieve as str
+        ret = av_opt_get_array(&test_ctx, "array_int", 0,
+                               0, 5, AV_OPT_TYPE_STRING, out_str);
+        printf("av_opt_get_array(\"array_int\", 0, 5, STRING)=%d -> "
+               "[ %s, %s, %s, %s, %s ]\n", ret,
+               out_str[0], out_str[1], out_str[2], out_str[3], out_str[4]);
+
+        for (int i = 0; i < FF_ARRAY_ELEMS(out_str); i++)
+            av_freep(&out_str[i]);
+
+        ret = av_opt_get_array(&test_ctx, "array_dict", 0, 0, 2,
+                               AV_OPT_TYPE_DICT, out_dict);
+        printf("av_opt_get_array(\"array_dict\", 0, 2, DICT)=%d\n", ret);
+
+        for (int i = 0; i < test_ctx.nb_array_dict; i++) {
+            const AVDictionaryEntry *e = NULL;
+            while ((e = av_dict_iterate(test_ctx.array_dict[i], e))) {
+                const AVDictionaryEntry *e1 = av_dict_get(out_dict[i], e->key, NULL, 0);
+                if (!e1 || strcmp(e->value, e1->value)) {
+                    printf("mismatching dict entry %s: %s/%s\n",
+                           e->key, e->value, e1 ? e1->value : "<missing>");
+                }
+            }
+            av_dict_free(&out_dict[i]);
+        }
+
+        av_opt_free(&test_ctx);
+    }
+
     printf("\nTest av_opt_serialize()\n");
     {
         TestContext test_ctx = { 0 };
@@ -280,8 +383,19 @@ int main(void)
             if (ret < 0)
                 printf("Error ret '%d'\n", ret);
             if (av_opt_serialize(&test_ctx, 0, 0, &buf, '=', ',') >= 0) {
+                ChildContext child_ctx = { 0 };
                 printf("%s\n", buf);
                 av_free(buf);
+                child_ctx.class = &child_class;
+                test_ctx.child = &child_ctx;
+                if (av_opt_serialize(&test_ctx, 0,
+                                     AV_OPT_SERIALIZE_SKIP_DEFAULTS|AV_OPT_SERIALIZE_SEARCH_CHILDREN,
+                                     &buf, '=', ',') >= 0) {
+                    printf("%s\n", buf);
+                    av_free(buf);
+                }
+                av_opt_free(&child_ctx);
+                test_ctx.child = NULL;
             }
         }
         av_opt_free(&test_ctx);
@@ -335,11 +449,25 @@ int main(void)
             "bin=boguss",
             "bin=111",
             "bin=ffff",
+            "num=bogus",
+            "num=44",
+            "num=44.4",
+            "num=-1",
+            "num=-2",
+            "num=101",
+            "unum=bogus",
+            "unum=44",
+            "unum=44.4",
+            "unum=-1",
+            "unum=2147483648",
+            "unum=2147483649",
             "num64=bogus",
             "num64=44",
             "num64=44.4",
             "num64=-1",
-            "num64=101",
+            "num64=-2",
+            "num64=4294967296",
+            "num64=4294967297",
             "flt=bogus",
             "flt=2",
             "flt=2.2",
@@ -405,6 +533,55 @@ int main(void)
                 printf("OK    '%s'\n", options[i]);
         }
         av_opt_free(&test_ctx);
+    }
+
+    printf("\nTesting av_opt_find2()\n");
+    {
+        TestContext test_ctx = { 0 };
+        ChildContext child_ctx = { 0 };
+        void *target;
+        const AVOption *opt;
+
+        test_ctx.class = &test_class;
+        child_ctx.class = &child_class;
+        test_ctx.child = &child_ctx;
+
+        av_log_set_level(AV_LOG_QUIET);
+
+        // Should succeed. num exists and has opt_flags 1
+        opt = av_opt_find2(&test_ctx, "num", NULL, 1, 0, &target);
+        if (opt && target == &test_ctx)
+            printf("OK    '%s'\n", opt->name);
+        else
+            printf("Error 'num'\n");
+
+        // Should fail. num64 exists but has opt_flags 1, not 2
+        opt = av_opt_find(&test_ctx, "num64", NULL, 2, 0);
+        if (opt)
+            printf("OK    '%s'\n", opt->name);
+        else
+            printf("Error 'num64'\n");
+
+        // Should fail. child_num exists but in a child object we're not searching
+        opt = av_opt_find(&test_ctx, "child_num", NULL, 0, 0);
+        if (opt)
+            printf("OK    '%s'\n", opt->name);
+        else
+            printf("Error 'child_num'\n");
+
+        // Should succeed. child_num exists in a child object we're searching
+        opt = av_opt_find2(&test_ctx, "child_num", NULL, 0, AV_OPT_SEARCH_CHILDREN, &target);
+        if (opt && target == &child_ctx)
+            printf("OK    '%s'\n", opt->name);
+        else
+            printf("Error 'child_num'\n");
+
+        // Should fail. foo doesn't exist
+        opt = av_opt_find(&test_ctx, "foo", NULL, 0, 0);
+        if (opt)
+            printf("OK    '%s'\n", opt->name);
+        else
+            printf("Error 'foo'\n");
     }
 
     return 0;

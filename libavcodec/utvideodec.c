@@ -31,6 +31,7 @@
 #define UNCHECKED_BITSTREAM_READER 1
 
 #include "libavutil/intreadwrite.h"
+#include "libavutil/mem.h"
 #include "libavutil/pixdesc.h"
 #include "avcodec.h"
 #include "bswapdsp.h"
@@ -889,8 +890,6 @@ static int decode_frame(AVCodecContext *avctx, AVFrame *frame,
         break;
     }
 
-    frame->flags |= AV_FRAME_FLAG_KEY;
-    frame->pict_type = AV_PICTURE_TYPE_I;
     if (c->interlaced)
         frame->flags |= AV_FRAME_FLAG_INTERLACED;
 

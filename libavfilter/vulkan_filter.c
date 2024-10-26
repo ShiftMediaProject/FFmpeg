@@ -18,6 +18,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include "filters.h"
 #include "vulkan_filter.h"
 #include "libavutil/vulkan_loader.h"
 
@@ -36,6 +37,7 @@ int ff_vk_filter_init_context(AVFilterContext *avctx, FFVulkanContext *s,
     if (frames_ref) {
         int no_storage = 0;
         FFVulkanFunctions *vk;
+        VkImageUsageFlagBits usage_req;
         const VkFormat *sub = av_vkfmt_from_pixfmt(sw_format);
 
         frames_ctx = (AVHWFramesContext *)frames_ref->data;
@@ -52,21 +54,44 @@ int ff_vk_filter_init_context(AVFilterContext *avctx, FFVulkanContext *s,
         if (sw_format != frames_ctx->sw_format)
             goto skip;
 
-        /* Unusual tiling mismatch. Don't let linear through either. */
-        if (vk_frames->tiling != VK_IMAGE_TILING_OPTIMAL)
-            goto skip;
-
-        /* Usage mismatch */
-        if ((vk_frames->usage & (VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_STORAGE_BIT)) !=
-                                (VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_STORAGE_BIT))
+        /* Don't let linear through. */
+        if (vk_frames->tiling == VK_IMAGE_TILING_LINEAR)
             goto skip;
 
         s->extensions = ff_vk_extensions_to_mask(vk_dev->enabled_dev_extensions,
                                                  vk_dev->nb_enabled_dev_extensions);
+
+        /* More advanced format checks */
         err = ff_vk_load_functions(device_ctx, &s->vkfn, s->extensions, 1, 1);
         if (err < 0)
             return err;
         vk = &s->vkfn;
+
+        /* Usage mismatch */
+        usage_req = VK_IMAGE_USAGE_SAMPLED_BIT |
+                    VK_IMAGE_USAGE_STORAGE_BIT;
+
+        /* If format supports hardware encoding, make sure
+         * the context includes it. */
+        if (vk_frames->format[1] == VK_FORMAT_UNDEFINED &&
+            (s->extensions & (FF_VK_EXT_VIDEO_ENCODE_QUEUE |
+                              FF_VK_EXT_VIDEO_MAINTENANCE_1))) {
+            VkFormatProperties3 fprops = {
+                .sType = VK_STRUCTURE_TYPE_FORMAT_PROPERTIES_3,
+            };
+            VkFormatProperties2 prop = {
+                .sType = VK_STRUCTURE_TYPE_FORMAT_PROPERTIES_2,
+                .pNext = &fprops,
+            };
+            vk->GetPhysicalDeviceFormatProperties2(vk_dev->phys_dev,
+                                                   vk_frames->format[0],
+                                                   &prop);
+            if (fprops.optimalTilingFeatures & VK_FORMAT_FEATURE_2_VIDEO_ENCODE_INPUT_BIT_KHR)
+                usage_req |= VK_IMAGE_USAGE_VIDEO_ENCODE_SRC_BIT_KHR;
+        }
+
+        if ((vk_frames->usage & usage_req) != usage_req)
+            goto skip;
 
         /* Check if the subformats can do storage */
         for (int i = 0; sub[i] != VK_FORMAT_UNDEFINED; i++) {
@@ -75,22 +100,18 @@ int ff_vk_filter_init_context(AVFilterContext *avctx, FFVulkanContext *s,
             };
             vk->GetPhysicalDeviceFormatProperties2(vk_dev->phys_dev, sub[i],
                                                    &prop);
-
-            if (vk_frames->tiling == VK_IMAGE_TILING_LINEAR) {
-                no_storage |= !(prop.formatProperties.linearTilingFeatures &
-                                VK_FORMAT_FEATURE_2_STORAGE_IMAGE_BIT);
-            } else {
-                no_storage |= !(prop.formatProperties.optimalTilingFeatures &
-                                VK_FORMAT_FEATURE_2_STORAGE_IMAGE_BIT);
-            }
+            no_storage |= !(prop.formatProperties.optimalTilingFeatures &
+                            VK_FORMAT_FEATURE_2_STORAGE_IMAGE_BIT);
         }
 
         /* Check if it's usable */
         if (no_storage) {
 skip:
+            av_log(avctx, AV_LOG_VERBOSE, "Cannot reuse context, creating a new one\n");
             device_ref = frames_ctx->device_ref;
             frames_ref = NULL;
         } else {
+            av_log(avctx, AV_LOG_VERBOSE, "Reusing existing frames context\n");
             frames_ref = av_buffer_ref(frames_ref);
             if (!frames_ref)
                 return AVERROR(ENOMEM);
@@ -116,8 +137,7 @@ skip:
         vk_frames->tiling = VK_IMAGE_TILING_OPTIMAL;
         vk_frames->usage  = VK_IMAGE_USAGE_SAMPLED_BIT |
                             VK_IMAGE_USAGE_STORAGE_BIT |
-                            VK_IMAGE_USAGE_TRANSFER_SRC_BIT |
-                            VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+                            VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
 
         err = av_hwframe_ctx_init(frames_ref);
         if (err < 0) {
@@ -131,18 +151,6 @@ skip:
 
     s->extensions = ff_vk_extensions_to_mask(vk_dev->enabled_dev_extensions,
                                              vk_dev->nb_enabled_dev_extensions);
-
-    /**
-     * libplacebo does not use descriptor buffers.
-     */
-    if (!(s->extensions & FF_VK_EXT_DESCRIPTOR_BUFFER) &&
-        strcmp(avctx->filter->name, "libplacebo")) {
-        av_log(avctx, AV_LOG_ERROR, "Vulkan filtering requires that "
-               "the %s extension is supported!\n",
-               VK_EXT_DESCRIPTOR_BUFFER_EXTENSION_NAME);
-        av_buffer_unref(&frames_ref);
-        return AVERROR(EINVAL);
-    }
 
     err = ff_vk_load_functions(device_ctx, &s->vkfn, s->extensions, 1, 1);
     if (err < 0) {
@@ -165,17 +173,18 @@ skip:
 
 int ff_vk_filter_config_input(AVFilterLink *inlink)
 {
+    FilterLink *l = ff_filter_link(inlink);
     AVHWFramesContext *input_frames;
     AVFilterContext *avctx = inlink->dst;
     FFVulkanContext *s = inlink->dst->priv;
 
-    if (!inlink->hw_frames_ctx) {
+    if (!l->hw_frames_ctx) {
         av_log(inlink->dst, AV_LOG_ERROR, "Vulkan filtering requires a "
                "hardware frames context on the input.\n");
         return AVERROR(EINVAL);
     }
 
-    input_frames = (AVHWFramesContext *)inlink->hw_frames_ctx->data;
+    input_frames = (AVHWFramesContext *)l->hw_frames_ctx->data;
     if (input_frames->format != AV_PIX_FMT_VULKAN)
         return AVERROR(EINVAL);
 
@@ -184,7 +193,7 @@ int ff_vk_filter_config_input(AVFilterLink *inlink)
         return 0;
 
     /* Save the ref, without reffing it */
-    s->input_frames_ref = inlink->hw_frames_ctx;
+    s->input_frames_ref = l->hw_frames_ctx;
 
     /* Defaults */
     s->input_format = input_frames->sw_format;
@@ -198,9 +207,10 @@ int ff_vk_filter_config_input(AVFilterLink *inlink)
 int ff_vk_filter_config_output(AVFilterLink *outlink)
 {
     int err;
+    FilterLink *l = ff_filter_link(outlink);
     FFVulkanContext *s = outlink->src->priv;
 
-    av_buffer_unref(&outlink->hw_frames_ctx);
+    av_buffer_unref(&l->hw_frames_ctx);
 
     err = ff_vk_filter_init_context(outlink->src, s, s->input_frames_ref,
                                     s->output_width, s->output_height,
@@ -208,8 +218,8 @@ int ff_vk_filter_config_output(AVFilterLink *outlink)
     if (err < 0)
         return err;
 
-    outlink->hw_frames_ctx = av_buffer_ref(s->frames_ref);
-    if (!outlink->hw_frames_ctx)
+    l->hw_frames_ctx = av_buffer_ref(s->frames_ref);
+    if (!l->hw_frames_ctx)
         return AVERROR(ENOMEM);
 
     outlink->w = s->output_width;
@@ -242,12 +252,13 @@ int ff_vk_filter_process_simple(FFVulkanContext *vkctx, FFVkExecPool *e,
     FFVkExecContext *exec = ff_vk_exec_get(e);
     ff_vk_exec_start(vkctx, exec);
 
-    ff_vk_exec_bind_pipeline(vkctx, exec, pl);
-
-    if (push_src)
-        ff_vk_update_push_exec(vkctx, exec, pl, VK_SHADER_STAGE_COMPUTE_BIT,
-                               0, push_size, push_src);
-
+    RET(ff_vk_exec_add_dep_frame(vkctx, exec, out_f,
+                                 VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT,
+                                 VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT));
+    RET(ff_vk_create_imageviews(vkctx, exec, out_views, out_f));
+    ff_vk_update_descriptor_img_array(vkctx, pl, exec, out_f, out_views, 0, !!in_f,
+                                      VK_IMAGE_LAYOUT_GENERAL,
+                                      VK_NULL_HANDLE);
     if (in_f) {
         RET(ff_vk_exec_add_dep_frame(vkctx, exec, in_f,
                                      VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT,
@@ -256,27 +267,28 @@ int ff_vk_filter_process_simple(FFVulkanContext *vkctx, FFVkExecPool *e,
         ff_vk_update_descriptor_img_array(vkctx, pl, exec,  in_f,  in_views, 0, 0,
                                           VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
                                           sampler);
-        ff_vk_frame_barrier(vkctx, exec, in_f, img_bar, &nb_img_bar,
-                            VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT,
-                            VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT,
-                            VK_ACCESS_SHADER_READ_BIT,
-                            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-                            VK_QUEUE_FAMILY_IGNORED);
     }
 
-    RET(ff_vk_exec_add_dep_frame(vkctx, exec, out_f,
-                                 VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT,
-                                 VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT));
-    RET(ff_vk_create_imageviews(vkctx, exec, out_views, out_f));
-    ff_vk_update_descriptor_img_array(vkctx, pl, exec, out_f, out_views, 0, !!in_f,
-                                      VK_IMAGE_LAYOUT_GENERAL,
-                                      VK_NULL_HANDLE);
+    /* Bind pipeline, update push data */
+    ff_vk_exec_bind_pipeline(vkctx, exec, pl);
+    if (push_src)
+        ff_vk_update_push_exec(vkctx, exec, pl, VK_SHADER_STAGE_COMPUTE_BIT,
+                               0, push_size, push_src);
+
+    /* Add data sync barriers */
     ff_vk_frame_barrier(vkctx, exec, out_f, img_bar, &nb_img_bar,
                         VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT,
                         VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT,
                         VK_ACCESS_SHADER_WRITE_BIT,
                         VK_IMAGE_LAYOUT_GENERAL,
                         VK_QUEUE_FAMILY_IGNORED);
+    if (in_f)
+        ff_vk_frame_barrier(vkctx, exec, in_f, img_bar, &nb_img_bar,
+                            VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT,
+                            VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT,
+                            VK_ACCESS_SHADER_READ_BIT,
+                            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                            VK_QUEUE_FAMILY_IGNORED);
 
     vk->CmdPipelineBarrier2(exec->buf, &(VkDependencyInfo) {
             .sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
@@ -358,12 +370,6 @@ int ff_vk_filter_process_2pass(FFVulkanContext *vkctx, FFVkExecPool *e,
         VkImageView *src_views = !i ? in_views : tmp_views;
         VkImageView *dst_views = !i ? tmp_views : out_views;
 
-        ff_vk_exec_bind_pipeline(vkctx, exec, pl);
-
-        if (push_src)
-            ff_vk_update_push_exec(vkctx, exec, pl, VK_SHADER_STAGE_COMPUTE_BIT,
-                                   0, push_size, push_src);
-
         ff_vk_update_descriptor_img_array(vkctx, pl, exec, src_f, src_views, 0, 0,
                                           !i ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL :
                                                VK_IMAGE_LAYOUT_GENERAL,
@@ -371,6 +377,12 @@ int ff_vk_filter_process_2pass(FFVulkanContext *vkctx, FFVkExecPool *e,
         ff_vk_update_descriptor_img_array(vkctx, pl, exec, dst_f, dst_views, 0, 1,
                                           VK_IMAGE_LAYOUT_GENERAL,
                                           VK_NULL_HANDLE);
+
+        /* Bind pipeline, update push data */
+        ff_vk_exec_bind_pipeline(vkctx, exec, pl);
+        if (push_src)
+            ff_vk_update_push_exec(vkctx, exec, pl, VK_SHADER_STAGE_COMPUTE_BIT,
+                                   0, push_size, push_src);
 
         vk->CmdDispatch(exec->buf,
                         FFALIGN(vkctx->output_width,  pl->wg_size[0])/pl->wg_size[0],
@@ -400,53 +412,53 @@ int ff_vk_filter_process_Nin(FFVulkanContext *vkctx, FFVkExecPool *e,
     FFVkExecContext *exec = ff_vk_exec_get(e);
     ff_vk_exec_start(vkctx, exec);
 
-    /* Inputs */
+    /* Add deps and create temporary imageviews */
+    RET(ff_vk_exec_add_dep_frame(vkctx, exec, out,
+                                 VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT,
+                                 VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT));
+    RET(ff_vk_create_imageviews(vkctx, exec, out_views, out));
     for (int i = 0; i < nb_in; i++) {
         RET(ff_vk_exec_add_dep_frame(vkctx, exec, in[i],
                                      VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT,
                                      VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT));
         RET(ff_vk_create_imageviews(vkctx, exec, in_views[i], in[i]));
-
-        ff_vk_frame_barrier(vkctx, exec, in[i], img_bar, &nb_img_bar,
-                            VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT,
-                            VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT,
-                            VK_ACCESS_SHADER_READ_BIT,
-                            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-                            VK_QUEUE_FAMILY_IGNORED);
     }
 
-    /* Output */
-    RET(ff_vk_exec_add_dep_frame(vkctx, exec, out,
-                                 VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT,
-                                 VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT));
-    RET(ff_vk_create_imageviews(vkctx, exec, out_views, out));
+    /* Update descriptor sets */
+    ff_vk_update_descriptor_img_array(vkctx, pl, exec, out, out_views, 0, nb_in,
+                                      VK_IMAGE_LAYOUT_GENERAL,
+                                      VK_NULL_HANDLE);
+    for (int i = 0; i < nb_in; i++)
+        ff_vk_update_descriptor_img_array(vkctx, pl, exec, in[i], in_views[i], 0, i,
+                                          VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                                          sampler);
+
+    /* Bind pipeline, update push data */
+    ff_vk_exec_bind_pipeline(vkctx, exec, pl);
+    if (push_src)
+        ff_vk_update_push_exec(vkctx, exec, pl, VK_SHADER_STAGE_COMPUTE_BIT,
+                               0, push_size, push_src);
+
+    /* Add data sync barriers */
     ff_vk_frame_barrier(vkctx, exec, out, img_bar, &nb_img_bar,
                         VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT,
                         VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT,
                         VK_ACCESS_SHADER_WRITE_BIT,
                         VK_IMAGE_LAYOUT_GENERAL,
                         VK_QUEUE_FAMILY_IGNORED);
+    for (int i = 0; i < nb_in; i++)
+        ff_vk_frame_barrier(vkctx, exec, in[i], img_bar, &nb_img_bar,
+                            VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT,
+                            VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT,
+                            VK_ACCESS_SHADER_READ_BIT,
+                            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                            VK_QUEUE_FAMILY_IGNORED);
 
     vk->CmdPipelineBarrier2(exec->buf, &(VkDependencyInfo) {
             .sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
             .pImageMemoryBarriers = img_bar,
             .imageMemoryBarrierCount = nb_img_bar,
         });
-
-    ff_vk_exec_bind_pipeline(vkctx, exec, pl);
-
-    if (push_src)
-        ff_vk_update_push_exec(vkctx, exec, pl, VK_SHADER_STAGE_COMPUTE_BIT,
-                               0, push_size, push_src);
-
-    for (int i = 0; i < nb_in; i++)
-        ff_vk_update_descriptor_img_array(vkctx, pl, exec, in[i], in_views[i], 0, i,
-                                          VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-                                          sampler);
-
-    ff_vk_update_descriptor_img_array(vkctx, pl, exec, out, out_views, 0, nb_in,
-                                      VK_IMAGE_LAYOUT_GENERAL,
-                                      VK_NULL_HANDLE);
 
     vk->CmdDispatch(exec->buf,
                     FFALIGN(vkctx->output_width,  pl->wg_size[0])/pl->wg_size[0],

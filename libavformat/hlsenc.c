@@ -33,6 +33,7 @@
 #include "libavutil/avstring.h"
 #include "libavutil/bprint.h"
 #include "libavutil/intreadwrite.h"
+#include "libavutil/mem.h"
 #include "libavutil/opt.h"
 #include "libavutil/log.h"
 #include "libavutil/random_seed.h"
@@ -49,6 +50,7 @@
 #endif
 #include "hlsplaylist.h"
 #include "internal.h"
+#include "nal.h"
 #include "mux.h"
 #include "os_support.h"
 #include "url.h"
@@ -147,6 +149,11 @@ typedef struct VariantStream {
     int discontinuity_set;
     int discontinuity;
     int reference_stream_index;
+
+    int64_t total_size;
+    double total_duration;
+    int64_t avg_bitrate;
+    int64_t max_bitrate;
 
     HLSSegment *segments;
     HLSSegment *last_segment;
@@ -569,12 +576,6 @@ static void reflush_dynbuf(VariantStream *vs, int *range_length)
     avio_write(vs->out, vs->temp_buffer, *range_length);
 }
 
-#if HAVE_DOS_PATHS
-#define SEPARATOR '\\'
-#else
-#define SEPARATOR '/'
-#endif
-
 static int hls_delete_file(HLSContext *hls, AVFormatContext *avf,
                            char *path, const char *proto)
 {
@@ -667,7 +668,7 @@ static int hls_delete_old_segments(AVFormatContext *s, HLSContext *hls,
         av_log(hls, AV_LOG_DEBUG, "deleting old segment %s\n",
                segment->filename);
         if (!hls->use_localtime_mkdir) // segment->filename contains basename only
-            av_bprintf(&path, "%s%c", dirname, SEPARATOR);
+            av_bprintf(&path, "%s/", dirname);
         av_bprintf(&path, "%s", segment->filename);
 
         if (!av_bprint_is_complete(&path)) {
@@ -684,8 +685,7 @@ static int hls_delete_old_segments(AVFormatContext *s, HLSContext *hls,
             vtt_dirname = av_dirname(vtt_dirname_r);
 
             av_bprint_clear(&path);
-            av_bprintf(&path, "%s%c%s", vtt_dirname, SEPARATOR,
-                                         segment->sub_filename);
+            av_bprintf(&path, "%s/%s", vtt_dirname, segment->sub_filename);
             av_freep(&vtt_dirname_r);
 
             if (!av_bprint_is_complete(&path)) {
@@ -1113,6 +1113,18 @@ static int hls_append_segment(struct AVFormatContext *s, HLSContext *hls,
     if (!en)
         return AVERROR(ENOMEM);
 
+    vs->total_size += size;
+    vs->total_duration += duration;
+    if (duration > 0.5) {
+        // Don't include the final, possibly very short segment in the
+        // calculation of the max bitrate.
+        int cur_bitrate = (int)(8 * size / duration);
+        if (cur_bitrate > vs->max_bitrate)
+            vs->max_bitrate = cur_bitrate;
+    }
+    if (vs->total_duration > 0)
+        vs->avg_bitrate = (int)(8 * vs->total_size / vs->total_duration);
+
     en->var_stream_idx = vs->var_stream_idx;
     ret = sls_flags_filename_process(s, hls, vs, en, duration, pos, size);
     if (ret < 0) {
@@ -1367,14 +1379,15 @@ static int64_t get_stream_bit_rate(AVStream *stream)
 }
 
 static int create_master_playlist(AVFormatContext *s,
-                                  VariantStream * const input_vs)
+                                  VariantStream * const input_vs,
+                                  int final)
 {
     HLSContext *hls = s->priv_data;
     VariantStream *vs, *temp_vs;
     AVStream *vid_st, *aud_st;
     AVDictionary *options = NULL;
     unsigned int i, j;
-    int ret, bandwidth;
+    int ret, bandwidth, avg_bandwidth;
     const char *m3u8_rel_name = NULL;
     const char *vtt_m3u8_rel_name = NULL;
     const char *ccgroup;
@@ -1394,8 +1407,8 @@ static int create_master_playlist(AVFormatContext *s,
                 return 0;
     } else {
          /* Keep publishing the master playlist at the configured rate */
-        if (&hls->var_streams[0] != input_vs || !hls->master_publish_rate ||
-            input_vs->number % hls->master_publish_rate)
+        if ((&hls->var_streams[0] != input_vs || !hls->master_publish_rate ||
+            input_vs->number % hls->master_publish_rate) && !final)
             return 0;
     }
 
@@ -1485,12 +1498,17 @@ static int create_master_playlist(AVFormatContext *s,
             }
         }
 
-        bandwidth = 0;
-        if (vid_st)
-            bandwidth += get_stream_bit_rate(vid_st);
-        if (aud_st)
-            bandwidth += get_stream_bit_rate(aud_st);
-        bandwidth += bandwidth / 10;
+        if (final) {
+            bandwidth = vs->max_bitrate;
+            avg_bandwidth = vs->avg_bitrate;
+        } else {
+            bandwidth = 0;
+            if (vid_st)
+                bandwidth += get_stream_bit_rate(vid_st);
+            if (aud_st)
+                bandwidth += get_stream_bit_rate(aud_st);
+            bandwidth += bandwidth / 10;
+        }
 
         ccgroup = NULL;
         if (vid_st && vs->ccgroup) {
@@ -1519,11 +1537,11 @@ static int create_master_playlist(AVFormatContext *s,
         }
 
         if (!hls->has_default_key || !hls->has_video_m3u8) {
-            ff_hls_write_stream_info(vid_st, hls->m3u8_out, bandwidth, m3u8_rel_name,
+            ff_hls_write_stream_info(vid_st, hls->m3u8_out, bandwidth, avg_bandwidth, m3u8_rel_name,
                     aud_st ? vs->agroup : NULL, vs->codec_attr, ccgroup, sgroup);
         } else {
             if (vid_st) {
-                ff_hls_write_stream_info(vid_st, hls->m3u8_out, bandwidth, m3u8_rel_name,
+                ff_hls_write_stream_info(vid_st, hls->m3u8_out, bandwidth, avg_bandwidth, m3u8_rel_name,
                                          aud_st ? vs->agroup : NULL, vs->codec_attr, ccgroup, sgroup);
             }
         }
@@ -1588,8 +1606,6 @@ static int hls_window(AVFormatContext *s, int last, VariantStream *vs)
     ret = hlsenc_io_open(s, byterange_mode ? &hls->m3u8_out : &vs->out, temp_filename, &options);
     av_dict_free(&options);
     if (ret < 0) {
-        if (hls->ignore_io_errors)
-            ret = 0;
         goto fail;
     }
 
@@ -1647,8 +1663,6 @@ static int hls_window(AVFormatContext *s, int last, VariantStream *vs)
         ret = hlsenc_io_open(s, &hls->sub_m3u8_out, temp_vtt_filename, &options);
         av_dict_free(&options);
         if (ret < 0) {
-            if (hls->ignore_io_errors)
-                ret = 0;
             goto fail;
         }
         ff_hls_write_playlist_header(hls->sub_m3u8_out, hls->version, hls->allowcache,
@@ -1680,7 +1694,7 @@ fail:
             ff_rename(temp_vtt_filename, vs->vtt_m3u8_name, s);
     }
     if (ret >= 0 && hls->master_pl_name)
-        if (create_master_playlist(s, vs) < 0)
+        if (create_master_playlist(s, vs, last) < 0)
             av_log(s, AV_LOG_WARNING, "Master playlist creation failed\n");
 
     return ret;
@@ -2389,7 +2403,7 @@ static int hls_init_file_resend(AVFormatContext *s, VariantStream *vs)
 
 static int64_t append_single_file(AVFormatContext *s, VariantStream *vs)
 {
-    int ret = 0;
+    int64_t ret = 0;
     int64_t read_byte = 0;
     int64_t total_size = 0;
     char *filename = NULL;
@@ -2427,7 +2441,6 @@ static int hls_write_packet(AVFormatContext *s, AVPacket *pkt)
     int is_ref_pkt = 1;
     int ret = 0, can_split = 1, i, j;
     int stream_index = 0;
-    int subtitle_streams = 0;
     int range_length = 0;
     const char *proto = NULL;
     int use_temp_file = 0;
@@ -2435,6 +2448,7 @@ static int hls_write_packet(AVFormatContext *s, AVPacket *pkt)
     char *old_filename = NULL;
 
     for (i = 0; i < hls->nb_varstreams; i++) {
+        int subtitle_streams = 0;
         vs = &hls->var_streams[i];
         for (j = 0; j < vs->nb_streams; j++) {
             if (vs->streams[j]->codecpar->codec_type == AVMEDIA_TYPE_SUBTITLE) {
@@ -2513,6 +2527,7 @@ static int hls_write_packet(AVFormatContext *s, AVPacket *pkt)
                                                           end_pts, AV_TIME_BASE_Q) >= 0) {
         int64_t new_start_pos;
         int byterange_mode = (hls->flags & HLS_SINGLE_FILE) || (hls->max_seg_size > 0);
+        double cur_duration;
 
         av_write_frame(oc, NULL); /* Flush any buffered data */
         new_start_pos = avio_tell(oc->pb);
@@ -2595,6 +2610,7 @@ static int hls_write_packet(AVFormatContext *s, AVPacket *pkt)
                     av_dict_free(&options);
                     return ret;
                 }
+                vs->size = range_length;
                 ret = hlsenc_io_close(s, &vs->out, filename);
                 if (ret < 0) {
                     av_log(s, AV_LOG_WARNING, "upload segment failed,"
@@ -2623,15 +2639,13 @@ static int hls_write_packet(AVFormatContext *s, AVPacket *pkt)
             return AVERROR(ENOMEM);
         }
 
-        if (vs->start_pos || hls->segment_type != SEGMENT_TYPE_FMP4) {
-            double cur_duration =  (double)(pkt->pts - vs->end_pts) * st->time_base.num / st->time_base.den;
-            ret = hls_append_segment(s, hls, vs, cur_duration, vs->start_pos, vs->size);
-            vs->end_pts = pkt->pts;
-            vs->duration = 0;
-            if (ret < 0) {
-                av_freep(&old_filename);
-                return ret;
-            }
+        cur_duration = (double)(pkt->pts - vs->end_pts) * st->time_base.num / st->time_base.den;
+        ret = hls_append_segment(s, hls, vs, cur_duration, vs->start_pos, vs->size);
+        vs->end_pts = pkt->pts;
+        vs->duration = 0;
+        if (ret < 0) {
+            av_freep(&old_filename);
+            return ret;
         }
 
         // if we're building a VOD playlist, skip writing the manifest multiple times, and just wait until the end
@@ -2673,7 +2687,7 @@ static int hls_write_packet(AVFormatContext *s, AVPacket *pkt)
                 vs->start_pos = new_start_pos;
             }
         } else {
-            vs->start_pos = new_start_pos;
+            vs->start_pos = 0;
             sls_flag_file_rename(hls, vs, old_filename);
             ret = hls_start(s, vs);
         }
@@ -2768,6 +2782,7 @@ static int hls_write_trailer(struct AVFormatContext *s)
             filename = av_asprintf("%s", oc->url);
         }
         if (!filename) {
+            av_dict_free(&options);
             av_freep(&old_filename);
             return AVERROR(ENOMEM);
         }

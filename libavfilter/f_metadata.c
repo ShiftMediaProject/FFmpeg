@@ -36,7 +36,7 @@
 #include "libavformat/avio.h"
 #include "avfilter.h"
 #include "audio.h"
-#include "internal.h"
+#include "filters.h"
 #include "video.h"
 
 enum MetadataMode {
@@ -276,10 +276,8 @@ static av_cold int init(AVFilterContext *ctx)
         }
 
         if (ret < 0) {
-            char buf[128];
-            av_strerror(ret, buf, sizeof(buf));
             av_log(ctx, AV_LOG_ERROR, "Could not open %s: %s\n",
-                   s->file_str, buf);
+                   s->file_str, av_err2str(ret));
             return ret;
         }
 
@@ -303,6 +301,7 @@ static av_cold void uninit(AVFilterContext *ctx)
 
 static int filter_frame(AVFilterLink *inlink, AVFrame *frame)
 {
+    FilterLink *inl = ff_filter_link(inlink);
     AVFilterContext *ctx = inlink->dst;
     AVFilterLink *outlink = ctx->outputs[0];
     MetadataContext *s = ctx->priv;
@@ -336,14 +335,14 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *frame)
     case METADATA_PRINT:
         if (!s->key && e) {
             s->print(ctx, "frame:%-4"PRId64" pts:%-7s pts_time:%s\n",
-                     inlink->frame_count_out, av_ts2str(frame->pts), av_ts2timestr(frame->pts, &inlink->time_base));
+                     inl->frame_count_out, av_ts2str(frame->pts), av_ts2timestr(frame->pts, &inlink->time_base));
             s->print(ctx, "%s=%s\n", e->key, e->value);
             while ((e = av_dict_iterate(*metadata, e)) != NULL) {
                 s->print(ctx, "%s=%s\n", e->key, e->value);
             }
         } else if (e && e->value && (!s->value || (e->value && s->compare(s, e->value, s->value)))) {
             s->print(ctx, "frame:%-4"PRId64" pts:%-7s pts_time:%s\n",
-                     inlink->frame_count_out, av_ts2str(frame->pts), av_ts2timestr(frame->pts, &inlink->time_base));
+                     inl->frame_count_out, av_ts2str(frame->pts), av_ts2timestr(frame->pts, &inlink->time_base));
             s->print(ctx, "%s=%s\n", s->key, e->value);
         }
         return ff_filter_frame(outlink, frame);

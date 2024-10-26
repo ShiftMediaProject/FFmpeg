@@ -23,7 +23,7 @@
 #include "libavutil/pixdesc.h"
 
 #include "avfilter.h"
-#include "internal.h"
+#include "filters.h"
 #include "opencl.h"
 #include "opencl_source.h"
 #include "video.h"
@@ -59,7 +59,7 @@ typedef struct UnsharpOpenCLContext {
         cl_int   size_y;
         cl_float amount;
         cl_float threshold;
-    } plane[4];
+    } plane[AV_VIDEO_MAX_PLANES];
 } UnsharpOpenCLContext;
 
 

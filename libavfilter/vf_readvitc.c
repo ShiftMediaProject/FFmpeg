@@ -29,7 +29,7 @@
 #include "libavutil/opt.h"
 #include "libavutil/timecode.h"
 #include "avfilter.h"
-#include "internal.h"
+#include "filters.h"
 #include "video.h"
 
 #define LINE_DATA_SIZE 9

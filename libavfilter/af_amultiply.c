@@ -21,11 +21,11 @@
 #include "libavutil/channel_layout.h"
 #include "libavutil/common.h"
 #include "libavutil/float_dsp.h"
+#include "libavutil/mem.h"
 
 #include "audio.h"
 #include "avfilter.h"
 #include "filters.h"
-#include "internal.h"
 
 typedef struct AudioMultiplyContext {
     const AVClass *class;

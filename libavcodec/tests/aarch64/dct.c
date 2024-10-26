@@ -19,9 +19,11 @@
 #include "config.h"
 
 #include "libavutil/cpu.h"
+#include "libavcodec/aarch64/fdct.h"
 #include "libavcodec/aarch64/idct.h"
 
 static const struct algo fdct_tab_arch[] = {
+    { "neon", ff_fdct_neon, FF_IDCT_PERM_NONE, AV_CPU_FLAG_NEON },
     { 0 }
 };
 

@@ -22,12 +22,12 @@
 
 #include "libavutil/eval.h"
 #include "libavutil/ffmath.h"
+#include "libavutil/mem.h"
 #include "libavutil/opt.h"
 #include "libavutil/tx.h"
 #include "audio.h"
 #include "avfilter.h"
 #include "filters.h"
-#include "internal.h"
 
 static const char * const var_names[] = {
     "ch",           ///< the value of the current channel
@@ -362,6 +362,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
 {
     AVFilterContext *ctx = inlink->dst;
     AVFilterLink *outlink = ctx->outputs[0];
+    FilterLink *outl = ff_filter_link(outlink);
     AudioDRCContext *s = ctx->priv;
     AVFrame *out;
     int ret;
@@ -372,7 +373,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
         goto fail;
     }
 
-    s->var_values[VAR_SN] = outlink->sample_count_in;
+    s->var_values[VAR_SN] = outl->sample_count_in;
     s->var_values[VAR_T] = s->var_values[VAR_SN] * (double)1/outlink->sample_rate;
 
     s->in = in;

@@ -35,7 +35,7 @@
 
 #include "avfilter.h"
 #include "colorspace.h"
-#include "internal.h"
+#include "filters.h"
 #include "video.h"
 
 enum TonemapAlgorithm {

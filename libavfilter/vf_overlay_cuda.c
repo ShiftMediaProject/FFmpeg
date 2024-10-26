@@ -34,7 +34,6 @@
 #include "avfilter.h"
 #include "filters.h"
 #include "framesync.h"
-#include "internal.h"
 
 #include "cuda/load_helper.h"
 
@@ -236,6 +235,7 @@ static int overlay_cuda_blend(FFFrameSync *fs)
     OverlayCUDAContext *ctx = avctx->priv;
     AVFilterLink *outlink = avctx->outputs[0];
     AVFilterLink *inlink = avctx->inputs[0];
+    FilterLink *inl = ff_filter_link(inlink);
 
     CudaFunctions *cu = ctx->hwctx->internal->cuda_dl;
     CUcontext dummy, cuda_ctx = ctx->hwctx->cuda_ctx;
@@ -270,7 +270,7 @@ static int overlay_cuda_blend(FFFrameSync *fs)
     }
 
     if (ctx->eval_mode == EVAL_MODE_FRAME) {
-        ctx->var_values[VAR_N] = inlink->frame_count_out;
+        ctx->var_values[VAR_N] = inl->frame_count_out;
         ctx->var_values[VAR_T] = input_main->pts == AV_NOPTS_VALUE ?
             NAN : input_main->pts * av_q2d(inlink->time_base);
 
@@ -436,14 +436,17 @@ static int overlay_cuda_config_output(AVFilterLink *outlink)
     extern const unsigned int ff_vf_overlay_cuda_ptx_len;
 
     int err;
+    FilterLink       *outl = ff_filter_link(outlink);
     AVFilterContext* avctx = outlink->src;
     OverlayCUDAContext* ctx = avctx->priv;
 
     AVFilterLink *inlink = avctx->inputs[0];
-    AVHWFramesContext  *frames_ctx = (AVHWFramesContext*)inlink->hw_frames_ctx->data;
+    FilterLink *inl = ff_filter_link(inlink);
+    AVHWFramesContext  *frames_ctx = (AVHWFramesContext*)inl->hw_frames_ctx->data;
 
     AVFilterLink *inlink_overlay = avctx->inputs[1];
-    AVHWFramesContext  *frames_ctx_overlay = (AVHWFramesContext*)inlink_overlay->hw_frames_ctx->data;
+    FilterLink *inl_overlay = ff_filter_link(inlink_overlay);
+    AVHWFramesContext  *frames_ctx_overlay = (AVHWFramesContext*)inl_overlay->hw_frames_ctx->data;
 
     CUcontext dummy, cuda_ctx;
     CudaFunctions *cu;
@@ -496,8 +499,8 @@ static int overlay_cuda_config_output(AVFilterLink *outlink)
 
     ctx->cu_stream = ctx->hwctx->stream;
 
-    outlink->hw_frames_ctx = av_buffer_ref(inlink->hw_frames_ctx);
-    if (!outlink->hw_frames_ctx)
+    outl->hw_frames_ctx = av_buffer_ref(inl->hw_frames_ctx);
+    if (!outl->hw_frames_ctx)
         return AVERROR(ENOMEM);
 
     // load functions

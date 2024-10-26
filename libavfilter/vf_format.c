@@ -33,8 +33,8 @@
 #include "libavutil/opt.h"
 
 #include "avfilter.h"
+#include "filters.h"
 #include "formats.h"
-#include "internal.h"
 #include "video.h"
 
 typedef struct FormatContext {
@@ -85,6 +85,21 @@ static av_cold int invert_formats(AVFilterFormats **fmts,
     return 0;
 }
 
+static int parse_pixel_format(enum AVPixelFormat *ret, const char *arg, void *log_ctx)
+{
+    char *tail;
+    int pix_fmt = av_get_pix_fmt(arg);
+    if (pix_fmt == AV_PIX_FMT_NONE) {
+        pix_fmt = strtol(arg, &tail, 0);
+        if (*tail || !av_pix_fmt_desc_get(pix_fmt)) {
+            av_log(log_ctx, AV_LOG_ERROR, "Invalid pixel format '%s'\n", arg);
+            return AVERROR(EINVAL);
+        }
+    }
+    *ret = pix_fmt;
+    return 0;
+}
+
 static av_cold int init(AVFilterContext *ctx)
 {
     FormatContext *s = ctx->priv;
@@ -95,7 +110,7 @@ static av_cold int init(AVFilterContext *ctx)
         sep = strchr(cur, '|');
         if (sep && *sep)
             *sep++ = 0;
-        if ((ret = ff_parse_pixel_format(&pix_fmt, cur, ctx)) < 0 ||
+        if ((ret = parse_pixel_format(&pix_fmt, cur, ctx)) < 0 ||
             (ret = ff_add_format(&s->formats, pix_fmt)) < 0)
             return ret;
     }

@@ -20,10 +20,10 @@
 
 #include "libavutil/attributes.h"
 #include "libavutil/aarch64/cpu.h"
-#include "libavcodec/opusdsp.h"
+#include "libavcodec/opus/dsp.h"
 
 void ff_opus_postfilter_neon(float *data, int period, float *gains, int len);
-float ff_opus_deemphasis_neon(float *out, float *in, float coeff, int len);
+float ff_opus_deemphasis_neon(float *out, float *in, float coeff, const float *weights, int len);
 
 av_cold void ff_opus_dsp_init_aarch64(OpusDSP *ctx)
 {

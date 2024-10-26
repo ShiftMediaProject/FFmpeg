@@ -19,10 +19,11 @@
  */
 
 #include "libavutil/imgutils.h"
+#include "libavutil/mem.h"
 #include "libavutil/pixdesc.h"
 #include "libavutil/opt.h"
 #include "avfilter.h"
-#include "internal.h"
+#include "filters.h"
 #include "video.h"
 #include "framesync.h"
 
@@ -296,13 +297,15 @@ static int config_output(AVFilterLink *outlink)
     MidEqualizerContext *s = ctx->priv;
     AVFilterLink *in0 = ctx->inputs[0];
     AVFilterLink *in1 = ctx->inputs[1];
+    FilterLink    *il = ff_filter_link(in0);
+    FilterLink    *ol = ff_filter_link(outlink);
     FFFrameSyncIn *in;
     int ret;
 
     outlink->w = in0->w;
     outlink->h = in0->h;
     outlink->sample_aspect_ratio = in0->sample_aspect_ratio;
-    outlink->frame_rate = in0->frame_rate;
+    ol->frame_rate = il->frame_rate;
 
     if ((ret = ff_framesync_init(&s->fs, ctx, 2)) < 0)
         return ret;

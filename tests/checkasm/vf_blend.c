@@ -24,6 +24,7 @@
 #include "libavutil/common.h"
 #include "libavutil/internal.h"
 #include "libavutil/intreadwrite.h"
+#include "libavutil/mem.h"
 
 #define WIDTH 256
 #define HEIGHT 256
@@ -67,7 +68,7 @@
                      const uint8_t *bottom, ptrdiff_t bottom_linesize,                     \
                      uint8_t *dst, ptrdiff_t dst_linesize,                                 \
                      ptrdiff_t width, ptrdiff_t height,                                    \
-                     struct FilterParams *param, double *values);                          \
+                     struct FilterParams *param, struct SliceParams *sliceparam);          \
         w = WIDTH / depth;                                                                 \
                                                                                            \
         for (i = 0; i < BUF_UNITS - 1; i++) {                                              \

@@ -115,6 +115,9 @@ static int sgirle_decode_frame(AVCodecContext *avctx, AVFrame *frame,
 {
     int ret;
 
+    if (avpkt->size * 192ll / 2 < avctx->width * avctx->height)
+        return AVERROR_INVALIDDATA;
+
     if ((ret = ff_get_buffer(avctx, frame, 0)) < 0)
         return ret;
 
@@ -122,9 +125,6 @@ static int sgirle_decode_frame(AVCodecContext *avctx, AVFrame *frame,
                          avctx->width, avctx->height, frame->linesize[0]);
     if (ret < 0)
         return ret;
-
-    frame->pict_type = AV_PICTURE_TYPE_I;
-    frame->flags |= AV_FRAME_FLAG_KEY;
 
     *got_frame = 1;
 

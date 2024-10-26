@@ -25,33 +25,50 @@
 
 #include <limits.h>
 
-#include <VapourSynth.h>
-#include <VSScript.h>
+#include <vapoursynth/VSScript4.h>
 
 #include "libavutil/avassert.h"
 #include "libavutil/avstring.h"
 #include "libavutil/eval.h"
 #include "libavutil/frame.h"
 #include "libavutil/imgutils.h"
+#include "libavutil/mem.h"
 #include "libavutil/opt.h"
 #include "libavutil/pixdesc.h"
 #include "avformat.h"
 #include "demux.h"
 #include "internal.h"
 
+/* Platform-specific directives. */
+#ifdef _WIN32
+  #include <windows.h>
+  #include "compat/w32dlfcn.h"
+  #include "libavutil/wchar_filename.h"
+  #undef EXTERN_C
+  #define VSSCRIPT_LIB "VSScript.dll"
+#else
+  #include <dlfcn.h>
+  #define VSSCRIPT_NAME "libvapoursynth-script"
+  #define VSSCRIPT_LIB VSSCRIPT_NAME SLIBSUF
+#endif
+
 struct VSState {
+    const VSSCRIPTAPI *vssapi;
     VSScript *vss;
 };
+
+typedef const VSSCRIPTAPI *(*VSScriptGetAPIFunc)(int version);
 
 typedef struct VSContext {
     const AVClass *class;
 
     AVBufferRef *vss_state;
 
+    const VSSCRIPTAPI *vssapi;
     const VSAPI *vsapi;
-    VSCore *vscore;
+    void *vslibrary;
 
-    VSNodeRef *outnode;
+    VSNode *outnode;
     int is_cfr;
     int current_frame;
 
@@ -69,13 +86,46 @@ static const AVOption options[] = {
     {NULL}
 };
 
+static av_cold void* vs_load_library(VSScriptGetAPIFunc *get_vssapi)
+{
+    void *vslibrary = NULL;
+#ifdef _WIN32
+    const HKEY hkeys[] = {HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE};
+    LONG r;
+    WCHAR vss_path[512];
+    DWORD buf_size = sizeof(vss_path) - 2;
+    char *vss_path_utf8;
+    int i;
+
+    for (i = 0; i < FF_ARRAY_ELEMS(hkeys); i++) {
+        if ((r = RegGetValueW(hkeys[i], L"SOFTWARE\\VapourSynth",
+                      L"VSScriptDLL", RRF_RT_REG_SZ, NULL,
+                      &vss_path, &buf_size)) == ERROR_SUCCESS)
+            break;
+    }
+    if (r == ERROR_SUCCESS && wchartoutf8(vss_path, &vss_path_utf8) == 0) {
+        vslibrary = dlopen(vss_path_utf8, RTLD_NOW | RTLD_GLOBAL);
+        av_free(vss_path_utf8);
+    }
+    else
+#endif
+    vslibrary = dlopen(VSSCRIPT_LIB, RTLD_NOW | RTLD_GLOBAL);
+
+    if (vslibrary != NULL) {
+        if (!(*get_vssapi = (VSScriptGetAPIFunc)dlsym(vslibrary, "getVSScriptAPI"))) {
+            dlclose(vslibrary);
+            return NULL;
+        }
+    }
+    return vslibrary;
+}
+
 static void free_vss_state(void *opaque, uint8_t *data)
 {
     struct VSState *vss = opaque;
 
     if (vss->vss) {
-        vsscript_freeScript(vss->vss);
-        vsscript_finalize();
+        vss->vssapi->freeScript(vss->vss);
     }
 }
 
@@ -89,8 +139,10 @@ static av_cold int read_close_vs(AVFormatContext *s)
     av_buffer_unref(&vs->vss_state);
 
     vs->vsapi = NULL;
-    vs->vscore = NULL;
     vs->outnode = NULL;
+
+    if (vs->vslibrary)
+        dlclose(vs->vslibrary);
 
     return 0;
 }
@@ -105,7 +157,7 @@ static av_cold int is_native_endian(enum AVPixelFormat pixfmt)
     return pd && (!!HAVE_BIGENDIAN == !!(pd->flags & AV_PIX_FMT_FLAG_BE));
 }
 
-static av_cold enum AVPixelFormat match_pixfmt(const VSFormat *vsf, int c_order[4])
+static av_cold enum AVPixelFormat match_pixfmt(const VSVideoFormat *vsf, int c_order[4])
 {
     static const int yuv_order[4] = {0, 1, 2, 0};
     static const int rgb_order[4] = {1, 2, 0, 0};
@@ -127,13 +179,12 @@ static av_cold enum AVPixelFormat match_pixfmt(const VSFormat *vsf, int c_order[
             pd->log2_chroma_h != vsf->subSamplingH)
             continue;
 
-        is_rgb = vsf->colorFamily == cmRGB;
+        is_rgb = vsf->colorFamily == cfRGB;
         if (is_rgb != !!(pd->flags & AV_PIX_FMT_FLAG_RGB))
             continue;
 
-        is_yuv = vsf->colorFamily == cmYUV ||
-                 vsf->colorFamily == cmYCoCg ||
-                 vsf->colorFamily == cmGray;
+        is_yuv = vsf->colorFamily == cfYUV ||
+                 vsf->colorFamily == cfGray;
         if (!is_rgb && !is_yuv)
             continue;
 
@@ -172,18 +223,41 @@ static av_cold int read_header_vs(AVFormatContext *s)
     AVStream *st;
     AVIOContext *pb = s->pb;
     VSContext *vs = s->priv_data;
+    VSScriptGetAPIFunc get_vssapi;
     int64_t sz = avio_size(pb);
     char *buf = NULL;
     char dummy;
+    char vsfmt[32];
     const VSVideoInfo *info;
     struct VSState *vss_state;
     int err = 0;
+
+    if (!(vs->vslibrary = vs_load_library(&get_vssapi))) {
+        av_log(s, AV_LOG_ERROR, "Could not open " VSSCRIPT_LIB ". "
+                                "Check VapourSynth installation.\n");
+        err = AVERROR_EXTERNAL;
+        goto done;
+    }
+
+    if (!(vs->vssapi = get_vssapi(VSSCRIPT_API_VERSION))) {
+        av_log(s, AV_LOG_ERROR, "Failed to initialize VSScript (possibly PYTHONPATH not set).\n");
+        err = AVERROR_EXTERNAL;
+        goto done;
+    }
+
+    if (!(vs->vsapi = vs->vssapi->getVSAPI(VAPOURSYNTH_API_VERSION))) {
+        av_log(s, AV_LOG_ERROR, "Could not get VSAPI. "
+                                "Check VapourSynth installation.\n");
+        err = AVERROR_EXTERNAL;
+        goto done;
+    }
 
     vss_state = av_mallocz(sizeof(*vss_state));
     if (!vss_state) {
         err = AVERROR(ENOMEM);
         goto done;
     }
+    vss_state->vssapi = vs->vssapi;
 
     vs->vss_state = av_buffer_create(NULL, 0, free_vss_state, vss_state, 0);
     if (!vs->vss_state) {
@@ -192,16 +266,9 @@ static av_cold int read_header_vs(AVFormatContext *s)
         goto done;
     }
 
-    if (!vsscript_init()) {
-        av_log(s, AV_LOG_ERROR, "Failed to initialize VSScript (possibly PYTHONPATH not set).\n");
-        err = AVERROR_EXTERNAL;
-        goto done;
-    }
-
-    if (vsscript_createScript(&vss_state->vss)) {
+    if (!(vss_state->vss = vs->vssapi->createScript(NULL))) {
         av_log(s, AV_LOG_ERROR, "Failed to create script instance.\n");
         err = AVERROR_EXTERNAL;
-        vsscript_finalize();
         goto done;
     }
 
@@ -234,17 +301,14 @@ static av_cold int read_header_vs(AVFormatContext *s)
     }
 
     buf[sz] = '\0';
-    if (vsscript_evaluateScript(&vss_state->vss, buf, s->url, 0)) {
-        const char *msg = vsscript_getError(vss_state->vss);
+    if (vs->vssapi->evaluateBuffer(vss_state->vss, buf, s->url)) {
+        const char *msg = vs->vssapi->getError(vss_state->vss);
         av_log(s, AV_LOG_ERROR, "Failed to parse script: %s\n", msg ? msg : "(unknown)");
         err = AVERROR_EXTERNAL;
         goto done;
     }
 
-    vs->vsapi = vsscript_getVSApi();
-    vs->vscore = vsscript_getCore(vss_state->vss);
-
-    vs->outnode = vsscript_getOutput(vss_state->vss, 0);
+    vs->outnode = vs->vssapi->getOutputNode(vss_state->vss, 0);
     if (!vs->outnode) {
         av_log(s, AV_LOG_ERROR, "Could not get script output node.\n");
         err = AVERROR_EXTERNAL;
@@ -259,7 +323,7 @@ static av_cold int read_header_vs(AVFormatContext *s)
 
     info = vs->vsapi->getVideoInfo(vs->outnode);
 
-    if (!info->format || !info->width || !info->height) {
+    if (!info->format.colorFamily || !info->width || !info->height) {
         av_log(s, AV_LOG_ERROR, "Non-constant input format not supported.\n");
         err = AVERROR_PATCHWELCOME;
         goto done;
@@ -279,18 +343,17 @@ static av_cold int read_header_vs(AVFormatContext *s)
     st->codecpar->codec_id = AV_CODEC_ID_WRAPPED_AVFRAME;
     st->codecpar->width = info->width;
     st->codecpar->height = info->height;
-    st->codecpar->format = match_pixfmt(info->format, vs->c_order);
+    st->codecpar->format = match_pixfmt(&info->format, vs->c_order);
 
     if (st->codecpar->format == AV_PIX_FMT_NONE) {
-        av_log(s, AV_LOG_ERROR, "Unsupported VS pixel format %s\n", info->format->name);
+        av_log(s, AV_LOG_ERROR, "Unsupported VS pixel format %s\n",
+               vs->vsapi->getVideoFormatName(&info->format, vsfmt) ? vsfmt : "(unknown)");
         err = AVERROR_EXTERNAL;
         goto done;
     }
-    av_log(s, AV_LOG_VERBOSE, "VS format %s -> pixfmt %s\n", info->format->name,
+    av_log(s, AV_LOG_VERBOSE, "VS format %s -> pixfmt %s\n",
+           vs->vsapi->getVideoFormatName(&info->format, vsfmt) ? vsfmt : "(unknown)",
            av_get_pix_fmt_name(st->codecpar->format));
-
-    if (info->format->colorFamily == cmYCoCg)
-        st->codecpar->color_space = AVCOL_SPC_YCGCO;
 
 done:
     av_free(buf);
@@ -310,13 +373,13 @@ static int get_vs_prop_int(AVFormatContext *s, const VSMap *map, const char *nam
     int64_t res;
     int err = 1;
 
-    res = vs->vsapi->propGetInt(map, name, 0, &err);
+    res = vs->vsapi->mapGetInt(map, name, 0, &err);
     return err || res < INT_MIN || res > INT_MAX ? def : res;
 }
 
 struct vsframe_ref_data {
     const VSAPI *vsapi;
-    const VSFrameRef *frame;
+    const VSFrame *frame;
     AVBufferRef *vss_state;
 };
 
@@ -338,7 +401,7 @@ static int read_packet_vs(AVFormatContext *s, AVPacket *pkt)
     AVStream *st = s->streams[0];
     AVFrame *frame = NULL;
     char vserr[80];
-    const VSFrameRef *vsframe;
+    const VSFrame *vsframe;
     const VSVideoInfo *info = vs->vsapi->getVideoInfo(vs->outnode);
     const VSMap *props;
     const AVPixFmtDescriptor *desc;
@@ -380,7 +443,7 @@ static int read_packet_vs(AVFormatContext *s, AVPacket *pkt)
         goto end;
     }
 
-    props = vs->vsapi->getFramePropsRO(vsframe);
+    props = vs->vsapi->getFramePropertiesRO(vsframe);
 
     frame = av_frame_alloc();
     if (!frame) {
@@ -409,7 +472,7 @@ static int read_packet_vs(AVFormatContext *s, AVPacket *pkt)
 
     desc = av_pix_fmt_desc_get(frame->format);
 
-    for (i = 0; i < info->format->numPlanes; i++) {
+    for (i = 0; i < info->format.numPlanes; i++) {
         int p = vs->c_order[i];
         ptrdiff_t plane_h = frame->height;
 

@@ -26,6 +26,7 @@
 
 #include "libavutil/attributes.h"
 #include "libavutil/ffmath.h"
+#include "libavutil/mem.h"
 
 #include "avcodec.h"
 #include "aac.h"
@@ -221,10 +222,6 @@ static const float psy_fir_coeffs[] = {
     -3.36639e-17 * 2, -0.0438162 * 2,  -1.54175e-17 * 2, 0.0931738 * 2,
     -5.52212e-17 * 2, -0.313819 * 2
 };
-
-#if ARCH_MIPS
-#   include "mips/aacpsy_mips.h"
-#endif /* ARCH_MIPS */
 
 /**
  * Calculate the ABR attack threshold from the above LAME psymodel table.

@@ -24,6 +24,8 @@
 
 #if (__riscv_xlen >= 64)
 func ff_bswap32_buf_rvb, zbb
+        lpad    0
+        slli    a2, a2, 2
         bswap32_rvb a0, a1, a2
 endfunc
 #endif

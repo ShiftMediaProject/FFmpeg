@@ -144,8 +144,7 @@ If this option is unspecified it is set to @samp{aac_low}.
 
 AC-3 audio encoders.
 
-These encoders implement part of ATSC A/52:2010 and ETSI TS 102 366, as well as
-the undocumented RealAudio 3 (a.k.a. dnet).
+These encoders implement part of ATSC A/52:2010 and ETSI TS 102 366.
 
 The @var{ac3} encoder uses floating-point math, while the @var{ac3_fixed}
 encoder only uses fixed-point integer math. This does not mean that one is
@@ -813,6 +812,63 @@ High-Efficiency AAC profile:
 ffmpeg -i input.wav -c:a libfdk_aac -profile:a aac_he -b:a 64k output.m4a
 @end example
 @end itemize
+
+@anchor{liblc3-enc}
+@section liblc3
+
+liblc3 LC3 (Low Complexity Communication Codec) encoder wrapper.
+
+Requires the presence of the liblc3 headers and library during configuration.
+You need to explicitly configure the build with @code{--enable-liblc3}.
+
+This encoder has support for the Bluetooth SIG LC3 codec for the LE Audio
+protocol, and the following features of LC3plus:
+@itemize
+@item
+Frame duration of 2.5 and 5ms.
+@item
+High-Resolution mode, 48 KHz, and 96 kHz sampling rates.
+@end itemize
+
+For more information see the liblc3 project at
+@url{https://github.com/google/liblc3}.
+
+@subsection Options
+
+The following options are mapped on the shared FFmpeg codec options.
+
+@table @option
+@item b @var{bitrate}
+Set the bit rate in bits/s. This will determine the fixed size of the encoded
+frames, for a selected frame duration.
+
+@item ar @var{frequency}
+Set the audio sampling rate (in Hz).
+
+@item channels
+Set the number of audio channels.
+
+@item frame_duration
+Set the audio frame duration in milliseconds. Default value is 10ms.
+Allowed frame durations are 2.5ms, 5ms, 7.5ms and 10ms.
+LC3 (Bluetooth LE Audio), allows 7.5ms and 10ms; and LC3plus 2.5ms, 5ms
+and 10ms.
+
+The 10ms frame duration is available in LC3 and LC3 plus standard.
+In this mode, the produced bitstream can be referenced either as LC3 or LC3plus.
+
+@item high_resolution @var{boolean}
+Enable the high-resolution mode if set to 1. The high-resolution mode is
+available with all LC3plus frame durations and for a sampling rate of 48 KHz,
+and 96 KHz.
+
+The encoder automatically turns off this mode at lower sampling rates and
+activates it at 96 KHz.
+
+This mode should be preferred at high bitrates. In this mode, the audio
+bandwidth is always up to the Nyquist frequency, compared to LC3 at 48 KHz,
+which limits the bandwidth to 20 KHz.
+@end table
 
 @anchor{libmp3lame}
 @section libmp3lame
@@ -2322,6 +2378,70 @@ Indicates frame duration
 For more information about libvpx see:
 @url{http://www.webmproject.org/}
 
+@section libvvenc
+
+VVenC H.266/VVC encoder wrapper.
+
+This encoder requires the presence of the libvvenc headers and library
+during configuration. You need to explicitly configure the build with
+@option{--enable-libvvenc}.
+
+The VVenC project website is at
+@url{https://github.com/fraunhoferhhi/vvenc}.
+
+@subsection Supported Pixel Formats
+
+VVenC supports only 10-bit color spaces as input. But the internal (encoded)
+bit depth can be set to 8-bit or 10-bit at runtime.
+
+@subsection Options
+
+@table @option
+@item b
+Sets target video bitrate.
+
+@item g
+Set the GOP size. Currently support for g=1 (Intra only) or default.
+
+@item preset
+Set the VVenC preset.
+
+@item levelidc
+Set level idc.
+
+@item tier
+Set vvc tier.
+
+@item qp
+Set constant quantization parameter.
+
+@item subopt @var{boolean}
+Set subjective (perceptually motivated) optimization. Default is 1 (on).
+
+@item bitdepth8 @var{boolean}
+Set 8bit coding mode instead of using 10bit. Default is 0 (off).
+
+@item period
+set (intra) refresh period in seconds.
+
+@item vvenc-params
+Set vvenc options using a list of @var{key}=@var{value} couples separated
+by ":". See @command{vvencapp --fullhelp} or @command{vvencFFapp --fullhelp} for a list of options.
+
+For example, the options might be provided as:
+
+@example
+intraperiod=64:decodingrefreshtype=idr:poc0idr=1:internalbitdepth=8
+@end example
+
+For example the encoding options might be provided with @option{-vvenc-params}:
+
+@example
+ffmpeg -i input -c:v libvvenc -b 1M -vvenc-params intraperiod=64:decodingrefreshtype=idr:poc0idr=1:internalbitdepth=8 output.mp4
+@end example
+
+@end table
+
 @section libwebp
 
 libwebp WebP Image encoder wrapper
@@ -3490,6 +3610,20 @@ Change these value to reset qsv codec's bitrate control configuration.
 @item @var{pic_timing_sei}
 Supported in h264_qsv and hevc_qsv.
 Change this value to reset qsv codec's pic_timing_sei configuration.
+
+@item @var{qsv_params}
+Set QSV encoder parameters as a colon-separated list of key-value pairs.
+
+The @option{qsv_params} should be formatted as @code{key1=value1:key2=value2:...}.
+
+These parameters are passed directly to the underlying Intel Quick Sync Video (QSV) encoder using the MFXSetParameter function.
+
+Example:
+@example
+ffmpeg -i input.mp4 -c:v h264_qsv -qsv_params "CodingOption1=1:CodingOption2=2" output.mp4
+@end example
+
+This option allows fine-grained control over various encoder-specific settings provided by the QSV encoder.
 @end table
 
 @subsection H264 options
@@ -3971,10 +4105,18 @@ Setting this flag turns on or off LowDelayBRC feautre in qsv plugin, which provi
 more accurate bitrate control to minimize the variance of bitstream size frame
 by frame. Value: -1-default 0-off 1-on
 
-@item max_frame_size
+@item @var{max_frame_size}
 Set the allowed max size in bytes for each frame. If the frame size exceeds
 the limitation, encoder will adjust the QP value to control the frame size.
 Invalid in CQP rate control mode.
+
+@item @var{max_frame_size_i}
+Maximum encoded frame size for I frames in bytes. If this value is set as larger
+than zero, then for I frames the value set by max_frame_size is ignored.
+
+@item @var{max_frame_size_p}
+Maximum encoded frame size for P frames in bytes. If this value is set as larger
+than zero, then for P frames the value set by max_frame_size is ignored.
 @end table
 
 @section snow

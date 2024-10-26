@@ -25,6 +25,7 @@
 #include "libavutil/avassert.h"
 #include "libavutil/mastering_display_metadata.h"
 #include "libavutil/mathematics.h"
+#include "libavutil/mem.h"
 #include "libavcodec/codec_desc.h"
 #include "libavcodec/mpeg4audio.h"
 #include "avio.h"
@@ -35,6 +36,7 @@
 #include "avformat.h"
 #include "flv.h"
 #include "internal.h"
+#include "nal.h"
 #include "mux.h"
 #include "libavutil/opt.h"
 #include "libavcodec/put_bits.h"
@@ -1075,7 +1077,7 @@ static int flv_write_packet(AVFormatContext *s, AVPacket *pkt)
     if (par->codec_id == AV_CODEC_ID_H264 || par->codec_id == AV_CODEC_ID_MPEG4) {
         /* check if extradata looks like mp4 formatted */
         if (par->extradata_size > 0 && *(uint8_t*)par->extradata != 1)
-            if ((ret = ff_avc_parse_nal_units_buf(pkt->data, &data, &size)) < 0)
+            if ((ret = ff_nal_parse_units_buf(pkt->data, &data, &size)) < 0)
                 return ret;
     } else if (par->codec_id == AV_CODEC_ID_HEVC) {
         if (par->extradata_size > 0 && *(uint8_t*)par->extradata != 1)

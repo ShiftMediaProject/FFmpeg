@@ -40,6 +40,7 @@
 #include "lossless_videoencdsp.h"
 #include "put_bits.h"
 #include "libavutil/emms.h"
+#include "libavutil/mem.h"
 #include "libavutil/opt.h"
 #include "libavutil/pixdesc.h"
 
@@ -64,8 +65,10 @@ typedef struct HYuvEncContext {
     int context;
     int picture_number;
 
-    uint8_t *temp[3];
-    uint16_t *temp16[3];                    ///< identical to temp but 16bit type
+    union {
+        uint8_t  *temp[3];
+        uint16_t *temp16[3];
+    };
     uint64_t stats[4][MAX_VLC_N];
     uint8_t len[4][MAX_VLC_N];
     uint32_t bits[4][MAX_VLC_N];
@@ -229,9 +232,9 @@ static int store_huffman_tables(HYuvEncContext *s, uint8_t *buf)
         if ((ret = ff_huff_gen_len_table(s->len[i], s->stats[i], s->vlc_n, 0)) < 0)
             return ret;
 
-        if (ff_huffyuv_generate_bits_table(s->bits[i], s->len[i], s->vlc_n) < 0) {
-            return -1;
-        }
+        ret = ff_huffyuv_generate_bits_table(s->bits[i], s->len[i], s->vlc_n);
+        if (ret < 0)
+            return ret;
 
         size += store_table(s, s->len[i], buf + size);
     }
@@ -429,11 +432,13 @@ static av_cold int encode_init(AVCodecContext *avctx)
                 s->stats[i][j]= 0;
     }
 
-    ret = ff_huffyuv_alloc_temp(s->temp, s->temp16, avctx->width);
-    if (ret < 0)
-        return ret;
-
     s->picture_number=0;
+
+    for (int i = 0; i < 3; i++) {
+        s->temp[i] = av_malloc(4 * avctx->width + 16);
+        if (!s->temp[i])
+            return AVERROR(ENOMEM);
+    }
 
     return 0;
 }
@@ -494,7 +499,7 @@ static int encode_422_bitstream(HYuvEncContext *s, int offset, int count)
 
 static int encode_plane_bitstream(HYuvEncContext *s, int width, int plane)
 {
-    int i, count = width/2;
+    int count = width/2;
 
     if (put_bytes_left(&s->pb, 0) < count * s->bps / 2) {
         av_log(s->avctx, AV_LOG_ERROR, "encoded frame too large\n");
@@ -541,112 +546,52 @@ static int encode_plane_bitstream(HYuvEncContext *s, int width, int plane)
             put_bits(&s->pb, s->len[plane][y1>>2], s->bits[plane][y1>>2]);\
             put_bits(&s->pb, 2, y1&3);
 
-    if (s->bps <= 8) {
-    if (s->flags & AV_CODEC_FLAG_PASS1) {
-        for (i = 0; i < count; i++) {
-            LOAD2;
-            STAT2;
-        }
-        if (width&1) {
-            LOADEND;
-            STATEND;
-        }
-    }
-    if (s->avctx->flags2 & AV_CODEC_FLAG2_NO_OUTPUT)
-        return 0;
+#define ENCODE_PLANE(LOAD, LOADEND, WRITE, WRITEEND, STAT, STATEND)   \
+do {                                                                  \
+    if (s->flags & AV_CODEC_FLAG_PASS1) {                             \
+        for (int i = 0; i < count; i++) {                             \
+            LOAD;                                                     \
+            STAT;                                                     \
+        }                                                             \
+        if (width & 1) {                                              \
+            LOADEND;                                                  \
+            STATEND;                                                  \
+        }                                                             \
+    }                                                                 \
+    if (s->avctx->flags2 & AV_CODEC_FLAG2_NO_OUTPUT)                  \
+        return 0;                                                     \
+                                                                      \
+    if (s->context) {                                                 \
+        for (int i = 0; i < count; i++) {                             \
+            LOAD;                                                     \
+            STAT;                                                     \
+            WRITE;                                                    \
+        }                                                             \
+        if (width & 1) {                                              \
+            LOADEND;                                                  \
+            STATEND;                                                  \
+            WRITEEND;                                                 \
+        }                                                             \
+    } else {                                                          \
+        for (int i = 0; i < count; i++) {                             \
+            LOAD;                                                     \
+            WRITE;                                                    \
+        }                                                             \
+        if (width & 1) {                                              \
+            LOADEND;                                                  \
+            WRITEEND;                                                 \
+        }                                                             \
+    }                                                                 \
+} while (0)
 
-    if (s->context) {
-        for (i = 0; i < count; i++) {
-            LOAD2;
-            STAT2;
-            WRITE2;
-        }
-        if (width&1) {
-            LOADEND;
-            STATEND;
-            WRITEEND;
-        }
-    } else {
-        for (i = 0; i < count; i++) {
-            LOAD2;
-            WRITE2;
-        }
-        if (width&1) {
-            LOADEND;
-            WRITEEND;
-        }
-    }
+    if (s->bps <= 8) {
+        ENCODE_PLANE(LOAD2, LOADEND, WRITE2, WRITEEND, STAT2, STATEND);
     } else if (s->bps <= 14) {
         int mask = s->n - 1;
-        if (s->flags & AV_CODEC_FLAG_PASS1) {
-            for (i = 0; i < count; i++) {
-                LOAD2_14;
-                STAT2;
-            }
-            if (width&1) {
-                LOADEND_14;
-                STATEND;
-            }
-        }
-        if (s->avctx->flags2 & AV_CODEC_FLAG2_NO_OUTPUT)
-            return 0;
 
-        if (s->context) {
-            for (i = 0; i < count; i++) {
-                LOAD2_14;
-                STAT2;
-                WRITE2;
-            }
-            if (width&1) {
-                LOADEND_14;
-                STATEND;
-                WRITEEND;
-            }
-        } else {
-            for (i = 0; i < count; i++) {
-                LOAD2_14;
-                WRITE2;
-            }
-            if (width&1) {
-                LOADEND_14;
-                WRITEEND;
-            }
-        }
+        ENCODE_PLANE(LOAD2_14, LOADEND_14, WRITE2, WRITEEND, STAT2, STATEND);
     } else {
-        if (s->flags & AV_CODEC_FLAG_PASS1) {
-            for (i = 0; i < count; i++) {
-                LOAD2_16;
-                STAT2_16;
-            }
-            if (width&1) {
-                LOADEND_16;
-                STATEND_16;
-            }
-        }
-        if (s->avctx->flags2 & AV_CODEC_FLAG2_NO_OUTPUT)
-            return 0;
-
-        if (s->context) {
-            for (i = 0; i < count; i++) {
-                LOAD2_16;
-                STAT2_16;
-                WRITE2_16;
-            }
-            if (width&1) {
-                LOADEND_16;
-                STATEND_16;
-                WRITEEND_16;
-            }
-        } else {
-            for (i = 0; i < count; i++) {
-                LOAD2_16;
-                WRITE2_16;
-            }
-            if (width&1) {
-                LOADEND_16;
-                WRITEEND_16;
-            }
-        }
+        ENCODE_PLANE(LOAD2_16, LOADEND_16, WRITE2_16, WRITEEND_16, STAT2_16, STATEND_16);
     }
 #undef LOAD2
 #undef STAT2
@@ -750,16 +695,15 @@ static inline int encode_bgra_bitstream(HYuvEncContext *s, int count, int planes
 }
 
 static int encode_frame(AVCodecContext *avctx, AVPacket *pkt,
-                        const AVFrame *pict, int *got_packet)
+                        const AVFrame *p, int *got_packet)
 {
     HYuvEncContext *s = avctx->priv_data;
     const int width = avctx->width;
     const int width2 = avctx->width >> 1;
     const int height = avctx->height;
-    const int fake_ystride = s->interlaced ? pict->linesize[0]*2  : pict->linesize[0];
-    const int fake_ustride = s->interlaced ? pict->linesize[1]*2  : pict->linesize[1];
-    const int fake_vstride = s->interlaced ? pict->linesize[2]*2  : pict->linesize[2];
-    const AVFrame * const p = pict;
+    const int fake_ystride = (1 + s->interlaced) * p->linesize[0];
+    const int fake_ustride = (1 + s->interlaced) * p->linesize[1];
+    const int fake_vstride = (1 + s->interlaced) * p->linesize[2];
     int i, j, size = 0, ret;
 
     if ((ret = ff_alloc_packet(avctx, pkt, width * height * 3 * 4 + FF_INPUT_BUFFER_MIN_SIZE)) < 0)
@@ -1034,9 +978,10 @@ static av_cold int encode_end(AVCodecContext *avctx)
 {
     HYuvEncContext *s = avctx->priv_data;
 
-    ff_huffyuv_common_end(s->temp, s->temp16);
-
     av_freep(&avctx->stats_out);
+
+    for (int i = 0; i < 3; i++)
+        av_freep(&s->temp[i]);
 
     return 0;
 }
@@ -1044,37 +989,24 @@ static av_cold int encode_end(AVCodecContext *avctx)
 #define OFFSET(x) offsetof(HYuvEncContext, x)
 #define VE AV_OPT_FLAG_VIDEO_PARAM | AV_OPT_FLAG_ENCODING_PARAM
 
-#define COMMON_OPTIONS \
-    { "non_deterministic", "Allow multithreading for e.g. context=1 at the expense of determinism", \
-      OFFSET(non_determ), AV_OPT_TYPE_BOOL, { .i64 = 0 }, \
-      0, 1, VE }, \
-    { "pred", "Prediction method", OFFSET(predictor), AV_OPT_TYPE_INT, { .i64 = LEFT }, LEFT, MEDIAN, VE, .unit = "pred" }, \
-        { "left",   NULL, 0, AV_OPT_TYPE_CONST, { .i64 = LEFT },   INT_MIN, INT_MAX, VE, .unit = "pred" }, \
-        { "plane",  NULL, 0, AV_OPT_TYPE_CONST, { .i64 = PLANE },  INT_MIN, INT_MAX, VE, .unit = "pred" }, \
-        { "median", NULL, 0, AV_OPT_TYPE_CONST, { .i64 = MEDIAN }, INT_MIN, INT_MAX, VE, .unit = "pred" }, \
-
-static const AVOption normal_options[] = {
-    COMMON_OPTIONS
-    { NULL },
-};
-
-static const AVOption ff_options[] = {
-    COMMON_OPTIONS
+static const AVOption options[] = {
+    /* ffvhuff-only options */
     { "context", "Set per-frame huffman tables", OFFSET(context), AV_OPT_TYPE_INT, { .i64 = 0 }, 0, 1, VE },
+    /* Common options */
+    { "non_deterministic", "Allow multithreading for e.g. context=1 at the expense of determinism",
+      OFFSET(non_determ), AV_OPT_TYPE_BOOL, { .i64 = 0 },
+      0, 1, VE },
+    { "pred", "Prediction method", OFFSET(predictor), AV_OPT_TYPE_INT, { .i64 = LEFT }, LEFT, MEDIAN, VE, .unit = "pred" },
+        { "left",   NULL, 0, AV_OPT_TYPE_CONST, { .i64 = LEFT },   INT_MIN, INT_MAX, VE, .unit = "pred" },
+        { "plane",  NULL, 0, AV_OPT_TYPE_CONST, { .i64 = PLANE },  INT_MIN, INT_MAX, VE, .unit = "pred" },
+        { "median", NULL, 0, AV_OPT_TYPE_CONST, { .i64 = MEDIAN }, INT_MIN, INT_MAX, VE, .unit = "pred" },
     { NULL },
 };
 
 static const AVClass normal_class = {
     .class_name = "huffyuv",
     .item_name  = av_default_item_name,
-    .option     = normal_options,
-    .version    = LIBAVUTIL_VERSION_INT,
-};
-
-static const AVClass ff_class = {
-    .class_name = "ffvhuff",
-    .item_name  = av_default_item_name,
-    .option     = ff_options,
+    .option     = options + 1,
     .version    = LIBAVUTIL_VERSION_INT,
 };
 
@@ -1094,10 +1026,18 @@ const FFCodec ff_huffyuv_encoder = {
         AV_PIX_FMT_YUV422P, AV_PIX_FMT_RGB24,
         AV_PIX_FMT_RGB32, AV_PIX_FMT_NONE
     },
+    .color_ranges   = AVCOL_RANGE_MPEG,
     .caps_internal  = FF_CODEC_CAP_INIT_CLEANUP,
 };
 
 #if CONFIG_FFVHUFF_ENCODER
+static const AVClass ff_class = {
+    .class_name = "ffvhuff",
+    .item_name  = av_default_item_name,
+    .option     = options,
+    .version    = LIBAVUTIL_VERSION_INT,
+};
+
 const FFCodec ff_ffvhuff_encoder = {
     .p.name         = "ffvhuff",
     CODEC_LONG_NAME("Huffyuv FFmpeg variant"),
@@ -1127,6 +1067,7 @@ const FFCodec ff_ffvhuff_encoder = {
         AV_PIX_FMT_RGB24,
         AV_PIX_FMT_RGB32, AV_PIX_FMT_NONE
     },
+    .color_ranges   = AVCOL_RANGE_MPEG,
     .caps_internal  = FF_CODEC_CAP_INIT_CLEANUP,
 };
 #endif

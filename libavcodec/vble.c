@@ -25,13 +25,13 @@
  */
 
 #include "libavutil/imgutils.h"
+#include "libavutil/mem.h"
 
 #define BITSTREAM_READER_LE
 #include "avcodec.h"
 #include "codec_internal.h"
 #include "get_bits.h"
 #include "lossless_videodsp.h"
-#include "mathops.h"
 #include "thread.h"
 
 typedef struct VBLEContext {
@@ -130,14 +130,6 @@ static int vble_decode_frame(AVCodecContext *avctx, AVFrame *pic,
         return AVERROR_INVALIDDATA;
     }
 
-    /* Allocate buffer */
-    if ((ret = ff_thread_get_buffer(avctx, pic, 0)) < 0)
-        return ret;
-
-    /* Set flags */
-    pic->flags |= AV_FRAME_FLAG_KEY;
-    pic->pict_type = AV_PICTURE_TYPE_I;
-
     /* Version should always be 1 */
     version = AV_RL32(src);
 
@@ -151,6 +143,10 @@ static int vble_decode_frame(AVCodecContext *avctx, AVFrame *pic,
         av_log(avctx, AV_LOG_ERROR, "Invalid Code\n");
         return AVERROR_INVALIDDATA;
     }
+
+    /* Allocate buffer */
+    if ((ret = ff_thread_get_buffer(avctx, pic, 0)) < 0)
+        return ret;
 
     /* Restore planes. Should be almost identical to Huffyuv's. */
     vble_restore_plane(ctx, pic, &gb, 0, offset, avctx->width, avctx->height);

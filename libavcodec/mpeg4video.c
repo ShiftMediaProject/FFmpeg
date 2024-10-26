@@ -98,7 +98,7 @@ static inline void ff_mpeg4_set_one_direct_mv(MpegEncContext *s, int mx,
     uint16_t time_pb = s->pb_time;
     int p_mx, p_my;
 
-    p_mx = s->next_picture.motion_val[0][xy][0];
+    p_mx = s->next_pic.motion_val[0][xy][0];
     if ((unsigned)(p_mx + tab_bias) < tab_size) {
         s->mv[0][i][0] = s->direct_scale_mv[0][p_mx + tab_bias] + mx;
         s->mv[1][i][0] = mx ? s->mv[0][i][0] - p_mx
@@ -108,7 +108,7 @@ static inline void ff_mpeg4_set_one_direct_mv(MpegEncContext *s, int mx,
         s->mv[1][i][0] = mx ? s->mv[0][i][0] - p_mx
                             : p_mx * (time_pb - time_pp) / time_pp;
     }
-    p_my = s->next_picture.motion_val[0][xy][1];
+    p_my = s->next_pic.motion_val[0][xy][1];
     if ((unsigned)(p_my + tab_bias) < tab_size) {
         s->mv[0][i][1] = s->direct_scale_mv[0][p_my + tab_bias] + my;
         s->mv[1][i][1] = my ? s->mv[0][i][1] - p_my
@@ -129,7 +129,7 @@ static inline void ff_mpeg4_set_one_direct_mv(MpegEncContext *s, int mx,
 int ff_mpeg4_set_direct_mv(MpegEncContext *s, int mx, int my)
 {
     const int mb_index          = s->mb_x + s->mb_y * s->mb_stride;
-    const int colocated_mb_type = s->next_picture.mb_type[mb_index];
+    const int colocated_mb_type = s->next_pic.mb_type[mb_index];
     uint16_t time_pp;
     uint16_t time_pb;
     int i;
@@ -141,11 +141,11 @@ int ff_mpeg4_set_direct_mv(MpegEncContext *s, int mx, int my)
         s->mv_type = MV_TYPE_8X8;
         for (i = 0; i < 4; i++)
             ff_mpeg4_set_one_direct_mv(s, mx, my, i);
-        return MB_TYPE_DIRECT2 | MB_TYPE_8x8 | MB_TYPE_L0L1;
+        return MB_TYPE_DIRECT2 | MB_TYPE_8x8 | MB_TYPE_BIDIR_MV;
     } else if (IS_INTERLACED(colocated_mb_type)) {
         s->mv_type = MV_TYPE_FIELD;
         for (i = 0; i < 2; i++) {
-            int field_select = s->next_picture.ref_index[0][4 * mb_index + 2 * i];
+            int field_select = s->next_pic.ref_index[0][4 * mb_index + 2 * i];
             s->field_select[0][i] = field_select;
             s->field_select[1][i] = i;
             if (s->top_field_first) {
@@ -169,7 +169,7 @@ int ff_mpeg4_set_direct_mv(MpegEncContext *s, int mx, int my)
                                   (time_pb - time_pp) / time_pp;
         }
         return MB_TYPE_DIRECT2 | MB_TYPE_16x8 |
-               MB_TYPE_L0L1    | MB_TYPE_INTERLACED;
+               MB_TYPE_BIDIR_MV | MB_TYPE_INTERLACED;
     } else {
         ff_mpeg4_set_one_direct_mv(s, mx, my, 0);
         s->mv[0][1][0] =
@@ -190,6 +190,6 @@ int ff_mpeg4_set_direct_mv(MpegEncContext *s, int mx, int my)
         else
             s->mv_type = MV_TYPE_8X8;
         // Note see prev line
-        return MB_TYPE_DIRECT2 | MB_TYPE_16x16 | MB_TYPE_L0L1;
+        return MB_TYPE_DIRECT2 | MB_TYPE_16x16 | MB_TYPE_BIDIR_MV;
     }
 }

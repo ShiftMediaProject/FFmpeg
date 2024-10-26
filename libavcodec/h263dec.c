@@ -42,7 +42,6 @@
 #include "mpeg4video.h"
 #include "mpeg4videodec.h"
 #include "mpeg4videodefs.h"
-#include "mpegutils.h"
 #include "mpegvideo.h"
 #include "mpegvideodec.h"
 #include "msmpeg4dec.h"
@@ -96,11 +95,17 @@ av_cold int ff_h263_decode_init(AVCodecContext *avctx)
     s->out_format      = FMT_H263;
 
     // set defaults
-    ff_mpv_decode_init(s, avctx);
+    ret = ff_mpv_decode_init(s, avctx);
+    if (ret < 0)
+        return ret;
 
-    s->quant_precision = 5;
     s->decode_mb       = ff_h263_decode_mb;
     s->low_delay       = 1;
+
+    // dct_unquantize defaults for H.263;
+    // they might change on a per-frame basis for MPEG-4.
+    s->dct_unquantize_intra = s->dct_unquantize_h263_intra;
+    s->dct_unquantize_inter = s->dct_unquantize_h263_inter;
 
     /* select sub codec */
     switch (avctx->codec->id) {
@@ -109,28 +114,33 @@ av_cold int ff_h263_decode_init(AVCodecContext *avctx)
         avctx->chroma_sample_location = AVCHROMA_LOC_CENTER;
         break;
     case AV_CODEC_ID_MPEG4:
+        // dct_unquantize_inter is only used with MPEG-2 quantizers,
+        // so we can already set dct_unquantize_inter here once and for all.
+        s->dct_unquantize_inter = s->dct_unquantize_mpeg2_inter;
         break;
     case AV_CODEC_ID_MSMPEG4V1:
         s->h263_pred       = 1;
-        s->msmpeg4_version = 1;
+        s->msmpeg4_version = MSMP4_V1;
         break;
     case AV_CODEC_ID_MSMPEG4V2:
         s->h263_pred       = 1;
-        s->msmpeg4_version = 2;
+        s->msmpeg4_version = MSMP4_V2;
         break;
     case AV_CODEC_ID_MSMPEG4V3:
         s->h263_pred       = 1;
-        s->msmpeg4_version = 3;
+        s->msmpeg4_version = MSMP4_V3;
         break;
     case AV_CODEC_ID_WMV1:
         s->h263_pred       = 1;
-        s->msmpeg4_version = 4;
+        s->msmpeg4_version = MSMP4_WMV1;
         break;
     case AV_CODEC_ID_WMV2:
         s->h263_pred       = 1;
-        s->msmpeg4_version = 5;
+        s->msmpeg4_version = MSMP4_WMV2;
         break;
     case AV_CODEC_ID_H263I:
+    case AV_CODEC_ID_RV10:
+    case AV_CODEC_ID_RV20:
         break;
     case AV_CODEC_ID_FLV1:
         s->h263_flv = 1;
@@ -157,14 +167,6 @@ av_cold int ff_h263_decode_init(AVCodecContext *avctx)
     ff_h263dsp_init(&s->h263dsp);
     ff_h263_decode_init_vlc();
 
-    return 0;
-}
-
-av_cold int ff_h263_decode_end(AVCodecContext *avctx)
-{
-    MpegEncContext *s = avctx->priv_data;
-
-    ff_mpv_common_end(s);
     return 0;
 }
 
@@ -234,7 +236,7 @@ static int decode_slice(MpegEncContext *s)
 
     for (; s->mb_y < s->mb_height; s->mb_y++) {
         /* per-row end of slice checks */
-        if (s->msmpeg4_version) {
+        if (s->msmpeg4_version != MSMP4_UNUSED) {
             if (s->resync_mb_y + s->slice_height == s->mb_y) {
                 ff_er_add_slice(&s->er, s->resync_mb_x, s->resync_mb_y,
                                 s->mb_x - 1, s->mb_y, ER_MB_END);
@@ -243,7 +245,7 @@ static int decode_slice(MpegEncContext *s)
             }
         }
 
-        if (s->msmpeg4_version == 1) {
+        if (s->msmpeg4_version == MSMP4_V1) {
             s->last_dc[0] =
             s->last_dc[1] =
             s->last_dc[2] = 128;
@@ -382,12 +384,12 @@ static int decode_slice(MpegEncContext *s)
     }
 
     // handle formats which don't have unique end markers
-    if (s->msmpeg4_version || (s->workaround_bugs & FF_BUG_NO_PADDING)) { // FIXME perhaps solve this more cleanly
+    if (s->msmpeg4_version != MSMP4_UNUSED || (s->workaround_bugs & FF_BUG_NO_PADDING)) { // FIXME perhaps solve this more cleanly
         int left      = get_bits_left(&s->gb);
         int max_extra = 7;
 
         /* no markers in M$ crap */
-        if (s->msmpeg4_version && s->pict_type == AV_PICTURE_TYPE_I)
+        if (s->msmpeg4_version != MSMP4_UNUSED && s->pict_type == AV_PICTURE_TYPE_I)
             max_extra += 17;
 
         /* buggy padding but the frame should still end approximately at
@@ -433,22 +435,22 @@ int ff_h263_decode_frame(AVCodecContext *avctx, AVFrame *pict,
     /* no supplementary picture */
     if (buf_size == 0) {
         /* special case for last picture */
-        if (s->low_delay == 0 && s->next_picture_ptr) {
-            if ((ret = av_frame_ref(pict, s->next_picture_ptr->f)) < 0)
+        if (s->low_delay == 0 && s->next_pic.ptr) {
+            if ((ret = av_frame_ref(pict, s->next_pic.ptr->f)) < 0)
                 return ret;
-            s->next_picture_ptr = NULL;
+            ff_mpv_unref_picture(&s->next_pic);
 
             *got_frame = 1;
-        } else if (s->skipped_last_frame && s->current_picture_ptr) {
+        } else if (s->skipped_last_frame && s->cur_pic.ptr) {
             /* Output the last picture we decoded again if the stream ended with
              * an NVOP */
-            if ((ret = av_frame_ref(pict, s->current_picture_ptr->f)) < 0)
+            if ((ret = av_frame_ref(pict, s->cur_pic.ptr->f)) < 0)
                 return ret;
             /* Copy props from the last input packet. Otherwise, props from the last
              * returned picture would be reused */
             if ((ret = ff_decode_frame_props(avctx, pict)) < 0)
                 return ret;
-            s->current_picture_ptr = NULL;
+            ff_mpv_unref_picture(&s->cur_pic);
 
             *got_frame = 1;
         }
@@ -481,10 +483,12 @@ retry:
         return ret;
 
     /* let's go :-) */
-    if (CONFIG_WMV2_DECODER && s->msmpeg4_version == 5) {
+    if (CONFIG_WMV2_DECODER && s->msmpeg4_version == MSMP4_WMV2) {
         ret = ff_wmv2_decode_picture_header(s);
-    } else if (CONFIG_MSMPEG4DEC && s->msmpeg4_version) {
+#if CONFIG_MSMPEG4DEC
+    } else if (s->msmpeg4_version != MSMP4_UNUSED) {
         ret = ff_msmpeg4_decode_picture_header(s);
+#endif
     } else if (CONFIG_MPEG4_DECODER && avctx->codec_id == AV_CODEC_ID_MPEG4) {
         ret = ff_mpeg4_decode_picture_header(avctx->priv_data, &s->gb, 0, 0);
         s->skipped_last_frame = (ret == FRAME_SKIPPED);
@@ -528,6 +532,11 @@ retry:
             goto retry;
         if (s->studio_profile != (s->idsp.idct == NULL))
             ff_mpv_idct_init(s);
+        if (s->mpeg_quant) {
+            s->dct_unquantize_intra = s->dct_unquantize_mpeg2_intra;
+        } else {
+            s->dct_unquantize_intra = s->dct_unquantize_h263_intra;
+        }
     }
 
     /* After H.263 & MPEG-4 header decode we have the height, width,
@@ -562,7 +571,7 @@ retry:
         s->gob_index = H263_GOB_HEIGHT(s->height);
 
     /* skip B-frames if we don't have reference frames */
-    if (!s->last_picture_ptr &&
+    if (!s->last_pic.ptr &&
         (s->pict_type == AV_PICTURE_TYPE_B || s->droppable))
         return get_consumed_bytes(s, buf_size);
     if ((avctx->skip_frame >= AVDISCARD_NONREF &&
@@ -590,13 +599,15 @@ retry:
     /* the second part of the wmv2 header contains the MB skip bits which
      * are stored in current_picture->mb_type which is not available before
      * ff_mpv_frame_start() */
-    if (CONFIG_WMV2_DECODER && s->msmpeg4_version == 5) {
+#if CONFIG_WMV2_DECODER
+    if (s->msmpeg4_version == MSMP4_WMV2) {
         ret = ff_wmv2_decode_secondary_picture_header(s);
         if (ret < 0)
             return ret;
         if (ret == 1)
             goto frame_end;
     }
+#endif
 
     /* decode each macroblock */
     s->mb_x = 0;
@@ -604,7 +615,7 @@ retry:
 
     slice_ret = decode_slice(s);
     while (s->mb_y < s->mb_height) {
-        if (s->msmpeg4_version) {
+        if (s->msmpeg4_version != MSMP4_UNUSED) {
             if (s->slice_height == 0 || s->mb_x != 0 || slice_ret < 0 ||
                 (s->mb_y % s->slice_height) != 0 || get_bits_left(&s->gb) < 0)
                 break;
@@ -616,14 +627,14 @@ retry:
                 s->er.error_occurred = 1;
         }
 
-        if (s->msmpeg4_version < 4 && s->h263_pred)
+        if (s->msmpeg4_version < MSMP4_WMV1 && s->h263_pred)
             ff_mpeg4_clean_buffers(s);
 
         if (decode_slice(s) < 0)
             slice_ret = AVERROR_INVALIDDATA;
     }
 
-    if (s->msmpeg4_version && s->msmpeg4_version < 4 &&
+    if (s->msmpeg4_version != MSMP4_UNUSED && s->msmpeg4_version < MSMP4_WMV1 &&
         s->pict_type == AV_PICTURE_TYPE_I)
         if (!CONFIG_MSMPEG4DEC ||
             ff_msmpeg4_decode_ext_header(s, buf_size) < 0)
@@ -648,21 +659,20 @@ frame_end:
     if (!s->divx_packed && avctx->hwaccel)
         ff_thread_finish_setup(avctx);
 
-    av_assert1(s->current_picture.f->pict_type == s->current_picture_ptr->f->pict_type);
-    av_assert1(s->current_picture.f->pict_type == s->pict_type);
+    av_assert1(s->pict_type == s->cur_pic.ptr->f->pict_type);
     if (s->pict_type == AV_PICTURE_TYPE_B || s->low_delay) {
-        if ((ret = av_frame_ref(pict, s->current_picture_ptr->f)) < 0)
+        if ((ret = av_frame_ref(pict, s->cur_pic.ptr->f)) < 0)
             return ret;
-        ff_print_debug_info(s, s->current_picture_ptr, pict);
-        ff_mpv_export_qp_table(s, pict, s->current_picture_ptr, FF_MPV_QSCALE_TYPE_MPEG1);
-    } else if (s->last_picture_ptr) {
-        if ((ret = av_frame_ref(pict, s->last_picture_ptr->f)) < 0)
+        ff_print_debug_info(s, s->cur_pic.ptr, pict);
+        ff_mpv_export_qp_table(s, pict, s->cur_pic.ptr, FF_MPV_QSCALE_TYPE_MPEG1);
+    } else if (s->last_pic.ptr) {
+        if ((ret = av_frame_ref(pict, s->last_pic.ptr->f)) < 0)
             return ret;
-        ff_print_debug_info(s, s->last_picture_ptr, pict);
-        ff_mpv_export_qp_table(s, pict, s->last_picture_ptr, FF_MPV_QSCALE_TYPE_MPEG1);
+        ff_print_debug_info(s, s->last_pic.ptr, pict);
+        ff_mpv_export_qp_table(s, pict, s->last_pic.ptr, FF_MPV_QSCALE_TYPE_MPEG1);
     }
 
-    if (s->last_picture_ptr || s->low_delay) {
+    if (s->last_pic.ptr || s->low_delay) {
         if (   pict->format == AV_PIX_FMT_YUV420P
             && (s->codec_tag == AV_RL32("GEOV") || s->codec_tag == AV_RL32("GEOX"))) {
             for (int p = 0; p < 3; p++) {
@@ -704,11 +714,12 @@ const FFCodec ff_h263_decoder = {
     .p.id           = AV_CODEC_ID_H263,
     .priv_data_size = sizeof(MpegEncContext),
     .init           = ff_h263_decode_init,
-    .close          = ff_h263_decode_end,
     FF_CODEC_DECODE_CB(ff_h263_decode_frame),
+    .close          = ff_mpv_decode_close,
     .p.capabilities = AV_CODEC_CAP_DRAW_HORIZ_BAND | AV_CODEC_CAP_DR1 |
                       AV_CODEC_CAP_DELAY,
-    .caps_internal  = FF_CODEC_CAP_SKIP_FRAME_FILL_PARAM,
+    .caps_internal  = FF_CODEC_CAP_INIT_CLEANUP |
+                      FF_CODEC_CAP_SKIP_FRAME_FILL_PARAM,
     .flush          = ff_mpeg_flush,
     .p.max_lowres   = 3,
     .hw_configs     = h263_hw_config_list,
@@ -721,11 +732,12 @@ const FFCodec ff_h263p_decoder = {
     .p.id           = AV_CODEC_ID_H263P,
     .priv_data_size = sizeof(MpegEncContext),
     .init           = ff_h263_decode_init,
-    .close          = ff_h263_decode_end,
     FF_CODEC_DECODE_CB(ff_h263_decode_frame),
+    .close          = ff_mpv_decode_close,
     .p.capabilities = AV_CODEC_CAP_DRAW_HORIZ_BAND | AV_CODEC_CAP_DR1 |
                       AV_CODEC_CAP_DELAY,
-    .caps_internal  = FF_CODEC_CAP_SKIP_FRAME_FILL_PARAM,
+    .caps_internal  = FF_CODEC_CAP_INIT_CLEANUP |
+                      FF_CODEC_CAP_SKIP_FRAME_FILL_PARAM,
     .flush          = ff_mpeg_flush,
     .p.max_lowres   = 3,
     .hw_configs     = h263_hw_config_list,

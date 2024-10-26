@@ -411,7 +411,9 @@ typedef struct FFStream {
 
     const struct AVCodecDescriptor *codec_desc;
 
+#if FF_API_INTERNAL_TIMING
     AVRational transferred_mux_tb;
+#endif
 } FFStream;
 
 static av_always_inline FFStream *ffstream(AVStream *st)
@@ -726,9 +728,6 @@ struct AVBPrint;
  * Finalize buf into extradata and set its size appropriately.
  */
 int ff_bprint_to_codecpar_extradata(AVCodecParameters *par, struct AVBPrint *buf);
-
-int ff_lock_avformat(void);
-int ff_unlock_avformat(void);
 
 /**
  * Set AVFormatContext url field to the provided pointer. The pointer must

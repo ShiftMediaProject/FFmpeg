@@ -23,8 +23,8 @@
 #include <vdpau/vdpau.h>
 
 #include "avcodec.h"
-#include "hevc_data.h"
-#include "hevcdec.h"
+#include "hevc/data.h"
+#include "hevc/hevcdec.h"
 #include "hwaccel_internal.h"
 #include "vdpau.h"
 #include "vdpau_internal.h"
@@ -35,7 +35,8 @@ static int vdpau_hevc_start_frame(AVCodecContext *avctx,
                                   const uint8_t *buffer, uint32_t size)
 {
     HEVCContext *h = avctx->priv_data;
-    HEVCFrame *pic = h->ref;
+    const HEVCLayerContext *l = &h->layers[h->cur_layer];
+    HEVCFrame *pic = h->cur_frame;
     struct vdpau_picture_context *pic_ctx = pic->hwaccel_picture_private;
 
     VdpPictureInfoHEVC *info = &pic_ctx->info.hevc;
@@ -43,8 +44,8 @@ static int vdpau_hevc_start_frame(AVCodecContext *avctx,
     VdpPictureInfoHEVC444 *info2 = &pic_ctx->info.hevc_444;
 #endif
 
-    const HEVCSPS *sps = h->ps.sps;
-    const HEVCPPS *pps = h->ps.pps;
+    const HEVCPPS *pps = h->pps;
+    const HEVCSPS *sps = pps->sps;
     const SliceHeader *sh = &h->sh;
     const ScalingList *sl = pps->scaling_list_data_present_flag ?
                             &pps->scaling_list : &sps->scaling_list;
@@ -53,7 +54,7 @@ static int vdpau_hevc_start_frame(AVCodecContext *avctx,
 
     /* SPS */
     info->chroma_format_idc = sps->chroma_format_idc;
-    info->separate_colour_plane_flag = sps->separate_colour_plane_flag;
+    info->separate_colour_plane_flag = sps->separate_colour_plane;
     info->pic_width_in_luma_samples = sps->width;
     info->pic_height_in_luma_samples = sps->height;
     info->bit_depth_luma_minus8 = sps->bit_depth - 8;
@@ -68,7 +69,7 @@ static int vdpau_hevc_start_frame(AVCodecContext *avctx,
     info->log2_diff_max_min_transform_block_size = sps->log2_max_trafo_size - sps->log2_min_tb_size;
     info->max_transform_hierarchy_depth_inter = sps->max_transform_hierarchy_depth_inter;
     info->max_transform_hierarchy_depth_intra = sps->max_transform_hierarchy_depth_intra;
-    info->scaling_list_enabled_flag = sps->scaling_list_enable_flag;
+    info->scaling_list_enabled_flag = sps->scaling_list_enabled;
     /* Scaling lists, in diagonal order, to be used for this frame. */
     for (size_t i = 0; i < 6; i++) {
         for (size_t j = 0; j < 16; j++) {
@@ -100,9 +101,9 @@ static int vdpau_hevc_start_frame(AVCodecContext *avctx,
             info->ScalingListDCCoeff32x32[i] = sl->sl_dc[1][i * 3];
         }
     }
-    info->amp_enabled_flag = sps->amp_enabled_flag;
+    info->amp_enabled_flag = sps->amp_enabled;
     info->sample_adaptive_offset_enabled_flag = sps->sao_enabled;
-    info->pcm_enabled_flag = sps->pcm_enabled_flag;
+    info->pcm_enabled_flag = sps->pcm_enabled;
     if (info->pcm_enabled_flag) {
         /* Only needs to be set if pcm_enabled_flag is set. Ignored otherwise. */
         info->pcm_sample_bit_depth_luma_minus1 = sps->pcm.bit_depth - 1;
@@ -113,17 +114,17 @@ static int vdpau_hevc_start_frame(AVCodecContext *avctx,
         /* Only needs to be set if pcm_enabled_flag is set. Ignored otherwise. */
         info->log2_diff_max_min_pcm_luma_coding_block_size = sps->pcm.log2_max_pcm_cb_size - sps->pcm.log2_min_pcm_cb_size;
         /* Only needs to be set if pcm_enabled_flag is set. Ignored otherwise. */
-        info->pcm_loop_filter_disabled_flag = sps->pcm.loop_filter_disable_flag;
+        info->pcm_loop_filter_disabled_flag = sps->pcm_loop_filter_disabled;
     }
     /* Per spec, when zero, assume short_term_ref_pic_set_sps_flag
        is also zero. */
     info->num_short_term_ref_pic_sets = sps->nb_st_rps;
-    info->long_term_ref_pics_present_flag = sps->long_term_ref_pics_present_flag;
+    info->long_term_ref_pics_present_flag = sps->long_term_ref_pics_present;
     /* Only needed if long_term_ref_pics_present_flag is set. Ignored
        otherwise. */
     info->num_long_term_ref_pics_sps = sps->num_long_term_ref_pics_sps;
-    info->sps_temporal_mvp_enabled_flag = sps->sps_temporal_mvp_enabled_flag;
-    info->strong_intra_smoothing_enabled_flag = sps->sps_strong_intra_smoothing_enable_flag;
+    info->sps_temporal_mvp_enabled_flag = sps->temporal_mvp_enabled;
+    info->strong_intra_smoothing_enabled_flag = sps->strong_intra_smoothing_enabled;
 
     /* Copy the HEVC Picture Parameter Set bitstream fields. */
     info->dependent_slice_segments_enabled_flag = pps->dependent_slice_segments_enabled_flag;
@@ -205,7 +206,7 @@ static int vdpau_hevc_start_frame(AVCodecContext *avctx,
         }
     }
     /* See section 7.4.7.2 of the specification. */
-    info->NumPocTotalCurr = ff_hevc_frame_nb_refs(h);
+    info->NumPocTotalCurr = ff_hevc_frame_nb_refs(&h->sh, pps, h->cur_layer);
     if (sh->short_term_ref_pic_set_sps_flag == 0 && sh->short_term_rps) {
         /* Corresponds to specification field, NumDeltaPocs[RefRpsIdx].
            Only applicable when short_term_ref_pic_set_sps_flag == 0.
@@ -236,9 +237,9 @@ static int vdpau_hevc_start_frame(AVCodecContext *avctx,
         info->PicOrderCntVal[i] = 0;
         info->IsLongTerm[i] = 0;
     }
-    for (size_t i = 0, j = 0; i < FF_ARRAY_ELEMS(h->DPB); i++) {
-        const HEVCFrame *frame = &h->DPB[i];
-        if (frame != h->ref && (frame->flags & (HEVC_FRAME_FLAG_LONG_REF |
+    for (size_t i = 0, j = 0; i < FF_ARRAY_ELEMS(l->DPB); i++) {
+        const HEVCFrame *frame = &l->DPB[i];
+        if (frame != h->cur_frame && (frame->flags & (HEVC_FRAME_FLAG_LONG_REF |
                                                 HEVC_FRAME_FLAG_SHORT_REF))) {
             if (j > 15) {
                 av_log(avctx, AV_LOG_WARNING,
@@ -248,7 +249,7 @@ static int vdpau_hevc_start_frame(AVCodecContext *avctx,
             }
             /* Array of video reference surfaces.
                Set any unused positions to VDP_INVALID_HANDLE. */
-            info->RefPics[j] = ff_vdpau_get_surface_id(frame->frame);
+            info->RefPics[j] = ff_vdpau_get_surface_id(frame->f);
             /* Array of picture order counts. These correspond to positions
                in the RefPics array. */
             info->PicOrderCntVal[j] = frame->poc;
@@ -295,7 +296,7 @@ static int vdpau_hevc_start_frame(AVCodecContext *avctx,
         HEVCFrame *frame = h->rps[ST_CURR_BEF].ref[i];
         if (frame) {
             uint8_t found = 0;
-            uintptr_t id = ff_vdpau_get_surface_id(frame->frame);
+            uintptr_t id = ff_vdpau_get_surface_id(frame->f);
             for (size_t k = 0; k < 16; k++) {
                 if (id == info->RefPics[k]) {
                     info->RefPicSetStCurrBefore[j] = k;
@@ -318,7 +319,7 @@ static int vdpau_hevc_start_frame(AVCodecContext *avctx,
         HEVCFrame *frame = h->rps[ST_CURR_AFT].ref[i];
         if (frame) {
             uint8_t found = 0;
-            uintptr_t id = ff_vdpau_get_surface_id(frame->frame);
+            uintptr_t id = ff_vdpau_get_surface_id(frame->f);
             for (size_t k = 0; k < 16; k++) {
                 if (id == info->RefPics[k]) {
                     info->RefPicSetStCurrAfter[j] = k;
@@ -341,7 +342,7 @@ static int vdpau_hevc_start_frame(AVCodecContext *avctx,
         HEVCFrame *frame = h->rps[LT_CURR].ref[i];
         if (frame) {
             uint8_t found = 0;
-            uintptr_t id = ff_vdpau_get_surface_id(frame->frame);
+            uintptr_t id = ff_vdpau_get_surface_id(frame->f);
             for (size_t k = 0; k < 16; k++) {
                 if (id == info->RefPics[k]) {
                     info->RefPicSetLtCurr[j] = k;
@@ -360,17 +361,17 @@ static int vdpau_hevc_start_frame(AVCodecContext *avctx,
     }
 
 #ifdef VDP_YCBCR_FORMAT_Y_U_V_444
-    if (sps->sps_range_extension_flag) {
+    if (sps->range_extension) {
         info2->sps_range_extension_flag             = 1;
-        info2->transformSkipRotationEnableFlag      = sps->transform_skip_rotation_enabled_flag;
-        info2->transformSkipContextEnableFlag       = sps->transform_skip_context_enabled_flag;
-        info2->implicitRdpcmEnableFlag              = sps->implicit_rdpcm_enabled_flag;
-        info2->explicitRdpcmEnableFlag              = sps->explicit_rdpcm_enabled_flag;
-        info2->extendedPrecisionProcessingFlag      = sps->extended_precision_processing_flag;
-        info2->intraSmoothingDisabledFlag           = sps->intra_smoothing_disabled_flag;
-        info2->highPrecisionOffsetsEnableFlag       = sps->high_precision_offsets_enabled_flag;
-        info2->persistentRiceAdaptationEnableFlag   = sps->persistent_rice_adaptation_enabled_flag;
-        info2->cabacBypassAlignmentEnableFlag       = sps->cabac_bypass_alignment_enabled_flag;
+        info2->transformSkipRotationEnableFlag      = sps->transform_skip_rotation_enabled;
+        info2->transformSkipContextEnableFlag       = sps->transform_skip_context_enabled;
+        info2->implicitRdpcmEnableFlag              = sps->implicit_rdpcm_enabled;
+        info2->explicitRdpcmEnableFlag              = sps->explicit_rdpcm_enabled;
+        info2->extendedPrecisionProcessingFlag      = sps->extended_precision_processing;
+        info2->intraSmoothingDisabledFlag           = sps->intra_smoothing_disabled;
+        info2->highPrecisionOffsetsEnableFlag       = sps->high_precision_offsets_enabled;
+        info2->persistentRiceAdaptationEnableFlag   = sps->persistent_rice_adaptation_enabled;
+        info2->cabacBypassAlignmentEnableFlag       = sps->cabac_bypass_alignment_enabled;
     } else {
         info2->sps_range_extension_flag = 0;
     }
@@ -403,7 +404,7 @@ static int vdpau_hevc_decode_slice(AVCodecContext *avctx,
                                    const uint8_t *buffer, uint32_t size)
 {
     HEVCContext *h = avctx->priv_data;
-    struct vdpau_picture_context *pic_ctx = h->ref->hwaccel_picture_private;
+    struct vdpau_picture_context *pic_ctx = h->cur_frame->hwaccel_picture_private;
     int val;
 
     val = ff_vdpau_add_buffer(pic_ctx, start_code_prefix, 3);
@@ -420,10 +421,10 @@ static int vdpau_hevc_decode_slice(AVCodecContext *avctx,
 static int vdpau_hevc_end_frame(AVCodecContext *avctx)
 {
     HEVCContext *h = avctx->priv_data;
-    struct vdpau_picture_context *pic_ctx = h->ref->hwaccel_picture_private;
+    struct vdpau_picture_context *pic_ctx = h->cur_frame->hwaccel_picture_private;
     int val;
 
-    val = ff_vdpau_common_end_frame(avctx, h->ref->frame, pic_ctx);
+    val = ff_vdpau_common_end_frame(avctx, h->cur_frame->f, pic_ctx);
     if (val < 0)
         return val;
 
@@ -469,7 +470,7 @@ static int ptl_convert(const PTLCommon *general_ptl, H265RawProfileTierLevel *h2
 static int vdpau_hevc_parse_rext_profile(AVCodecContext *avctx, VdpDecoderProfile *vdp_profile)
 {
     const HEVCContext *h = avctx->priv_data;
-    const HEVCSPS *sps = h->ps.sps;
+    const HEVCSPS *sps = h->pps->sps;
     const PTL *ptl = &sps->ptl;
     const PTLCommon *general_ptl = &ptl->general_ptl;
     const H265ProfileDescriptor *profile;

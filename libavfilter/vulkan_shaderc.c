@@ -51,6 +51,7 @@ static int shdc_shader_compile(FFVkSPIRVCompiler *ctx, void *avctx,
     shaderc_compile_options_set_target_env(opts, shaderc_target_env_vulkan,
                                            shaderc_env_version_vulkan_1_2);
     shaderc_compile_options_set_target_spirv(opts, shaderc_spirv_version_1_5);
+    shaderc_compile_options_set_generate_debug_info(opts);
     shaderc_compile_options_set_optimization_level(opts,
                                                    shaderc_optimization_level_performance);
 
@@ -64,6 +65,9 @@ static int shdc_shader_compile(FFVkSPIRVCompiler *ctx, void *avctx,
     err = shaderc_result_get_num_errors(res);
     warn = shaderc_result_get_num_warnings(res);
     message = shaderc_result_get_error_message(res);
+
+    if (ret != shaderc_compilation_status_success && !err)
+        err = 1;
 
     loglevel = err ? AV_LOG_ERROR : warn ? AV_LOG_WARNING : AV_LOG_VERBOSE;
 

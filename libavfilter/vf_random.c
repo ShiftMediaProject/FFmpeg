@@ -22,7 +22,7 @@
 #include "libavutil/opt.h"
 #include "libavutil/random_seed.h"
 #include "avfilter.h"
-#include "internal.h"
+#include "filters.h"
 
 #define MAX_FRAMES 512
 

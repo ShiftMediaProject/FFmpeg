@@ -21,11 +21,12 @@
 #include "config_components.h"
 
 #include "libavutil/eval.h"
+#include "libavutil/mem.h"
 #include "libavutil/opt.h"
 #include "libavutil/pixfmt.h"
 #include "avfilter.h"
+#include "filters.h"
 #include "framesync.h"
-#include "internal.h"
 #include "vf_blend_init.h"
 #include "video.h"
 #include "blend.h"
@@ -46,6 +47,7 @@ typedef struct BlendContext {
     FilterParams params[4];
     int tblend;
     AVFrame *prev_frame;        /* only used with tblend */
+    int nb_threads;
 } BlendContext;
 
 static const char *const var_names[] = {   "X",   "Y",   "W",   "H",   "SW",   "SH",   "T",   "N",   "A",   "B",   "TOP",   "BOTTOM",        NULL };
@@ -131,12 +133,14 @@ static void blend_expr_## name(const uint8_t *_top, ptrdiff_t top_linesize,     
                                const uint8_t *_bottom, ptrdiff_t bottom_linesize,    \
                                uint8_t *_dst, ptrdiff_t dst_linesize,                \
                                ptrdiff_t width, ptrdiff_t height,              \
-                               FilterParams *param, double *values, int starty) \
+                               FilterParams *param, SliceParams *sliceparam)   \
 {                                                                              \
     const type *top = (const type*)_top;                                       \
     const type *bottom = (const type*)_bottom;                                 \
+    double *values = sliceparam->values;                                       \
+    int starty = sliceparam->starty;                                           \
     type *dst = (type*)_dst;                                                   \
-    AVExpr *e = param->e;                                                      \
+    AVExpr *e = sliceparam->e;                                                 \
     int y, x;                                                                  \
     dst_linesize /= div;                                                       \
     top_linesize /= div;                                                       \
@@ -169,9 +173,11 @@ static int filter_slice(AVFilterContext *ctx, void *arg, int jobnr, int nb_jobs)
     const uint8_t *top    = td->top->data[td->plane];
     const uint8_t *bottom = td->bottom->data[td->plane];
     uint8_t *dst    = td->dst->data[td->plane];
+    FilterLink *inl = ff_filter_link(td->inlink);
     double values[VAR_VARS_NB];
+    SliceParams sliceparam = {.values = &values[0], .starty = slice_start, .e = td->param->e ? td->param->e[jobnr] : NULL};
 
-    values[VAR_N]  = td->inlink->frame_count_out;
+    values[VAR_N]  = inl->frame_count_out;
     values[VAR_T]  = td->dst->pts == AV_NOPTS_VALUE ? NAN : td->dst->pts * av_q2d(td->inlink->time_base);
     values[VAR_W]  = td->w;
     values[VAR_H]  = td->h;
@@ -184,7 +190,7 @@ static int filter_slice(AVFilterContext *ctx, void *arg, int jobnr, int nb_jobs)
                      td->bottom->linesize[td->plane],
                      dst + slice_start * td->dst->linesize[td->plane],
                      td->dst->linesize[td->plane],
-                     td->w, height, td->param, &values[0], slice_start);
+                     td->w, height, td->param, &sliceparam);
     return 0;
 }
 
@@ -217,7 +223,7 @@ static AVFrame *blend_frame(AVFilterContext *ctx, AVFrame *top_buf,
                           .inlink = inlink };
 
         ff_filter_execute(ctx, filter_slice, &td, NULL,
-                          FFMIN(outh, ff_filter_get_nb_threads(ctx)));
+                          FFMIN(outh, s->nb_threads));
     }
 
     if (!s->tblend)
@@ -246,6 +252,7 @@ static av_cold int init(AVFilterContext *ctx)
     BlendContext *s = ctx->priv;
 
     s->tblend = !strcmp(ctx->filter->name, "tblend");
+    s->nb_threads = ff_filter_get_nb_threads(ctx);
 
     s->fs.on_event = blend_frame_for_dualinput;
     return 0;
@@ -280,8 +287,14 @@ static av_cold void uninit(AVFilterContext *ctx)
     ff_framesync_uninit(&s->fs);
     av_frame_free(&s->prev_frame);
 
-    for (i = 0; i < FF_ARRAY_ELEMS(s->params); i++)
-        av_expr_free(s->params[i].e);
+    for (i = 0; i < FF_ARRAY_ELEMS(s->params); i++) {
+        if (s->params[i].e) {
+            for (int j = 0; j < s->nb_threads; j++)
+                av_expr_free(s->params[i].e[j]);
+            av_freep(&s->params[i].e);
+        }
+    }
+
 }
 
 static int config_params(AVFilterContext *ctx)
@@ -305,10 +318,19 @@ static int config_params(AVFilterContext *ctx)
                 return AVERROR(ENOMEM);
         }
         if (param->expr_str) {
-            ret = av_expr_parse(&param->e, param->expr_str, var_names,
-                                NULL, NULL, NULL, NULL, 0, ctx);
-            if (ret < 0)
-                return ret;
+            if (!param->e) {
+                param->e = av_calloc(s->nb_threads, sizeof(*param->e));
+                if (!param->e)
+                    return AVERROR(ENOMEM);
+            }
+            for (int i = 0; i < s->nb_threads; i++) {
+                av_expr_free(param->e[i]);
+                param->e[i] = NULL;
+                ret = av_expr_parse(&param->e[i], param->expr_str, var_names,
+                                    NULL, NULL, NULL, NULL, 0, ctx);
+                if (ret < 0)
+                    return ret;
+            }
             param->blend = s->depth > 8 ? s->depth > 16 ? blend_expr_32bit : blend_expr_16bit : blend_expr_8bit;
         }
     }
@@ -318,8 +340,10 @@ static int config_params(AVFilterContext *ctx)
 
 static int config_output(AVFilterLink *outlink)
 {
+    FilterLink *outl = ff_filter_link(outlink);
     AVFilterContext *ctx = outlink->src;
     AVFilterLink *toplink = ctx->inputs[TOP];
+    FilterLink *tl = ff_filter_link(toplink);
     BlendContext *s = ctx->priv;
     const AVPixFmtDescriptor *pix_desc = av_pix_fmt_desc_get(toplink->format);
     int ret;
@@ -341,7 +365,7 @@ static int config_output(AVFilterLink *outlink)
     outlink->h = toplink->h;
     outlink->time_base = toplink->time_base;
     outlink->sample_aspect_ratio = toplink->sample_aspect_ratio;
-    outlink->frame_rate = toplink->frame_rate;
+    outl->frame_rate = tl->frame_rate;
 
     s->hsub = pix_desc->log2_chroma_w;
     s->vsub = pix_desc->log2_chroma_h;

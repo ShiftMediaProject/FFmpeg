@@ -20,11 +20,12 @@
 
 #include <float.h>  /* DBL_MAX */
 
+#include "libavutil/mem.h"
 #include "libavutil/opt.h"
 #include "libavutil/eval.h"
 #include "libavutil/pixdesc.h"
 #include "avfilter.h"
-#include "internal.h"
+#include "filters.h"
 #include "video.h"
 
 static const char *const var_names[] = {
@@ -148,12 +149,13 @@ static double get_natural_factor(const VignetteContext *s, int x, int y)
 
 static void update_context(VignetteContext *s, AVFilterLink *inlink, AVFrame *frame)
 {
+    FilterLink *inl = ff_filter_link(inlink);
     int x, y;
     float *dst = s->fmap;
     int dst_linesize = s->fmap_linesize;
 
     if (frame) {
-        s->var_values[VAR_N]   = inlink->frame_count_out;
+        s->var_values[VAR_N]   = inl->frame_count_out;
         s->var_values[VAR_T]   = TS2T(frame->pts, inlink->time_base);
         s->var_values[VAR_PTS] = TS2D(frame->pts);
     } else {
@@ -282,14 +284,15 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
 static int config_props(AVFilterLink *inlink)
 {
     VignetteContext *s = inlink->dst->priv;
+    FilterLink *l = ff_filter_link(inlink);
     AVRational sar = inlink->sample_aspect_ratio;
 
     s->desc = av_pix_fmt_desc_get(inlink->format);
     s->var_values[VAR_W]  = inlink->w;
     s->var_values[VAR_H]  = inlink->h;
     s->var_values[VAR_TB] = av_q2d(inlink->time_base);
-    s->var_values[VAR_R]  = inlink->frame_rate.num == 0 || inlink->frame_rate.den == 0 ?
-        NAN : av_q2d(inlink->frame_rate);
+    s->var_values[VAR_R]  = l->frame_rate.num == 0 || l->frame_rate.den == 0 ?
+        NAN : av_q2d(l->frame_rate);
 
     if (!sar.num || !sar.den)
         sar.num = sar.den = 1;

@@ -72,15 +72,15 @@ try to unroll inner for(x=0 ... loop to avoid these damn if(x ... checks
 
 //Changelog: use git log
 
-#include "config.h"
-#include "libavutil/avutil.h"
-#include "libavutil/avassert.h"
-#include "libavutil/cpu.h"
-#include "libavutil/intreadwrite.h"
-#include <inttypes.h>
-#include <stdio.h>
+#include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "config.h"
+#include "libavutil/common.h"
+#include "libavutil/cpu.h"
+#include "libavutil/intreadwrite.h"
+#include "libavutil/mem.h"
 //#undef HAVE_MMXEXT_INLINE
 //#undef HAVE_MMX_INLINE
 //#undef ARCH_X86
@@ -88,7 +88,6 @@ try to unroll inner for(x=0 ... loop to avoid these damn if(x ... checks
 #include "postprocess.h"
 #include "postprocess_internal.h"
 #include "libavutil/avstring.h"
-#include "libavutil/ppc/util_altivec.h"
 
 #define GET_MODE_BUFFER_SIZE 500
 #define OPTIONS_ARRAY_SIZE 10
@@ -499,6 +498,8 @@ static av_always_inline void do_a_deblock_C(uint8_t *src, int step,
 #include "postprocess_template.c"
 
 #if HAVE_ALTIVEC
+#include "libavutil/ppc/util_altivec.h"
+
 #   define TEMPLATE_PP_ALTIVEC 1
 #   include "postprocess_altivec_template.c"
 #   include "postprocess_template.c"

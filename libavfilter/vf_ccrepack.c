@@ -30,7 +30,7 @@
  */
 
 #include "avfilter.h"
-#include "internal.h"
+#include "filters.h"
 #include "ccfifo.h"
 #include "video.h"
 #include "libavutil/opt.h"
@@ -49,9 +49,10 @@ AVFILTER_DEFINE_CLASS(ccrepack);
 
 static int config_input(AVFilterLink *link)
 {
+    FilterLink *l = ff_filter_link(link);
     CCRepackContext *ctx = link->dst->priv;
 
-    int ret = ff_ccfifo_init(&ctx->cc_fifo, link->frame_rate, ctx);
+    int ret = ff_ccfifo_init(&ctx->cc_fifo, l->frame_rate, ctx);
     if (ret < 0) {
         av_log(ctx, AV_LOG_ERROR, "Failure to setup CC FIFO queue\n");
         return ret;

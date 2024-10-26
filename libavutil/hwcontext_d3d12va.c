@@ -27,6 +27,7 @@
 #include "hwcontext_d3d12va_internal.h"
 #include "hwcontext_d3d12va.h"
 #include "imgutils.h"
+#include "mem.h"
 #include "pixdesc.h"
 #include "pixfmt.h"
 #include "thread.h"
@@ -246,7 +247,7 @@ static AVBufferRef *d3d12va_pool_alloc(void *opaque, size_t size)
         .Format           = hwctx->format,
         .SampleDesc       = {.Count = 1, .Quality = 0 },
         .Layout           = D3D12_TEXTURE_LAYOUT_UNKNOWN,
-        .Flags            = D3D12_RESOURCE_FLAG_NONE,
+        .Flags            = hwctx->flags,
     };
 
     frame = av_mallocz(sizeof(AVD3D12VAFrame));

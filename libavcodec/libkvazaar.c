@@ -111,8 +111,8 @@ FF_ENABLE_DEPRECATION_WARNINGS
     if (ctx->kvz_params) {
         AVDictionary *dict = NULL;
         if (!av_dict_parse_string(&dict, ctx->kvz_params, "=", ",", 0)) {
-            AVDictionaryEntry *entry = NULL;
-            while ((entry = av_dict_get(dict, "", entry, AV_DICT_IGNORE_SUFFIX))) {
+            const AVDictionaryEntry *entry = NULL;
+            while ((entry = av_dict_iterate(dict, entry))) {
                 if (!api->config_parse(cfg, entry->key, entry->value)) {
                     av_log(avctx, AV_LOG_WARNING, "Invalid option: %s=%s.\n",
                            entry->key, entry->value);
@@ -334,6 +334,7 @@ const FFCodec ff_libkvazaar_encoder = {
     .p.capabilities   = AV_CODEC_CAP_DR1 | AV_CODEC_CAP_DELAY |
                         AV_CODEC_CAP_OTHER_THREADS,
     .p.pix_fmts       = pix_fmts,
+    .color_ranges     = AVCOL_RANGE_MPEG | AVCOL_RANGE_JPEG,
 
     .p.priv_class     = &class,
     .priv_data_size   = sizeof(LibkvazaarContext),

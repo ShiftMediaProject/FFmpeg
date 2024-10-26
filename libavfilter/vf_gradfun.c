@@ -35,12 +35,13 @@
 #include "libavutil/emms.h"
 #include "libavutil/imgutils.h"
 #include "libavutil/common.h"
+#include "libavutil/mem.h"
 #include "libavutil/mem_internal.h"
 #include "libavutil/opt.h"
 #include "libavutil/pixdesc.h"
 #include "avfilter.h"
+#include "filters.h"
 #include "gradfun.h"
-#include "internal.h"
 #include "video.h"
 
 DECLARE_ALIGNED(16, static const uint16_t, dither)[8][8] = {

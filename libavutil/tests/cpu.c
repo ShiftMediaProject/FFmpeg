@@ -51,6 +51,8 @@ static const struct {
     { AV_CPU_FLAG_SETEND,    "setend"     },
 #elif ARCH_PPC
     { AV_CPU_FLAG_ALTIVEC,   "altivec"    },
+    { AV_CPU_FLAG_VSX,       "vsx"        },
+    { AV_CPU_FLAG_POWER8,    "power8"     },
 #elif ARCH_MIPS
     { AV_CPU_FLAG_MMI,       "mmi"        },
     { AV_CPU_FLAG_MSA,       "msa"        },
@@ -86,14 +88,14 @@ static const struct {
     { AV_CPU_FLAG_LASX,      "lasx"       },
 #elif ARCH_RISCV
     { AV_CPU_FLAG_RVI,       "rvi"        },
-    { AV_CPU_FLAG_RVF,       "rvf"        },
-    { AV_CPU_FLAG_RVD,       "rvd"        },
-    { AV_CPU_FLAG_RVB_ADDR,  "zba"        },
     { AV_CPU_FLAG_RVB_BASIC, "zbb"        },
+    { AV_CPU_FLAG_RVB,       "rvb"        },
     { AV_CPU_FLAG_RVV_I32,   "zve32x"     },
     { AV_CPU_FLAG_RVV_F32,   "zve32f"     },
     { AV_CPU_FLAG_RVV_I64,   "zve64x"     },
     { AV_CPU_FLAG_RVV_F64,   "zve64d"     },
+    { AV_CPU_FLAG_RV_ZVBB,   "zvbb"       },
+    { AV_CPU_FLAG_RV_MISALIGNED, "misaligned" },
 #endif
     { 0 }
 };

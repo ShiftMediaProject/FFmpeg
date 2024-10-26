@@ -26,20 +26,19 @@
 #include <float.h>
 
 #include "libavutil/channel_layout.h"
-#include "libavutil/common.h"
 #include "libavutil/frame.h"
 #include "libavutil/hwcontext.h"
-#include "libavutil/imgutils.h"
 #include "libavutil/internal.h"
+#include "libavutil/mem.h"
 #include "libavutil/opt.h"
+#include "libavutil/pixdesc.h"
 #include "libavutil/samplefmt.h"
 #include "libavutil/timestamp.h"
-#include "audio.h"
 #include "avfilter.h"
+#include "avfilter_internal.h"
 #include "buffersrc.h"
 #include "filters.h"
 #include "formats.h"
-#include "internal.h"
 #include "video.h"
 
 typedef struct BufferSourceContext {
@@ -217,7 +216,7 @@ int attribute_align_arg av_buffersrc_add_frame_flags(AVFilterContext *ctx, AVFra
             break;
         case AVMEDIA_TYPE_AUDIO:
             /* For layouts unknown on input but known on link after negotiation. */
-            if (frame->ch_layout.order == AV_CHANNEL_ORDER_UNSPEC) {
+            if (frame->ch_layout.order == AV_CHANNEL_ORDER_UNSPEC && frame->ch_layout.nb_channels == s->ch_layout.nb_channels) {
                 ret = av_channel_layout_copy(&frame->ch_layout, &s->ch_layout);
                 if (ret < 0)
                     return ret;
@@ -337,12 +336,15 @@ static const AVOption buffer_options[] = {
     {   "smpte170m",   NULL,  0, AV_OPT_TYPE_CONST, {.i64=AVCOL_SPC_SMPTE170M},         INT_MIN, INT_MAX, V, .unit = "colorspace"},
     {   "smpte240m",   NULL,  0, AV_OPT_TYPE_CONST, {.i64=AVCOL_SPC_SMPTE240M},         INT_MIN, INT_MAX, V, .unit = "colorspace"},
     {   "ycgco",       NULL,  0, AV_OPT_TYPE_CONST, {.i64=AVCOL_SPC_YCGCO},             INT_MIN, INT_MAX, V, .unit = "colorspace"},
+    {   "ycgco-re",    NULL,  0, AV_OPT_TYPE_CONST, {.i64=AVCOL_SPC_YCGCO_RE},          INT_MIN, INT_MAX, V, .unit = "colorspace"},
+    {   "ycgco-ro",    NULL,  0, AV_OPT_TYPE_CONST, {.i64=AVCOL_SPC_YCGCO_RO},          INT_MIN, INT_MAX, V, .unit = "colorspace"},
     {   "bt2020nc",    NULL,  0, AV_OPT_TYPE_CONST, {.i64=AVCOL_SPC_BT2020_NCL},        INT_MIN, INT_MAX, V, .unit = "colorspace"},
     {   "bt2020c",     NULL,  0, AV_OPT_TYPE_CONST, {.i64=AVCOL_SPC_BT2020_CL},         INT_MIN, INT_MAX, V, .unit = "colorspace"},
     {   "smpte2085",   NULL,  0, AV_OPT_TYPE_CONST, {.i64=AVCOL_SPC_SMPTE2085},         INT_MIN, INT_MAX, V, .unit = "colorspace"},
     {   "chroma-derived-nc",  NULL,  0, AV_OPT_TYPE_CONST, {.i64=AVCOL_SPC_CHROMA_DERIVED_NCL},INT_MIN, INT_MAX, V, .unit = "colorspace"},
     {   "chroma-derived-c",   NULL,  0, AV_OPT_TYPE_CONST, {.i64=AVCOL_SPC_CHROMA_DERIVED_CL}, INT_MIN, INT_MAX, V, .unit = "colorspace"},
     {   "ictcp",       NULL,  0, AV_OPT_TYPE_CONST, {.i64=AVCOL_SPC_ICTCP},             INT_MIN, INT_MAX, V, .unit = "colorspace"},
+    {   "ipt-c2",      NULL,  0, AV_OPT_TYPE_CONST, {.i64=AVCOL_SPC_IPT_C2},            INT_MIN, INT_MAX, V, .unit = "colorspace"},
     { "range", "select color range", OFFSET(color_range), AV_OPT_TYPE_INT, {.i64=AVCOL_RANGE_UNSPECIFIED}, 0, AVCOL_RANGE_NB-1, V, .unit = "range"},
     {   "unspecified", NULL,   0, AV_OPT_TYPE_CONST, {.i64=AVCOL_RANGE_UNSPECIFIED},  0, 0, V, .unit = "range"},
     {   "unknown",     NULL,   0, AV_OPT_TYPE_CONST, {.i64=AVCOL_RANGE_UNSPECIFIED},  0, 0, V, .unit = "range"},
@@ -459,12 +461,17 @@ static int query_formats(AVFilterContext *ctx)
             if ((ret = ff_add_format(&color_spaces, c->color_space)) < 0 ||
                 (ret = ff_set_common_color_spaces(ctx, color_spaces)) < 0)
                 return ret;
-            if ((ret = ff_add_format(&color_ranges, c->color_range)) < 0)
-                return ret;
-            if (c->color_range == AVCOL_RANGE_UNSPECIFIED) {
-                /* allow implicitly promoting unspecified to mpeg */
-                if ((ret = ff_add_format(&color_ranges, AVCOL_RANGE_MPEG)) < 0)
+            if (ff_fmt_is_forced_full_range(swfmt)) {
+                if ((ret = ff_add_format(&color_ranges, AVCOL_RANGE_JPEG)) < 0)
                     return ret;
+            } else {
+                if ((ret = ff_add_format(&color_ranges, c->color_range)) < 0)
+                    return ret;
+                if (c->color_range == AVCOL_RANGE_UNSPECIFIED) {
+                    /* allow implicitly promoting unspecified to mpeg */
+                    if ((ret = ff_add_format(&color_ranges, AVCOL_RANGE_MPEG)) < 0)
+                        return ret;
+                }
             }
             if ((ret = ff_set_common_color_ranges(ctx, color_ranges)) < 0)
                 return ret;
@@ -492,6 +499,7 @@ static int query_formats(AVFilterContext *ctx)
 
 static int config_props(AVFilterLink *link)
 {
+    FilterLink *l = ff_filter_link(link);
     BufferSourceContext *c = link->src->priv;
 
     switch (link->type) {
@@ -501,8 +509,8 @@ static int config_props(AVFilterLink *link)
         link->sample_aspect_ratio = c->pixel_aspect;
 
         if (c->hw_frames_ctx) {
-            link->hw_frames_ctx = av_buffer_ref(c->hw_frames_ctx);
-            if (!link->hw_frames_ctx)
+            l->hw_frames_ctx = av_buffer_ref(c->hw_frames_ctx);
+            if (!l->hw_frames_ctx)
                 return AVERROR(ENOMEM);
         }
         break;
@@ -518,7 +526,7 @@ static int config_props(AVFilterLink *link)
     }
 
     link->time_base = c->time_base;
-    link->frame_rate = c->frame_rate;
+    l->frame_rate = c->frame_rate;
     return 0;
 }
 

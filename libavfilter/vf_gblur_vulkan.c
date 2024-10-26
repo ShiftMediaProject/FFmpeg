@@ -19,11 +19,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include "libavutil/mem.h"
 #include "libavutil/random_seed.h"
 #include "libavutil/opt.h"
 #include "vulkan_filter.h"
 #include "vulkan_spirv.h"
-#include "internal.h"
+
+#include "filters.h"
 #include "video.h"
 
 #define CGS 32
@@ -187,7 +189,7 @@ static int init_gblur_pipeline(GBlurVulkanContext *s, FFVulkanPipeline *pl,
     RET(ff_vk_unmap_buffer(&s->vkctx, params_buf, 1));
 
     RET(ff_vk_set_descriptor_buffer(&s->vkctx, pl, NULL, 1, 0, 0,
-                                    params_buf->address, params_buf->size,
+                                    params_buf, 0, params_buf->size,
                                     VK_FORMAT_UNDEFINED));
 
 fail:

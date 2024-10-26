@@ -49,6 +49,20 @@ typedef enum AACCoder {
     AAC_CODER_NB,
 }AACCoder;
 
+/**
+ * Predictor State
+ */
+typedef struct PredictorState {
+    float cor0;
+    float cor1;
+    float var0;
+    float var1;
+    float r0;
+    float r1;
+    float k1;
+    float x_est;
+} PredictorState;
+
 typedef struct AACEncOptions {
     int coder;
     int pns;
@@ -228,7 +242,7 @@ typedef struct AACEncContext {
     enum RawDataBlockType cur_type;              ///< channel group type cur_channel belongs to
 
     AudioFrameQueue afq;
-    DECLARE_ALIGNED(16, int,   qcoefs)[96];      ///< quantized coefficients
+    DECLARE_ALIGNED(32, int,   qcoefs)[96];      ///< quantized coefficients
     DECLARE_ALIGNED(32, float, scoefs)[1024];    ///< scaled coefficients
 
     uint16_t quantize_band_cost_cache_generation;

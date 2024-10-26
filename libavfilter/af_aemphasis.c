@@ -20,7 +20,7 @@
 
 #include "libavutil/opt.h"
 #include "avfilter.h"
-#include "internal.h"
+#include "filters.h"
 #include "audio.h"
 
 typedef struct BiquadCoeffs {

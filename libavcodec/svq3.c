@@ -44,6 +44,7 @@
 
 #include "libavutil/attributes.h"
 #include "libavutil/crc.h"
+#include "libavutil/mem.h"
 #include "libavutil/mem_internal.h"
 
 #include "codec_internal.h"
@@ -1398,6 +1399,9 @@ static int svq3_decode_frame(AVCodecContext *avctx, AVFrame *rframe,
 
     if (svq3_decode_slice_header(avctx))
         return -1;
+
+    if (avpkt->size < s->mb_width * s->mb_height / 8)
+        return AVERROR_INVALIDDATA;
 
     s->pict_type = s->slice_type;
 

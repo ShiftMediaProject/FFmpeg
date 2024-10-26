@@ -27,13 +27,13 @@
 #include <math.h>
 
 #include "libavutil/colorspace.h"
+#include "libavutil/mem.h"
 #include "libavutil/opt.h"
-#include "libavutil/intreadwrite.h"
 #include "libavutil/pixdesc.h"
 
 #include "avfilter.h"
 #include "drawutils.h"
-#include "internal.h"
+#include "filters.h"
 #include "video.h"
 
 typedef struct LenscorrectionCtx {

@@ -30,7 +30,7 @@
 #include "libavutil/opt.h"
 #include "libavutil/avassert.h"
 #include "libavutil/pixdesc.h"
-#include "internal.h"
+#include "filters.h"
 #include "video.h"
 
 typedef int (*hqxfunc_t)(AVFilterContext *ctx, void *arg, int jobnr, int nb_jobs);

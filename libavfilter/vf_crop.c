@@ -26,8 +26,8 @@
 #include <stdio.h>
 
 #include "avfilter.h"
+#include "filters.h"
 #include "formats.h"
-#include "internal.h"
 #include "video.h"
 #include "libavutil/eval.h"
 #include "libavutil/avstring.h"
@@ -206,7 +206,7 @@ static int config_input(AVFilterLink *link)
         AVRational dar = av_mul_q(link->sample_aspect_ratio,
                                   (AVRational){ link->w, link->h });
         av_reduce(&s->out_sar.num, &s->out_sar.den,
-                  dar.num * s->h, dar.den * s->w, INT_MAX);
+                  (int64_t)dar.num * s->h, (int64_t)dar.den * s->w, INT_MAX);
     } else
         s->out_sar = link->sample_aspect_ratio;
 
@@ -255,12 +255,13 @@ static int config_output(AVFilterLink *link)
 
 static int filter_frame(AVFilterLink *link, AVFrame *frame)
 {
+    FilterLink        *l = ff_filter_link(link);
     AVFilterContext *ctx = link->dst;
     CropContext *s = ctx->priv;
     const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(link->format);
     int i;
 
-    s->var_values[VAR_N] = link->frame_count_out;
+    s->var_values[VAR_N] = l->frame_count_out;
     s->var_values[VAR_T] = frame->pts == AV_NOPTS_VALUE ?
         NAN : frame->pts * av_q2d(link->time_base);
 #if FF_API_FRAME_PKT

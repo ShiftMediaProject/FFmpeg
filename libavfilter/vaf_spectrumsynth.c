@@ -24,19 +24,16 @@
  * @todo support float pixel format
  */
 
+#include "libavutil/mem.h"
 #include "libavutil/tx.h"
 #include "libavutil/avassert.h"
-#include "libavutil/channel_layout.h"
 #include "libavutil/cpu.h"
 #include "libavutil/ffmath.h"
 #include "libavutil/opt.h"
-#include "libavutil/parseutils.h"
 #include "avfilter.h"
 #include "formats.h"
 #include "audio.h"
-#include "video.h"
 #include "filters.h"
-#include "internal.h"
 #include "window_func.h"
 
 enum MagnitudeScale { LINEAR, LOG, NB_SCALES };
@@ -142,10 +139,12 @@ static int config_output(AVFilterLink *outlink)
 {
     AVFilterContext *ctx = outlink->src;
     SpectrumSynthContext *s = ctx->priv;
+    FilterLink *inl0 = ff_filter_link(ctx->inputs[0]);
+    FilterLink *inl1 = ff_filter_link(ctx->inputs[1]);
     int width = ctx->inputs[0]->w;
     int height = ctx->inputs[0]->h;
     AVRational time_base  = ctx->inputs[0]->time_base;
-    AVRational frame_rate = ctx->inputs[0]->frame_rate;
+    AVRational frame_rate = inl0->frame_rate;
     float factor, overlap, scale;
     int i, ch, ret;
 
@@ -166,12 +165,12 @@ static int config_output(AVFilterLink *outlink)
                ctx->inputs[1]->time_base.num,
                ctx->inputs[1]->time_base.den);
         return AVERROR_INVALIDDATA;
-    } else if (av_cmp_q(frame_rate, ctx->inputs[1]->frame_rate) != 0) {
+    } else if (av_cmp_q(frame_rate, inl1->frame_rate) != 0) {
         av_log(ctx, AV_LOG_ERROR,
                "Magnitude and Phase framerates differ (%d/%d vs %d/%d).\n",
                frame_rate.num, frame_rate.den,
-               ctx->inputs[1]->frame_rate.num,
-               ctx->inputs[1]->frame_rate.den);
+               inl1->frame_rate.num,
+               inl1->frame_rate.den);
         return AVERROR_INVALIDDATA;
     }
 

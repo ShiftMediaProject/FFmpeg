@@ -34,7 +34,6 @@
 #include "libavutil/mastering_display_metadata.h"
 
 #include "formats.h"
-#include "internal.h"
 #include "avfilter.h"
 #include "filters.h"
 
@@ -297,18 +296,19 @@ static int config_input(AVFilterLink *inlink)
 {
     AVFilterContext *ctx = inlink->dst;
     VPPContext      *vpp = ctx->priv;
+    FilterLink      *inl = ff_filter_link(inlink);
     int              ret;
     int64_t          ow, oh;
 
     if (vpp->framerate.den == 0 || vpp->framerate.num == 0) {
-        vpp->framerate = inlink->frame_rate;
+        vpp->framerate = inl->frame_rate;
 
         if (vpp->deinterlace && vpp->field_rate)
-            vpp->framerate = av_mul_q(inlink->frame_rate,
+            vpp->framerate = av_mul_q(inl->frame_rate,
                                       (AVRational){ 2, 1 });
     }
 
-    if (av_cmp_q(vpp->framerate, inlink->frame_rate))
+    if (av_cmp_q(vpp->framerate, inl->frame_rate))
         vpp->use_frc = 1;
 
     ret = eval_expr(ctx);
@@ -364,13 +364,13 @@ static int config_input(AVFilterLink *inlink)
 
 static mfxStatus get_mfx_version(const AVFilterContext *ctx, mfxVersion *mfx_version)
 {
-    const AVFilterLink *inlink = ctx->inputs[0];
+    const FilterLink *l = ff_filter_link(ctx->inputs[0]);
     AVBufferRef *device_ref;
     AVHWDeviceContext *device_ctx;
     AVQSVDeviceContext *device_hwctx;
 
-    if (inlink->hw_frames_ctx) {
-        AVHWFramesContext *frames_ctx = (AVHWFramesContext *)inlink->hw_frames_ctx->data;
+    if (l->hw_frames_ctx) {
+        AVHWFramesContext *frames_ctx = (AVHWFramesContext *)l->hw_frames_ctx->data;
         device_ref = frames_ctx->device_ref;
     } else if (ctx->hw_device_ctx) {
         device_ref = ctx->hw_device_ctx;
@@ -524,6 +524,7 @@ static int vpp_set_frame_ext_params(AVFilterContext *ctx, const AVFrame *in, AVF
 
 static int config_output(AVFilterLink *outlink)
 {
+    FilterLink     *outl = ff_filter_link(outlink);
     AVFilterContext *ctx = outlink->src;
     VPPContext      *vpp = ctx->priv;
     QSVVPPParam     param = { NULL };
@@ -531,11 +532,13 @@ static int config_output(AVFilterLink *outlink)
     mfxExtBuffer    *ext_buf[ENH_FILTERS_COUNT];
     mfxVersion      mfx_version;
     AVFilterLink    *inlink = ctx->inputs[0];
+    FilterLink         *inl = ff_filter_link(inlink);
+    FilterLink          *ol = ff_filter_link(outlink);
     enum AVPixelFormat in_format;
 
     outlink->w          = vpp->out_width;
     outlink->h          = vpp->out_height;
-    outlink->frame_rate = vpp->framerate;
+    ol->frame_rate      = vpp->framerate;
     if (vpp->framerate.num == 0 || vpp->framerate.den == 0)
         outlink->time_base = inlink->time_base;
     else
@@ -552,10 +555,10 @@ static int config_output(AVFilterLink *outlink)
     }
 
     if (inlink->format == AV_PIX_FMT_QSV) {
-         if (!inlink->hw_frames_ctx || !inlink->hw_frames_ctx->data)
+         if (!inl->hw_frames_ctx || !inl->hw_frames_ctx->data)
              return AVERROR(EINVAL);
          else
-             in_format = ((AVHWFramesContext*)inlink->hw_frames_ctx->data)->sw_format;
+             in_format = ((AVHWFramesContext*)inl->hw_frames_ctx->data)->sw_format;
     } else
         in_format = inlink->format;
 
@@ -716,8 +719,8 @@ static int config_output(AVFilterLink *outlink)
     else {
         /* No MFX session is created in this case */
         av_log(ctx, AV_LOG_VERBOSE, "qsv vpp pass through mode.\n");
-        if (inlink->hw_frames_ctx)
-            outlink->hw_frames_ctx = av_buffer_ref(inlink->hw_frames_ctx);
+        if (inl->hw_frames_ctx)
+            outl->hw_frames_ctx = av_buffer_ref(inl->hw_frames_ctx);
     }
 
     return 0;
@@ -748,7 +751,7 @@ static int activate(AVFilterContext *ctx)
 
     if (qsv->session) {
         if (in || qsv->eof) {
-            ret = ff_qsvvpp_filter_frame(qsv, inlink, in);
+            ret = ff_qsvvpp_filter_frame(qsv, inlink, in, in);
             av_frame_free(&in);
             if (ret == AVERROR(EAGAIN))
                 goto not_ready;
@@ -766,11 +769,12 @@ static int activate(AVFilterContext *ctx)
     } else {
         /* No MFX session is created in pass-through mode */
         if (in) {
+            FilterLink *ol = ff_filter_link(outlink);
             if (in->pts != AV_NOPTS_VALUE)
                 in->pts = av_rescale_q(in->pts, inlink->time_base, outlink->time_base);
 
-            if (outlink->frame_rate.num && outlink->frame_rate.den)
-                in->duration = av_rescale_q(1, av_inv_q(outlink->frame_rate), outlink->time_base);
+            if (ol->frame_rate.num && ol->frame_rate.den)
+                in->duration = av_rescale_q(1, av_inv_q(ol->frame_rate), outlink->time_base);
             else
                 in->duration = 0;
 

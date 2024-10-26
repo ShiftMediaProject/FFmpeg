@@ -22,7 +22,6 @@
 #include "vulkan_filter.h"
 #include "vulkan_spirv.h"
 #include "filters.h"
-#include "internal.h"
 #include "video.h"
 
 #define IN_A  0
@@ -460,6 +459,8 @@ static int config_props_output(AVFilterLink *outlink)
     XFadeVulkanContext *s = avctx->priv;
     AVFilterLink *inlink_a = avctx->inputs[IN_A];
     AVFilterLink *inlink_b = avctx->inputs[IN_B];
+    FilterLink *il = ff_filter_link(inlink_a);
+    FilterLink *ol = ff_filter_link(outlink);
 
     if (inlink_a->w != inlink_b->w || inlink_a->h != inlink_b->h) {
         av_log(avctx, AV_LOG_ERROR, "First input link %s parameters "
@@ -483,7 +484,7 @@ static int config_props_output(AVFilterLink *outlink)
     s->start_pts = s->inputs_offset_pts = AV_NOPTS_VALUE;
 
     outlink->time_base = inlink_a->time_base;
-    outlink->frame_rate = inlink_a->frame_rate;
+    ol->frame_rate = il->frame_rate;
     outlink->sample_aspect_ratio = inlink_a->sample_aspect_ratio;
 
     if (s->duration)

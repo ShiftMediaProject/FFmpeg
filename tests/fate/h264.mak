@@ -231,6 +231,8 @@ FATE_H264-$(call DEMMUX, MOV, H264, H264_MP4TOANNEXB_BSF) += fate-h264-bsf-mp4to
                                                              fate-h264_mp4toannexb_ticket5927 \
                                                              fate-h264_mp4toannexb_ticket5927_2 \
 
+FATE_H264-$(call DEMMUX, H264, MOV, DTS2PTS_BSF) += fate-h264-bsf-dts2pts
+
 FATE_H264-$(call FRAMECRC, MATROSKA, H264) += fate-h264-direct-bff
 FATE_H264-$(call FRAMECRC, FLV, H264, SCALE_FILTER) += fate-h264-brokensps-2580
 FATE_H264-$(call FRAMECRC, MXF, H264, PCM_S24LE_DECODER SCALE_FILTER ARESAMPLE_FILTER) += fate-h264-xavc-4389
@@ -312,7 +314,7 @@ fate-h264-conformance-ci1_ft_b:                   CMD = framecrc -i $(TARGET_SAM
 fate-h264-conformance-ci_mw_d:                    CMD = framecrc -i $(TARGET_SAMPLES)/h264-conformance/CI_MW_D.264
 fate-h264-conformance-cvbs3_sony_c:               CMD = framecrc -i $(TARGET_SAMPLES)/h264-conformance/CVBS3_Sony_C.jsv
 fate-h264-conformance-cvcanlma2_sony_c:           CMD = framecrc -i $(TARGET_SAMPLES)/h264-conformance/CVCANLMA2_Sony_C.jsv
-fate-h264-conformance-cvfc1_sony_c:               CMD = framecrc -flags unaligned -i $(TARGET_SAMPLES)/h264-conformance/CVFC1_Sony_C.jsv
+fate-h264-conformance-cvfc1_sony_c:               CMD = framecrc -i $(TARGET_SAMPLES)/h264-conformance/CVFC1_Sony_C.jsv
 fate-h264-conformance-cvfi1_sony_d:               CMD = framecrc -i $(TARGET_SAMPLES)/h264-conformance/CVFI1_Sony_D.jsv
 fate-h264-conformance-cvfi1_sva_c:                CMD = framecrc -i $(TARGET_SAMPLES)/h264-conformance/CVFI1_SVA_C.264
 fate-h264-conformance-cvfi2_sony_h:               CMD = framecrc -i $(TARGET_SAMPLES)/h264-conformance/CVFI2_Sony_H.jsv
@@ -437,6 +439,8 @@ fate-h264-bsf-mp4toannexb-2:                      CMD = md5 -i $(TARGET_SAMPLES)
 fate-h264-bsf-mp4toannexb-2:                      CMP = oneline
 fate-h264-bsf-mp4toannexb-2:                      REF = cffcfa6a2d0b58c9de1f5785f099f41d
 fate-h264-bsf-mp4toannexb-new-extradata:          CMD = stream_remux mov $(TARGET_SAMPLES)/h264/extradata-reload-multi-stsd.mov "" h264 "-map 0:v"
+fate-h264-bsf-dts2pts:                            CMD = transcode "h264" $(TARGET_SAMPLES)/h264-conformance/CAPAMA3_Sand_F.264 \
+                                                        mov "-c:v copy -bsf:v dts2pts -frames:v 50" "-c:v copy"
 fate-h264_mp4toannexb_ticket5927:                 CMD = transcode "mp4" $(TARGET_SAMPLES)/h264/thezerotheorem-cut.mp4 \
                                                         h264 "-c:v copy -bsf:v h264_mp4toannexb -an" "-c:v copy"
 fate-h264_mp4toannexb_ticket5927_2:               CMD = transcode "mp4" $(TARGET_SAMPLES)/h264/thezerotheorem-cut.mp4 \

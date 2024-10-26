@@ -31,6 +31,7 @@
 #include "config.h"
 #include "libavformat/demux.h"
 #include "libavformat/internal.h"
+#include "libavutil/mem.h"
 #include "libavutil/opt.h"
 #include "libavutil/time.h"
 #include "libavutil/wchar_filename.h"
@@ -280,7 +281,7 @@ gdigrab_read_header(AVFormatContext *s1)
 
         hwnd = (HWND) strtoull(name, &p, 0);
 
-        if (p == NULL || p == name || p[0] == '\0')
+        if (p == NULL || p == name || p[0] != '\0')
         {
             av_log(s1, AV_LOG_ERROR,
                    "Invalid window handle '%s', must be a valid integer.\n", name);

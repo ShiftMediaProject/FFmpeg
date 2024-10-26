@@ -201,6 +201,43 @@ void ff_yuv2plane1_8_neon(
     default: break;                                                     \
     }
 
+#define NEON_INPUT(name) \
+void ff_##name##ToY_neon(uint8_t *dst, const uint8_t *src, const uint8_t *, \
+                        const uint8_t *, int w, uint32_t *coeffs, void *); \
+void ff_##name##ToUV_neon(uint8_t *, uint8_t *, const uint8_t *, \
+                         const uint8_t *, const uint8_t *, int w, \
+                         uint32_t *coeffs, void *); \
+void ff_##name##ToUV_half_neon(uint8_t *, uint8_t *, const uint8_t *, \
+                              const uint8_t *, const uint8_t *, int w, \
+                              uint32_t *coeffs, void *)
+
+NEON_INPUT(abgr32);
+NEON_INPUT(argb32);
+NEON_INPUT(bgr24);
+NEON_INPUT(bgra32);
+NEON_INPUT(rgb24);
+NEON_INPUT(rgba32);
+
+void ff_lumRangeFromJpeg_neon(int16_t *dst, int width);
+void ff_chrRangeFromJpeg_neon(int16_t *dstU, int16_t *dstV, int width);
+void ff_lumRangeToJpeg_neon(int16_t *dst, int width);
+void ff_chrRangeToJpeg_neon(int16_t *dstU, int16_t *dstV, int width);
+
+av_cold void ff_sws_init_range_convert_aarch64(SwsContext *c)
+{
+    if (c->srcRange != c->dstRange && !isAnyRGB(c->dstFormat)) {
+        if (c->dstBpc <= 14) {
+            if (c->srcRange) {
+                c->lumConvertRange = ff_lumRangeFromJpeg_neon;
+                c->chrConvertRange = ff_chrRangeFromJpeg_neon;
+            } else {
+                c->lumConvertRange = ff_lumRangeToJpeg_neon;
+                c->chrConvertRange = ff_chrRangeToJpeg_neon;
+            }
+        }
+    }
+}
+
 av_cold void ff_sws_init_swscale_aarch64(SwsContext *c)
 {
     int cpu_flags = av_get_cpu_flags();
@@ -212,5 +249,53 @@ av_cold void ff_sws_init_swscale_aarch64(SwsContext *c)
         if (c->dstBpc == 8) {
             c->yuv2planeX = ff_yuv2planeX_8_neon;
         }
+        switch (c->srcFormat) {
+        case AV_PIX_FMT_ABGR:
+            c->lumToYV12 = ff_abgr32ToY_neon;
+            if (c->chrSrcHSubSample)
+                c->chrToYV12 = ff_abgr32ToUV_half_neon;
+            else
+                c->chrToYV12 = ff_abgr32ToUV_neon;
+            break;
+
+        case AV_PIX_FMT_ARGB:
+            c->lumToYV12 = ff_argb32ToY_neon;
+            if (c->chrSrcHSubSample)
+                c->chrToYV12 = ff_argb32ToUV_half_neon;
+            else
+                c->chrToYV12 = ff_argb32ToUV_neon;
+            break;
+        case AV_PIX_FMT_BGR24:
+            c->lumToYV12 = ff_bgr24ToY_neon;
+            if (c->chrSrcHSubSample)
+                c->chrToYV12 = ff_bgr24ToUV_half_neon;
+            else
+                c->chrToYV12 = ff_bgr24ToUV_neon;
+            break;
+        case AV_PIX_FMT_BGRA:
+            c->lumToYV12 = ff_bgra32ToY_neon;
+            if (c->chrSrcHSubSample)
+                c->chrToYV12 = ff_bgra32ToUV_half_neon;
+            else
+                c->chrToYV12 = ff_bgra32ToUV_neon;
+            break;
+        case AV_PIX_FMT_RGB24:
+            c->lumToYV12 = ff_rgb24ToY_neon;
+            if (c->chrSrcHSubSample)
+                c->chrToYV12 = ff_rgb24ToUV_half_neon;
+            else
+                c->chrToYV12 = ff_rgb24ToUV_neon;
+            break;
+        case AV_PIX_FMT_RGBA:
+            c->lumToYV12 = ff_rgba32ToY_neon;
+            if (c->chrSrcHSubSample)
+                c->chrToYV12 = ff_rgba32ToUV_half_neon;
+            else
+                c->chrToYV12 = ff_rgba32ToUV_neon;
+            break;
+        default:
+            break;
+        }
+        ff_sws_init_range_convert_aarch64(c);
     }
 }

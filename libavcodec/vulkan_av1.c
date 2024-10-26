@@ -79,6 +79,7 @@ static int vk_av1_fill_pict(AVCodecContext *avctx, const AV1Frame **ref_src,
                             const uint8_t *saved_order_hints)
 {
     FFVulkanDecodeContext *dec = avctx->internal->hwaccel_priv_data;
+    FFVulkanDecodeShared *ctx = dec->shared_ctx;
     AV1VulkanDecodePicture *hp = pic->hwaccel_picture_private;
     FFVulkanDecodePicture *vkpic = &hp->vp;
 
@@ -119,7 +120,7 @@ static int vk_av1_fill_pict(AVCodecContext *avctx, const AV1Frame **ref_src,
         .sType = VK_STRUCTURE_TYPE_VIDEO_PICTURE_RESOURCE_INFO_KHR,
         .codedOffset = (VkOffset2D){ 0, 0 },
         .codedExtent = (VkExtent2D){ pic->f->width, pic->f->height },
-        .baseArrayLayer = ((has_grain || dec->dedicated_dpb) && dec->layered_dpb) ?
+        .baseArrayLayer = ((has_grain || dec->dedicated_dpb) && ctx->common.layered_dpb) ?
                           hp->frame_id : 0,
         .imageViewBinding = vkpic->img_view_ref,
     };
@@ -284,7 +285,7 @@ static int vk_av1_start_frame(AVCodecContext          *avctx,
         AV1VulkanDecodePicture *hp = ref_frame->hwaccel_picture_private;
         int found = 0;
 
-        if (ref_frame->f->pict_type == AV_PICTURE_TYPE_NONE)
+        if (!ref_frame->f)
             continue;
 
         for (int j = 0; j < ref_count; j++) {
@@ -326,7 +327,7 @@ static int vk_av1_start_frame(AVCodecContext          *avctx,
         const AV1Frame *ref_frame = &s->ref[idx];
         AV1VulkanDecodePicture *hp = ref_frame->hwaccel_picture_private;
 
-        if (ref_frame->f->pict_type == AV_PICTURE_TYPE_NONE)
+        if (!ref_frame->f)
             ap->av1_pic_info.referenceNameSlotIndices[i] = AV1_REF_FRAME_NONE;
         else
             ap->av1_pic_info.referenceNameSlotIndices[i] = hp->frame_id;

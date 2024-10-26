@@ -18,9 +18,11 @@
 
 #include "libavutil/channel_layout.h"
 #include "libavutil/ffmath.h"
+#include "libavutil/mem.h"
 #include "libavutil/opt.h"
 #include "avfilter.h"
 #include "audio.h"
+#include "filters.h"
 
 typedef struct ASubBoostContext {
     const AVClass *class;

@@ -24,7 +24,7 @@
 #include "libavutil/video_enc_params.h"
 
 #include "avfilter.h"
-#include "internal.h"
+#include "filters.h"
 #include "video.h"
 
 typedef struct QPContext {

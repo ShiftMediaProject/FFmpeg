@@ -23,6 +23,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "libavutil/mem.h"
 #include "avcodec.h"
 #include "bytestream.h"
 #include "codec_internal.h"
@@ -148,28 +149,6 @@ static int decode_frame(AVCodecContext *avctx, AVFrame *frame,
     if (avpkt->size < 3)
         return buf_size;
 
-    if ((ret = ff_get_buffer(avctx, frame, 0)) < 0)
-        return ret;
-
-    if (avctx->pix_fmt == AV_PIX_FMT_PAL8) {
-        size_t size;
-        const uint8_t *pal = av_packet_get_side_data(avpkt, AV_PKT_DATA_PALETTE, &size);
-
-        if (pal && size == AVPALETTE_SIZE) {
-#if FF_API_PALETTE_HAS_CHANGED
-FF_DISABLE_DEPRECATION_WARNINGS
-            frame->palette_has_changed = 1;
-FF_ENABLE_DEPRECATION_WARNINGS
-#endif
-            for (j = 0; j < 256; j++)
-                s->pal[j] = 0xFF000000 | AV_RL32(pal + j * 4);
-        } else if (pal) {
-            av_log(avctx, AV_LOG_ERROR,
-                   "Palette size %"SIZE_SPECIFIER" is wrong\n", size);
-        }
-        memcpy(frame->data[1], s->pal, AVPALETTE_SIZE);
-    }
-
     ret = inflateReset(zstream);
     if (ret != Z_OK) {
         av_log(avctx, AV_LOG_ERROR, "Inflate reset error: %d\n", ret);
@@ -197,6 +176,27 @@ inflate_error:
         av_log(avctx, AV_LOG_ERROR, "Inflate error: %d\n", ret);
         return AVERROR_UNKNOWN;
     }
+    if ((ret = ff_get_buffer(avctx, frame, 0)) < 0)
+        return ret;
+
+    if (avctx->pix_fmt == AV_PIX_FMT_PAL8) {
+        size_t size;
+        const uint8_t *pal = av_packet_get_side_data(avpkt, AV_PKT_DATA_PALETTE, &size);
+
+        if (pal && size == AVPALETTE_SIZE) {
+#if FF_API_PALETTE_HAS_CHANGED
+FF_DISABLE_DEPRECATION_WARNINGS
+            frame->palette_has_changed = 1;
+FF_ENABLE_DEPRECATION_WARNINGS
+#endif
+            for (j = 0; j < 256; j++)
+                s->pal[j] = 0xFF000000 | AV_RL32(pal + j * 4);
+        } else if (pal) {
+            av_log(avctx, AV_LOG_ERROR,
+                   "Palette size %"SIZE_SPECIFIER" is wrong\n", size);
+        }
+        memcpy(frame->data[1], s->pal, AVPALETTE_SIZE);
+    }
 
     bytestream2_init(&gb, s->decomp_buf, zstream->total_out);
     bytestream2_init_writer(&pb, s->uncomp_buf, s->uncomp_size);
@@ -209,9 +209,6 @@ inflate_error:
         memcpy(frame->data[0] + (avctx->height - j - 1) * frame->linesize[0],
                s->uncomp_buf + s->bpp * j * avctx->width, s->bpp * avctx->width);
     }
-
-    frame->flags |= AV_FRAME_FLAG_KEY;
-    frame->pict_type = AV_PICTURE_TYPE_I;
 
     *got_frame = 1;
 

@@ -30,11 +30,8 @@
 #ifndef AVCODEC_AAC_H
 #define AVCODEC_AAC_H
 
-
-#include "aac_defines.h"
-
 #define MAX_CHANNELS 64
-#define MAX_ELEM_ID 16
+#define MAX_ELEM_ID 64
 
 #define TNS_MAX_ORDER 20
 #define MAX_LTP_LONG_SFB 40
@@ -85,20 +82,6 @@ enum ChannelPosition {
     AAC_CHANNEL_CC    = 5,
 };
 
-/**
- * Predictor State
- */
-typedef struct PredictorState {
-    AAC_FLOAT cor0;
-    AAC_FLOAT cor1;
-    AAC_FLOAT var0;
-    AAC_FLOAT var1;
-    AAC_FLOAT r0;
-    AAC_FLOAT r1;
-    AAC_FLOAT k1;
-    AAC_FLOAT x_est;
-} PredictorState;
-
 #define MAX_PREDICTORS 672
 
 #define SCALE_DIV_512    36    ///< scalefactor difference that corresponds to scale difference in 512 times
@@ -119,5 +102,21 @@ typedef struct Pulse {
     int pos[4];
     int amp[4];
 } Pulse;
+
+static inline int ff_aac_sample_rate_idx(int rate)
+{
+         if (92017 <= rate) return 0;
+    else if (75132 <= rate) return 1;
+    else if (55426 <= rate) return 2;
+    else if (46009 <= rate) return 3;
+    else if (37566 <= rate) return 4;
+    else if (27713 <= rate) return 5;
+    else if (23004 <= rate) return 6;
+    else if (18783 <= rate) return 7;
+    else if (13856 <= rate) return 8;
+    else if (11502 <= rate) return 9;
+    else if (9391  <= rate) return 10;
+    else                    return 11;
+}
 
 #endif /* AVCODEC_AAC_H */

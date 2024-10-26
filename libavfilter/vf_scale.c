@@ -28,18 +28,18 @@
 #include <string.h>
 
 #include "avfilter.h"
+#include "filters.h"
 #include "formats.h"
-#include "internal.h"
+#include "framesync.h"
 #include "scale_eval.h"
 #include "video.h"
-#include "libavutil/avstring.h"
 #include "libavutil/eval.h"
+#include "libavutil/imgutils_internal.h"
 #include "libavutil/internal.h"
-#include "libavutil/mathematics.h"
+#include "libavutil/mem.h"
 #include "libavutil/opt.h"
 #include "libavutil/parseutils.h"
 #include "libavutil/pixdesc.h"
-#include "libavutil/imgutils.h"
 #include "libswscale/swscale.h"
 
 static const char *const var_names[] = {
@@ -59,6 +59,17 @@ static const char *const var_names[] = {
 #if FF_API_FRAME_PKT
     "pos",
 #endif
+    "ref_w", "rw",
+    "ref_h", "rh",
+    "ref_a",
+    "ref_sar",
+    "ref_dar", "rdar",
+    "ref_hsub",
+    "ref_vsub",
+    "ref_n",
+    "ref_t",
+    "ref_pos",
+    /* Legacy variables for scale2ref */
     "main_w",
     "main_h",
     "main_a",
@@ -89,6 +100,16 @@ enum var_name {
 #if FF_API_FRAME_PKT
     VAR_POS,
 #endif
+    VAR_REF_W, VAR_RW,
+    VAR_REF_H, VAR_RH,
+    VAR_REF_A,
+    VAR_REF_SAR,
+    VAR_REF_DAR, VAR_RDAR,
+    VAR_REF_HSUB,
+    VAR_REF_VSUB,
+    VAR_REF_N,
+    VAR_REF_T,
+    VAR_REF_POS,
     VAR_S2R_MAIN_W,
     VAR_S2R_MAIN_H,
     VAR_S2R_MAIN_A,
@@ -114,6 +135,7 @@ typedef struct ScaleContext {
     struct SwsContext *isws[2]; ///< software scaler context for interlaced material
     // context used for forwarding options to sws
     struct SwsContext *sws_opts;
+    FFFrameSync fs;
 
     /**
      * New dimensions. Special values are:
@@ -130,6 +152,7 @@ typedef struct ScaleContext {
     int input_is_pal;           ///< set to 1 if the input format is paletted
     int output_is_pal;          ///< set to 1 if the output format is paletted
     int interlaced;
+    int uses_ref;
 
     char *w_expr;               ///< width  expression string
     char *h_expr;               ///< height expression string
@@ -145,6 +168,8 @@ typedef struct ScaleContext {
     int in_range;
     int out_range;
 
+    int in_chroma_loc;
+    int out_chroma_loc;
     int out_h_chr_pos;
     int out_v_chr_pos;
     int in_h_chr_pos;
@@ -187,6 +212,38 @@ static int check_exprs(AVFilterContext *ctx)
     if ((vars_w[VAR_OUT_H] || vars_w[VAR_OH]) &&
         (vars_h[VAR_OUT_W] || vars_h[VAR_OW])) {
         av_log(ctx, AV_LOG_WARNING, "Circular references detected for width '%s' and height '%s' - possibly invalid.\n", scale->w_expr, scale->h_expr);
+    }
+
+    if (vars_w[VAR_REF_W]    || vars_h[VAR_REF_W]    ||
+        vars_w[VAR_RW]       || vars_h[VAR_RW]       ||
+        vars_w[VAR_REF_H]    || vars_h[VAR_REF_H]    ||
+        vars_w[VAR_RH]       || vars_h[VAR_RH]       ||
+        vars_w[VAR_REF_A]    || vars_h[VAR_REF_A]    ||
+        vars_w[VAR_REF_SAR]  || vars_h[VAR_REF_SAR]  ||
+        vars_w[VAR_REF_DAR]  || vars_h[VAR_REF_DAR]  ||
+        vars_w[VAR_RDAR]     || vars_h[VAR_RDAR]     ||
+        vars_w[VAR_REF_HSUB] || vars_h[VAR_REF_HSUB] ||
+        vars_w[VAR_REF_VSUB] || vars_h[VAR_REF_VSUB] ||
+        vars_w[VAR_REF_N]    || vars_h[VAR_REF_N]    ||
+        vars_w[VAR_REF_T]    || vars_h[VAR_REF_T]    ||
+        vars_w[VAR_REF_POS]  || vars_h[VAR_REF_POS]) {
+        scale->uses_ref = 1;
+    }
+
+    if (ctx->filter != &ff_vf_scale2ref &&
+        (vars_w[VAR_S2R_MAIN_W]    || vars_h[VAR_S2R_MAIN_W]    ||
+         vars_w[VAR_S2R_MAIN_H]    || vars_h[VAR_S2R_MAIN_H]    ||
+         vars_w[VAR_S2R_MAIN_A]    || vars_h[VAR_S2R_MAIN_A]    ||
+         vars_w[VAR_S2R_MAIN_SAR]  || vars_h[VAR_S2R_MAIN_SAR]  ||
+         vars_w[VAR_S2R_MAIN_DAR]  || vars_h[VAR_S2R_MAIN_DAR]  ||
+         vars_w[VAR_S2R_MDAR]      || vars_h[VAR_S2R_MDAR]      ||
+         vars_w[VAR_S2R_MAIN_HSUB] || vars_h[VAR_S2R_MAIN_HSUB] ||
+         vars_w[VAR_S2R_MAIN_VSUB] || vars_h[VAR_S2R_MAIN_VSUB] ||
+         vars_w[VAR_S2R_MAIN_N]    || vars_h[VAR_S2R_MAIN_N]    ||
+         vars_w[VAR_S2R_MAIN_T]    || vars_h[VAR_S2R_MAIN_T]    ||
+         vars_w[VAR_S2R_MAIN_POS]  || vars_h[VAR_S2R_MAIN_POS]) ) {
+        av_log(ctx, AV_LOG_ERROR, "Expressions with scale2ref variables are not valid in scale filter.\n");
+        return AVERROR(EINVAL);
     }
 
     if (ctx->filter != &ff_vf_scale2ref &&
@@ -288,6 +345,8 @@ static av_cold int preinit(AVFilterContext *ctx)
     if (ret < 0)
         return ret;
 
+    ff_framesync_preinit(&scale->fs);
+
     return 0;
 }
 
@@ -303,11 +362,16 @@ static const int sws_colorspaces[] = {
     -1
 };
 
+static int do_scale(FFFrameSync *fs);
+
 static av_cold int init(AVFilterContext *ctx)
 {
     ScaleContext *scale = ctx->priv;
     int64_t threads;
     int ret;
+
+    if (ctx->filter == &ff_vf_scale2ref)
+        av_log(ctx, AV_LOG_WARNING, "scale2ref is deprecated, use scale=rw:rh instead\n");
 
     if (scale->size_str && (scale->w_expr || scale->h_expr)) {
         av_log(ctx, AV_LOG_ERROR,
@@ -380,6 +444,16 @@ static av_cold int init(AVFilterContext *ctx)
     if (!threads)
         av_opt_set_int(scale->sws_opts, "threads", ff_filter_get_nb_threads(ctx), 0);
 
+    if (ctx->filter != &ff_vf_scale2ref && scale->uses_ref) {
+        AVFilterPad pad = {
+            .name = "ref",
+            .type = AVMEDIA_TYPE_VIDEO,
+        };
+        ret = ff_append_inpad(ctx, &pad);
+        if (ret < 0)
+            return ret;
+    }
+
     return 0;
 }
 
@@ -389,6 +463,7 @@ static av_cold void uninit(AVFilterContext *ctx)
     av_expr_free(scale->w_pexpr);
     av_expr_free(scale->h_pexpr);
     scale->w_pexpr = scale->h_pexpr = NULL;
+    ff_framesync_uninit(&scale->fs);
     sws_freeContext(scale->sws_opts);
     sws_freeContext(scale->sws);
     sws_freeContext(scale->isws[0]);
@@ -500,6 +575,20 @@ static int scale_eval_dimensions(AVFilterContext *ctx)
         scale->var_values[VAR_S2R_MAIN_VSUB] = 1 << main_desc->log2_chroma_h;
     }
 
+    if (scale->uses_ref) {
+        const AVFilterLink *reflink = ctx->inputs[1];
+        const AVPixFmtDescriptor *ref_desc = av_pix_fmt_desc_get(reflink->format);
+        scale->var_values[VAR_REF_W] = scale->var_values[VAR_RW] = reflink->w;
+        scale->var_values[VAR_REF_H] = scale->var_values[VAR_RH] = reflink->h;
+        scale->var_values[VAR_REF_A] = (double) reflink->w / reflink->h;
+        scale->var_values[VAR_REF_SAR] = reflink->sample_aspect_ratio.num ?
+            (double) reflink->sample_aspect_ratio.num / reflink->sample_aspect_ratio.den : 1;
+        scale->var_values[VAR_REF_DAR] = scale->var_values[VAR_RDAR] =
+            scale->var_values[VAR_REF_A] * scale->var_values[VAR_REF_SAR];
+        scale->var_values[VAR_REF_HSUB] = 1 << ref_desc->log2_chroma_w;
+        scale->var_values[VAR_REF_VSUB] = 1 << ref_desc->log2_chroma_h;
+    }
+
     res = av_expr_eval(scale->w_pexpr, scale->var_values, NULL);
     eval_w = scale->var_values[VAR_OUT_W] = scale->var_values[VAR_OW] = (int) res == 0 ? inlink->w : (int) res;
 
@@ -528,6 +617,50 @@ fail:
     av_log(ctx, AV_LOG_ERROR,
            "Error when evaluating the expression '%s'.\n", expr);
     return ret;
+}
+
+static void calc_chroma_pos(int *h_pos_out, int *v_pos_out, int chroma_loc,
+                            int h_pos_override, int v_pos_override,
+                            int h_sub, int v_sub, int index)
+{
+    int h_pos, v_pos;
+
+    /* Explicitly default to center siting for compatibility with swscale */
+    if (chroma_loc == AVCHROMA_LOC_UNSPECIFIED)
+        chroma_loc = AVCHROMA_LOC_CENTER;
+
+    /* av_chroma_location_enum_to_pos() always gives us values in the range from
+     * 0 to 256, but we need to adjust this to the true value range of the
+     * subsampling grid, which may be larger for h/v_sub > 1 */
+    av_chroma_location_enum_to_pos(&h_pos, &v_pos, chroma_loc);
+    h_pos *= (1 << h_sub) - 1;
+    v_pos *= (1 << v_sub) - 1;
+
+    if (h_pos_override != -513)
+        h_pos = h_pos_override;
+    if (v_pos_override != -513)
+        v_pos = v_pos_override;
+
+    /* Fix vertical chroma position for interlaced frames */
+    if (v_sub && index > 0) {
+        /* When vertically subsampling, chroma samples are effectively only
+         * placed next to even rows. To access them from the odd field, we need
+         * to account for this shift by offsetting the distance of one luma row.
+         *
+         * For 4x vertical subsampling (v_sub == 2), they are only placed
+         * next to every *other* even row, so we need to shift by three luma
+         * rows to get to the chroma sample. */
+        if (index == 2)
+            v_pos += (256 << v_sub) - 256;
+
+        /* Luma row distance is doubled for fields, so halve offsets */
+        v_pos >>= 1;
+    }
+
+    /* Explicitly strip chroma offsets when not subsampling, because it
+     * interferes with the operation of flags like SWS_FULL_CHR_H_INP */
+    *h_pos_out = h_sub ? h_pos : -513;
+    *v_pos_out = v_sub ? v_pos : -513;
 }
 
 static int config_props(AVFilterLink *outlink)
@@ -589,15 +722,16 @@ static int config_props(AVFilterLink *outlink)
         inlink0->h == outlink->h &&
         in_range == outlink->color_range &&
         in_colorspace == outlink->colorspace &&
-        inlink0->format == outlink->format)
+        inlink0->format == outlink->format &&
+        scale->in_chroma_loc == scale->out_chroma_loc)
         ;
     else {
         struct SwsContext **swscs[3] = {&scale->sws, &scale->isws[0], &scale->isws[1]};
         int i;
 
         for (i = 0; i < 3; i++) {
-            int in_v_chr_pos = scale->in_v_chr_pos, out_v_chr_pos = scale->out_v_chr_pos;
             int in_full, out_full, brightness, contrast, saturation;
+            int h_chr_pos, v_chr_pos;
             const int *inv_table, *table;
             struct SwsContext *const s = sws_alloc_context();
             if (!s)
@@ -621,22 +755,17 @@ static int config_props(AVFilterLink *outlink)
                 av_opt_set_int(s, "dst_range",
                                outlink->color_range == AVCOL_RANGE_JPEG, 0);
 
-            /* Override chroma location default settings to have the correct
-             * chroma positions. MPEG chroma positions are used by convention.
-             * Note that this works for both MPEG-1/JPEG and MPEG-2/4 chroma
-             * locations, since they share a vertical alignment */
-            if (desc->log2_chroma_h == 1 && scale->in_v_chr_pos == -513) {
-                in_v_chr_pos = (i == 0) ? 128 : (i == 1) ? 64 : 192;
-            }
+            calc_chroma_pos(&h_chr_pos, &v_chr_pos, scale->in_chroma_loc,
+                            scale->in_h_chr_pos, scale->in_v_chr_pos,
+                            desc->log2_chroma_w, desc->log2_chroma_h, i);
+            av_opt_set_int(s, "src_h_chr_pos", h_chr_pos, 0);
+            av_opt_set_int(s, "src_v_chr_pos", v_chr_pos, 0);
 
-            if (outdesc->log2_chroma_h == 1 && scale->out_v_chr_pos == -513) {
-                out_v_chr_pos = (i == 0) ? 128 : (i == 1) ? 64 : 192;
-            }
-
-            av_opt_set_int(s, "src_h_chr_pos", scale->in_h_chr_pos, 0);
-            av_opt_set_int(s, "src_v_chr_pos", in_v_chr_pos, 0);
-            av_opt_set_int(s, "dst_h_chr_pos", scale->out_h_chr_pos, 0);
-            av_opt_set_int(s, "dst_v_chr_pos", out_v_chr_pos, 0);
+            calc_chroma_pos(&h_chr_pos, &v_chr_pos, scale->out_chroma_loc,
+                            scale->out_h_chr_pos, scale->out_v_chr_pos,
+                            outdesc->log2_chroma_w, outdesc->log2_chroma_h, i);
+            av_opt_set_int(s, "dst_h_chr_pos", h_chr_pos, 0);
+            av_opt_set_int(s, "dst_v_chr_pos", v_chr_pos, 0);
 
             if ((ret = sws_init_context(s, NULL, NULL)) < 0)
                 return ret;
@@ -681,6 +810,29 @@ static int config_props(AVFilterLink *outlink)
            flags_val);
     av_freep(&flags_val);
 
+    if (ctx->filter != &ff_vf_scale2ref) {
+        ff_framesync_uninit(&scale->fs);
+        ret = ff_framesync_init(&scale->fs, ctx, ctx->nb_inputs);
+        if (ret < 0)
+            return ret;
+        scale->fs.on_event        = do_scale;
+        scale->fs.in[0].time_base = ctx->inputs[0]->time_base;
+        scale->fs.in[0].sync      = 1;
+        scale->fs.in[0].before    = EXT_STOP;
+        scale->fs.in[0].after     = EXT_STOP;
+        if (scale->uses_ref) {
+            av_assert0(ctx->nb_inputs == 2);
+            scale->fs.in[1].time_base = ctx->inputs[1]->time_base;
+            scale->fs.in[1].sync      = 0;
+            scale->fs.in[1].before    = EXT_NULL;
+            scale->fs.in[1].after     = EXT_INFINITY;
+        }
+
+        ret = ff_framesync_configure(&scale->fs);
+        if (ret < 0)
+            return ret;
+    }
+
     return 0;
 
 fail:
@@ -690,12 +842,14 @@ fail:
 static int config_props_ref(AVFilterLink *outlink)
 {
     AVFilterLink *inlink = outlink->src->inputs[1];
+    FilterLink *il = ff_filter_link(inlink);
+    FilterLink *ol = ff_filter_link(outlink);
 
     outlink->w = inlink->w;
     outlink->h = inlink->h;
     outlink->sample_aspect_ratio = inlink->sample_aspect_ratio;
     outlink->time_base = inlink->time_base;
-    outlink->frame_rate = inlink->frame_rate;
+    ol->frame_rate = il->frame_rate;
     outlink->colorspace = inlink->colorspace;
     outlink->color_range = inlink->color_range;
 
@@ -762,18 +916,21 @@ static int scale_field(ScaleContext *scale, AVFrame *dst, AVFrame *src,
     return 0;
 }
 
-static int scale_frame(AVFilterLink *link, AVFrame *in, AVFrame **frame_out)
+/* Takes over ownership of *frame_in, passes ownership of *frame_out to caller */
+static int scale_frame(AVFilterLink *link, AVFrame **frame_in,
+                       AVFrame **frame_out)
 {
+    FilterLink *inl = ff_filter_link(link);
     AVFilterContext *ctx = link->dst;
     ScaleContext *scale = ctx->priv;
     AVFilterLink *outlink = ctx->outputs[0];
-    AVFrame *out;
+    AVFrame *out, *in = *frame_in;
     const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(link->format);
     char buf[32];
     int ret;
     int frame_changed;
 
-    *frame_out = NULL;
+    *frame_in = NULL;
     if (in->colorspace == AVCOL_SPC_YCGCO)
         av_log(link->dst, AV_LOG_WARNING, "Detected unsupported YCgCo colorspace.\n");
 
@@ -815,15 +972,15 @@ static int scale_frame(AVFilterLink *link, AVFrame *in, AVFrame **frame_out)
 
             ret = scale_parse_expr(ctx, NULL, &scale->w_pexpr, "width", scale->w_expr);
             if (ret < 0)
-                return ret;
+                goto err;
 
             ret = scale_parse_expr(ctx, NULL, &scale->h_pexpr, "height", scale->h_expr);
             if (ret < 0)
-                return ret;
+                goto err;
         }
 
         if (ctx->filter == &ff_vf_scale2ref) {
-            scale->var_values[VAR_S2R_MAIN_N] = link->frame_count_out;
+            scale->var_values[VAR_S2R_MAIN_N] = inl->frame_count_out;
             scale->var_values[VAR_S2R_MAIN_T] = TS2T(in->pts, link->time_base);
 #if FF_API_FRAME_PKT
 FF_DISABLE_DEPRECATION_WARNINGS
@@ -831,7 +988,7 @@ FF_DISABLE_DEPRECATION_WARNINGS
 FF_ENABLE_DEPRECATION_WARNINGS
 #endif
         } else {
-            scale->var_values[VAR_N] = link->frame_count_out;
+            scale->var_values[VAR_N] = inl->frame_count_out;
             scale->var_values[VAR_T] = TS2T(in->pts, link->time_base);
 #if FF_API_FRAME_PKT
 FF_DISABLE_DEPRECATION_WARNINGS
@@ -850,7 +1007,7 @@ FF_ENABLE_DEPRECATION_WARNINGS
         link->dst->inputs[0]->sample_aspect_ratio.num = in->sample_aspect_ratio.num;
 
         if ((ret = config_props(outlink)) < 0)
-            return ret;
+            goto err;
     }
 
 scale:
@@ -864,16 +1021,17 @@ scale:
 
     out = ff_get_video_buffer(outlink, outlink->w, outlink->h);
     if (!out) {
-        av_frame_free(&in);
-        return AVERROR(ENOMEM);
+        ret = AVERROR(ENOMEM);
+        goto err;
     }
-    *frame_out = out;
 
     av_frame_copy_props(out, in);
     out->width  = outlink->w;
     out->height = outlink->h;
     out->color_range = outlink->color_range;
     out->colorspace = outlink->colorspace;
+    if (scale->out_chroma_loc != AVCHROMA_LOC_UNSPECIFIED)
+        out->chroma_location = scale->out_chroma_loc;
 
     if (scale->output_is_pal)
         avpriv_set_systematic_pal2((uint32_t*)out->data[1], outlink->format == AV_PIX_FMT_PAL8 ? AV_PIX_FMT_BGR8 : outlink->format);
@@ -892,9 +1050,80 @@ scale:
         ret = sws_scale_frame(scale->sws, out, in);
     }
 
-    av_frame_free(&in);
     if (ret < 0)
-        av_frame_free(frame_out);
+        av_frame_free(&out);
+    *frame_out = out;
+
+err:
+    av_frame_free(&in);
+    return ret;
+}
+
+static int do_scale(FFFrameSync *fs)
+{
+    AVFilterContext *ctx = fs->parent;
+    ScaleContext *scale = ctx->priv;
+    AVFilterLink *outlink = ctx->outputs[0];
+    AVFrame *out, *in = NULL, *ref = NULL;
+    int ret = 0, frame_changed;
+
+    ret = ff_framesync_get_frame(fs, 0, &in, 1);
+    if (ret < 0)
+        goto err;
+
+    if (scale->uses_ref) {
+        ret = ff_framesync_get_frame(fs, 1, &ref, 0);
+        if (ret < 0)
+            goto err;
+    }
+
+    if (ref) {
+        AVFilterLink *reflink = ctx->inputs[1];
+        FilterLink      *rl   = ff_filter_link(reflink);
+
+        frame_changed = ref->width  != reflink->w ||
+                        ref->height != reflink->h ||
+                        ref->format != reflink->format ||
+                        ref->sample_aspect_ratio.den != reflink->sample_aspect_ratio.den ||
+                        ref->sample_aspect_ratio.num != reflink->sample_aspect_ratio.num ||
+                        ref->colorspace != reflink->colorspace ||
+                        ref->color_range != reflink->color_range;
+
+        if (frame_changed) {
+            reflink->format = ref->format;
+            reflink->w = ref->width;
+            reflink->h = ref->height;
+            reflink->sample_aspect_ratio.num = ref->sample_aspect_ratio.num;
+            reflink->sample_aspect_ratio.den = ref->sample_aspect_ratio.den;
+            reflink->colorspace = ref->colorspace;
+            reflink->color_range = ref->color_range;
+
+            ret = config_props(outlink);
+            if (ret < 0)
+                goto err;
+        }
+
+        if (scale->eval_mode == EVAL_MODE_FRAME) {
+            scale->var_values[VAR_REF_N] = rl->frame_count_out;
+            scale->var_values[VAR_REF_T] = TS2T(ref->pts, reflink->time_base);
+#if FF_API_FRAME_PKT
+FF_DISABLE_DEPRECATION_WARNINGS
+            scale->var_values[VAR_REF_POS] = ref->pkt_pos == -1 ? NAN : ref->pkt_pos;
+FF_ENABLE_DEPRECATION_WARNINGS
+#endif
+        }
+    }
+
+    ret = scale_frame(ctx->inputs[0], &in, &out);
+    if (ret < 0)
+        goto err;
+
+    av_assert0(out);
+    out->pts = av_rescale_q(fs->pts, fs->time_base, outlink->time_base);
+    return ff_filter_frame(outlink, out);
+
+err:
+    av_frame_free(&in);
     return ret;
 }
 
@@ -905,7 +1134,7 @@ static int filter_frame(AVFilterLink *link, AVFrame *in)
     AVFrame *out;
     int ret;
 
-    ret = scale_frame(link, in, &out);
+    ret = scale_frame(link, &in, &out);
     if (out)
         return ff_filter_frame(outlink, out);
 
@@ -914,6 +1143,7 @@ static int filter_frame(AVFilterLink *link, AVFrame *in)
 
 static int filter_frame_ref(AVFilterLink *link, AVFrame *in)
 {
+    FilterLink *l = ff_filter_link(link);
     ScaleContext *scale = link->dst->priv;
     AVFilterLink *outlink = link->dst->outputs[1];
     int frame_changed;
@@ -939,7 +1169,7 @@ static int filter_frame_ref(AVFilterLink *link, AVFrame *in)
     }
 
     if (scale->eval_mode == EVAL_MODE_FRAME) {
-        scale->var_values[VAR_N] = link->frame_count_out;
+        scale->var_values[VAR_N] = l->frame_count_out;
         scale->var_values[VAR_T] = TS2T(in->pts, link->time_base);
 #if FF_API_FRAME_PKT
 FF_DISABLE_DEPRECATION_WARNINGS
@@ -976,11 +1206,24 @@ static int process_command(AVFilterContext *ctx, const char *cmd, const char *ar
     return ret;
 }
 
+static int activate(AVFilterContext *ctx)
+{
+    ScaleContext *scale = ctx->priv;
+    return ff_framesync_activate(&scale->fs);
+}
+
 static const AVClass *child_class_iterate(void **iter)
 {
-    const AVClass *c = *iter ? NULL : sws_get_class();
-    *iter = (void*)(uintptr_t)c;
-    return c;
+    switch ((uintptr_t) *iter) {
+    case 0:
+        *iter = (void*)(uintptr_t) 1;
+        return sws_get_class();
+    case 1:
+        *iter = (void*)(uintptr_t) 2;
+        return &ff_framesync_class;
+    }
+
+    return NULL;
 }
 
 static void *child_next(void *obj, void *prev)
@@ -988,6 +1231,8 @@ static void *child_next(void *obj, void *prev)
     ScaleContext *s = obj;
     if (!prev)
         return s->sws_opts;
+    if (prev == s->sws_opts)
+        return &s->fs;
     return NULL;
 }
 
@@ -1002,8 +1247,8 @@ static const AVOption scale_options[] = {
     { "height","Output video height",         OFFSET(h_expr),    AV_OPT_TYPE_STRING,        .flags = TFLAGS },
     { "flags", "Flags to pass to libswscale", OFFSET(flags_str), AV_OPT_TYPE_STRING, { .str = "" }, .flags = FLAGS },
     { "interl", "set interlacing", OFFSET(interlaced), AV_OPT_TYPE_BOOL, {.i64 = 0 }, -1, 1, FLAGS },
-    { "size",   "set video size",          OFFSET(size_str), AV_OPT_TYPE_STRING, {.str = NULL}, 0, FLAGS },
-    { "s",      "set video size",          OFFSET(size_str), AV_OPT_TYPE_STRING, {.str = NULL}, 0, FLAGS },
+    { "size",   "set video size",          OFFSET(size_str), AV_OPT_TYPE_STRING, {.str = NULL}, 0, .flags = FLAGS },
+    { "s",      "set video size",          OFFSET(size_str), AV_OPT_TYPE_STRING, {.str = NULL}, 0, .flags = FLAGS },
     {  "in_color_matrix", "set input YCbCr type",   OFFSET(in_color_matrix),  AV_OPT_TYPE_INT, { .i64 = -1 }, -1, AVCOL_SPC_NB-1, .flags = FLAGS, .unit = "color" },
     { "out_color_matrix", "set output YCbCr type",  OFFSET(out_color_matrix), AV_OPT_TYPE_INT, { .i64 = AVCOL_SPC_UNSPECIFIED }, 0, AVCOL_SPC_NB-1, .flags = FLAGS, .unit = "color"},
         { "auto",        NULL, 0, AV_OPT_TYPE_CONST, { .i64 = -1 },                     0, 0, FLAGS, .unit = "color" },
@@ -1024,6 +1269,16 @@ static const AVOption scale_options[] = {
     { "mpeg",   NULL, 0, AV_OPT_TYPE_CONST, {.i64 = AVCOL_RANGE_MPEG}, 0, 0, FLAGS, .unit = "range" },
     { "tv",     NULL, 0, AV_OPT_TYPE_CONST, {.i64 = AVCOL_RANGE_MPEG}, 0, 0, FLAGS, .unit = "range" },
     { "pc",     NULL, 0, AV_OPT_TYPE_CONST, {.i64 = AVCOL_RANGE_JPEG}, 0, 0, FLAGS, .unit = "range" },
+    { "in_chroma_loc",  "set input chroma sample location",  OFFSET(in_chroma_loc),  AV_OPT_TYPE_INT, { .i64 = AVCHROMA_LOC_UNSPECIFIED }, 0, AVCHROMA_LOC_NB-1, .flags = FLAGS, .unit = "chroma_loc" },
+    { "out_chroma_loc", "set output chroma sample location", OFFSET(out_chroma_loc), AV_OPT_TYPE_INT, { .i64 = AVCHROMA_LOC_UNSPECIFIED }, 0, AVCHROMA_LOC_NB-1, .flags = FLAGS, .unit = "chroma_loc" },
+        {"auto",          NULL, 0, AV_OPT_TYPE_CONST, {.i64=AVCHROMA_LOC_UNSPECIFIED}, 0, 0, FLAGS, .unit = "chroma_loc"},
+        {"unknown",       NULL, 0, AV_OPT_TYPE_CONST, {.i64=AVCHROMA_LOC_UNSPECIFIED}, 0, 0, FLAGS, .unit = "chroma_loc"},
+        {"left",          NULL, 0, AV_OPT_TYPE_CONST, {.i64=AVCHROMA_LOC_LEFT},        0, 0, FLAGS, .unit = "chroma_loc"},
+        {"center",        NULL, 0, AV_OPT_TYPE_CONST, {.i64=AVCHROMA_LOC_CENTER},      0, 0, FLAGS, .unit = "chroma_loc"},
+        {"topleft",       NULL, 0, AV_OPT_TYPE_CONST, {.i64=AVCHROMA_LOC_TOPLEFT},     0, 0, FLAGS, .unit = "chroma_loc"},
+        {"top",           NULL, 0, AV_OPT_TYPE_CONST, {.i64=AVCHROMA_LOC_TOP},         0, 0, FLAGS, .unit = "chroma_loc"},
+        {"bottomleft",    NULL, 0, AV_OPT_TYPE_CONST, {.i64=AVCHROMA_LOC_BOTTOMLEFT},  0, 0, FLAGS, .unit = "chroma_loc"},
+        {"bottom",        NULL, 0, AV_OPT_TYPE_CONST, {.i64=AVCHROMA_LOC_BOTTOM},      0, 0, FLAGS, .unit = "chroma_loc"},
     { "in_v_chr_pos",   "input vertical chroma position in luma grid/256"  ,   OFFSET(in_v_chr_pos),  AV_OPT_TYPE_INT, { .i64 = -513}, -513, 512, FLAGS },
     { "in_h_chr_pos",   "input horizontal chroma position in luma grid/256",   OFFSET(in_h_chr_pos),  AV_OPT_TYPE_INT, { .i64 = -513}, -513, 512, FLAGS },
     { "out_v_chr_pos",   "output vertical chroma position in luma grid/256"  , OFFSET(out_v_chr_pos), AV_OPT_TYPE_INT, { .i64 = -513}, -513, 512, FLAGS },
@@ -1042,7 +1297,7 @@ static const AVOption scale_options[] = {
 };
 
 static const AVClass scale_class = {
-    .class_name       = "scale(2ref)",
+    .class_name       = "scale",
     .item_name        = av_default_item_name,
     .option           = scale_options,
     .version          = LIBAVUTIL_VERSION_INT,
@@ -1055,7 +1310,6 @@ static const AVFilterPad avfilter_vf_scale_inputs[] = {
     {
         .name         = "default",
         .type         = AVMEDIA_TYPE_VIDEO,
-        .filter_frame = filter_frame,
     },
 };
 
@@ -1078,7 +1332,34 @@ const AVFilter ff_vf_scale = {
     FILTER_INPUTS(avfilter_vf_scale_inputs),
     FILTER_OUTPUTS(avfilter_vf_scale_outputs),
     FILTER_QUERY_FUNC(query_formats),
+    .activate        = activate,
     .process_command = process_command,
+    .flags           = AVFILTER_FLAG_DYNAMIC_INPUTS,
+};
+
+static const AVClass *scale2ref_child_class_iterate(void **iter)
+{
+    const AVClass *c = *iter ? NULL : sws_get_class();
+    *iter = (void*)(uintptr_t)c;
+    return c;
+}
+
+static void *scale2ref_child_next(void *obj, void *prev)
+{
+    ScaleContext *s = obj;
+    if (!prev)
+        return s->sws_opts;
+    return NULL;
+}
+
+static const AVClass scale2ref_class = {
+    .class_name       = "scale(2ref)",
+    .item_name        = av_default_item_name,
+    .option           = scale_options,
+    .version          = LIBAVUTIL_VERSION_INT,
+    .category         = AV_CLASS_CATEGORY_FILTER,
+    .child_class_iterate = scale2ref_child_class_iterate,
+    .child_next          = scale2ref_child_next,
 };
 
 static const AVFilterPad avfilter_vf_scale2ref_inputs[] = {
@@ -1116,7 +1397,7 @@ const AVFilter ff_vf_scale2ref = {
     .init            = init,
     .uninit          = uninit,
     .priv_size       = sizeof(ScaleContext),
-    .priv_class      = &scale_class,
+    .priv_class      = &scale2ref_class,
     FILTER_INPUTS(avfilter_vf_scale2ref_inputs),
     FILTER_OUTPUTS(avfilter_vf_scale2ref_outputs),
     FILTER_QUERY_FUNC(query_formats),

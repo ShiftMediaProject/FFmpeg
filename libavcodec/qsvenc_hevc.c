@@ -25,6 +25,7 @@
 #include <mfxvideo.h>
 
 #include "libavutil/common.h"
+#include "libavutil/mem.h"
 #include "libavutil/opt.h"
 #include "libavutil/mastering_display_metadata.h"
 
@@ -32,11 +33,12 @@
 #include "bytestream.h"
 #include "codec_internal.h"
 #include "get_bits.h"
-#include "hevc.h"
-#include "hevcdec.h"
 #include "h2645_parse.h"
 #include "qsv.h"
 #include "qsvenc.h"
+
+#include "hevc/hevc.h"
+#include "hevc/ps.h"
 
 enum LoadPlugin {
     LOAD_PLUGIN_NONE,
@@ -97,7 +99,7 @@ static int generate_fake_vps(QSVEncContext *q, AVCodecContext *avctx)
     }
     get_bits(&gb, 9);
 
-    ret = ff_hevc_parse_sps(&sps, &gb, &sps_id, 0, NULL, avctx);
+    ret = ff_hevc_parse_sps(&sps, &gb, &sps_id, 0, 0, NULL, avctx);
     av_freep(&sps_rbsp.rbsp_buffer);
     if (ret < 0) {
         av_log(avctx, AV_LOG_ERROR, "Error parsing the SPS\n");
@@ -107,7 +109,7 @@ static int generate_fake_vps(QSVEncContext *q, AVCodecContext *avctx)
     /* generate the VPS */
     vps.vps_max_layers     = 1;
     vps.vps_max_sub_layers = sps.max_sub_layers;
-    vps.vps_temporal_id_nesting_flag = sps.temporal_id_nesting_flag;
+    vps.vps_temporal_id_nesting_flag = sps.temporal_id_nesting;
     memcpy(&vps.ptl, &sps.ptl, sizeof(vps.ptl));
     vps.vps_sub_layer_ordering_info_present_flag = 1;
     for (i = 0; i < HEVC_MAX_SUB_LAYERS; i++) {
@@ -405,6 +407,7 @@ const FFCodec ff_hevc_qsv_encoder = {
                                                     AV_PIX_FMT_VUYX,
                                                     AV_PIX_FMT_XV30,
                                                     AV_PIX_FMT_NONE },
+    .color_ranges   = AVCOL_RANGE_MPEG | AVCOL_RANGE_JPEG,
     .p.priv_class   = &class,
     .defaults       = qsv_enc_defaults,
     .caps_internal  = FF_CODEC_CAP_NOT_INIT_THREADSAFE |

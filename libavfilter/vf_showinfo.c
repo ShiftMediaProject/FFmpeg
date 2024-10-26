@@ -47,7 +47,7 @@
 #include "libavutil/uuid.h"
 
 #include "avfilter.h"
-#include "internal.h"
+#include "filters.h"
 #include "video.h"
 
 typedef struct ShowInfoContext {
@@ -73,26 +73,14 @@ static void dump_spherical(AVFilterContext *ctx, AVFrame *frame, const AVFrameSi
     const AVSphericalMapping *spherical = (const AVSphericalMapping *)sd->data;
     double yaw, pitch, roll;
 
-    if (sd->size < sizeof(*spherical)) {
-        av_log(ctx, AV_LOG_ERROR, "invalid data\n");
-        return;
-    }
+    av_log(ctx, AV_LOG_INFO, "%s ", av_spherical_projection_name(spherical->projection));
 
-    if (spherical->projection == AV_SPHERICAL_EQUIRECTANGULAR)
-        av_log(ctx, AV_LOG_INFO, "equirectangular ");
-    else if (spherical->projection == AV_SPHERICAL_CUBEMAP)
-        av_log(ctx, AV_LOG_INFO, "cubemap ");
-    else if (spherical->projection == AV_SPHERICAL_EQUIRECTANGULAR_TILE)
-        av_log(ctx, AV_LOG_INFO, "tiled equirectangular ");
-    else {
-        av_log(ctx, AV_LOG_WARNING, "unknown\n");
-        return;
+    if (spherical->yaw || spherical->pitch || spherical->roll) {
+        yaw = ((double)spherical->yaw) / (1 << 16);
+        pitch = ((double)spherical->pitch) / (1 << 16);
+        roll = ((double)spherical->roll) / (1 << 16);
+        av_log(ctx, AV_LOG_INFO, "(%f/%f/%f) ", yaw, pitch, roll);
     }
-
-    yaw = ((double)spherical->yaw) / (1 << 16);
-    pitch = ((double)spherical->pitch) / (1 << 16);
-    roll = ((double)spherical->roll) / (1 << 16);
-    av_log(ctx, AV_LOG_INFO, "(%f/%f/%f) ", yaw, pitch, roll);
 
     if (spherical->projection == AV_SPHERICAL_EQUIRECTANGULAR_TILE) {
         size_t l, t, r, b;
@@ -108,23 +96,27 @@ static void dump_spherical(AVFilterContext *ctx, AVFrame *frame, const AVFrameSi
 
 static void dump_stereo3d(AVFilterContext *ctx, const AVFrameSideData *sd)
 {
-    const AVStereo3D *stereo;
-
-    if (sd->size < sizeof(*stereo)) {
-        av_log(ctx, AV_LOG_ERROR, "invalid data\n");
-        return;
-    }
-
-    stereo = (const AVStereo3D *)sd->data;
+    const AVStereo3D *stereo = (const AVStereo3D *)sd->data;
 
     av_log(ctx, AV_LOG_INFO, "type - %s", av_stereo3d_type_name(stereo->type));
 
     if (stereo->flags & AV_STEREO3D_FLAG_INVERT)
         av_log(ctx, AV_LOG_INFO, " (inverted)");
+
+    av_log(ctx, AV_LOG_INFO, ", view - %s, primary_eye - %s", av_stereo3d_view_name(stereo->view),
+                                                              av_stereo3d_primary_eye_name(stereo->primary_eye));
+    if (stereo->baseline)
+        av_log(ctx, AV_LOG_INFO, ", baseline: %"PRIu32"", stereo->baseline);
+    if (stereo->horizontal_disparity_adjustment.num && stereo->horizontal_disparity_adjustment.den)
+        av_log(ctx, AV_LOG_INFO, ", horizontal_disparity_adjustment: %0.4f",
+               av_q2d(stereo->horizontal_disparity_adjustment));
+    if (stereo->horizontal_field_of_view.num && stereo->horizontal_field_of_view.den)
+        av_log(ctx, AV_LOG_INFO, ", horizontal_field_of_view: %0.3f", av_q2d(stereo->horizontal_field_of_view));
 }
 
-static void dump_s12m_timecode(AVFilterContext *ctx, AVRational frame_rate, const AVFrameSideData *sd)
+static void dump_s12m_timecode(AVFilterContext *ctx, AVFilterLink *inlink, const AVFrameSideData *sd)
 {
+    FilterLink      *l = ff_filter_link(inlink);
     const uint32_t *tc = (const uint32_t *)sd->data;
 
     if ((sd->size != sizeof(uint32_t) * 4) || (tc[0] > 3)) {
@@ -134,7 +126,7 @@ static void dump_s12m_timecode(AVFilterContext *ctx, AVRational frame_rate, cons
 
     for (int j = 1; j <= tc[0]; j++) {
         char tcbuf[AV_TIMECODE_STR_SIZE];
-        av_timecode_make_smpte_tc_string2(tcbuf, frame_rate, tc[j], 0, 0);
+        av_timecode_make_smpte_tc_string2(tcbuf, l->frame_rate, tc[j], 0, 0);
         av_log(ctx, AV_LOG_INFO, "timecode - %s%s", tcbuf, j != tc[0]  ? ", " : "");
     }
 }
@@ -735,6 +727,7 @@ static void update_sample_stats(int depth, int be, const uint8_t *src, int len, 
 
 static int filter_frame(AVFilterLink *inlink, AVFrame *frame)
 {
+    FilterLink *inl = ff_filter_link(inlink);
     AVFilterContext *ctx = inlink->dst;
     ShowInfoContext *s = ctx->priv;
     const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(inlink->format);
@@ -768,7 +761,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *frame)
            "n:%4"PRId64" pts:%7s pts_time:%-7s duration:%7"PRId64
            " duration_time:%-7s "
            "fmt:%s cl:%s sar:%d/%d s:%dx%d i:%c iskey:%d type:%c ",
-           inlink->frame_count_out,
+           inl->frame_count_out,
            av_ts2str(frame->pts), av_ts2timestr(frame->pts, &inlink->time_base),
            frame->duration, av_ts2timestr(frame->duration, &inlink->time_base),
            desc->name, av_chroma_location_name(frame->chroma_location),
@@ -815,7 +808,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *frame)
             dump_stereo3d(ctx, sd);
             break;
         case AV_FRAME_DATA_S12M_TIMECODE: {
-            dump_s12m_timecode(ctx, inlink->frame_rate, sd);
+            dump_s12m_timecode(ctx, inlink, sd);
             break;
         }
         case AV_FRAME_DATA_DISPLAYMATRIX:
@@ -864,6 +857,9 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *frame)
         case AV_FRAME_DATA_AMBIENT_VIEWING_ENVIRONMENT:
             dump_ambient_viewing_environment(ctx, sd);
             break;
+        case AV_FRAME_DATA_VIEW_ID:
+            av_log(ctx, AV_LOG_INFO, "view id: %d\n", *(int*)sd->data);
+            break;
         default:
             if (name)
                 av_log(ctx, AV_LOG_INFO,
@@ -884,11 +880,12 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *frame)
 
 static int config_props(AVFilterContext *ctx, AVFilterLink *link, int is_out)
 {
+    FilterLink *l = ff_filter_link(link);
 
     av_log(ctx, AV_LOG_INFO, "config %s time_base: %d/%d, frame_rate: %d/%d\n",
            is_out ? "out" : "in",
            link->time_base.num, link->time_base.den,
-           link->frame_rate.num, link->frame_rate.den);
+           l->frame_rate.num, l->frame_rate.den);
 
     return 0;
 }

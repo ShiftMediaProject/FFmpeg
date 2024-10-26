@@ -19,8 +19,7 @@
  */
 
 #include "libavutil/audio_fifo.h"
-#include "libavutil/internal.h"
-#include "libavutil/intreadwrite.h"
+#include "libavutil/mem.h"
 #include "avcodec.h"
 #include "codec_internal.h"
 #include "decode.h"
@@ -130,7 +129,7 @@ static int apac_decode(AVCodecContext *avctx, AVFrame *frame,
     APACContext *s = avctx->priv_data;
     GetBitContext *gb = &s->gb;
     int ret, n, buf_size, input_buf_size;
-    const uint8_t *buf;
+    uint8_t *buf;
     int nb_samples;
 
     if (!pkt->size && s->bitstream_size <= 0) {
@@ -160,6 +159,7 @@ static int apac_decode(AVCodecContext *avctx, AVFrame *frame,
     buf                = &s->bitstream[s->bitstream_index];
     buf_size          += s->bitstream_size;
     s->bitstream_size  = buf_size;
+    memset(buf + buf_size, 0, AV_INPUT_BUFFER_PADDING_SIZE);
 
     frame->nb_samples = s->bitstream_size * 16 * 8;
     if ((ret = ff_get_buffer(avctx, frame, 0)) < 0)

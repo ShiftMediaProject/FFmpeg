@@ -22,6 +22,7 @@
 #include "libavutil/intmath.h"
 #include "libavutil/libm.h"
 #include "libavutil/log.h"
+#include "libavutil/mem.h"
 #include "libavutil/opt.h"
 #include "libavutil/pixdesc.h"
 #include "avcodec.h"
@@ -61,6 +62,7 @@ typedef struct SnowEncContext {
 
     MECmpContext mecc;
     MpegEncContext m; // needed for motion estimation, should not be used for anything else, the idea is to eventually make the motion estimation independent of MpegEncContext, so this will be removed then (FIXME/XXX)
+    MPVPicture cur_pic, last_pic;
 #define ME_CACHE_SIZE 1024
     unsigned me_cache[ME_CACHE_SIZE];
     unsigned me_cache_generation;
@@ -215,6 +217,9 @@ static av_cold int encode_init(AVCodecContext *avctx)
     mcf(12,12)
 
     ff_me_cmp_init(&enc->mecc, avctx);
+    ret = ff_me_init(&enc->m.me, avctx, &enc->mecc, 0);
+    if (ret < 0)
+        return ret;
     ff_mpegvideoencdsp_init(&enc->mpvencdsp, avctx);
 
     ff_snow_alloc_blocks(s);
@@ -275,11 +280,6 @@ static av_cold int encode_init(AVCodecContext *avctx)
                                            &s->chroma_v_shift);
     if (ret)
         return ret;
-
-    ret  = ff_set_cmp(&enc->mecc, enc->mecc.me_cmp, s->avctx->me_cmp);
-    ret |= ff_set_cmp(&enc->mecc, enc->mecc.me_sub_cmp, s->avctx->me_sub_cmp);
-    if (ret < 0)
-        return AVERROR(EINVAL);
 
     s->input_picture = av_frame_alloc();
     if (!s->input_picture)
@@ -715,7 +715,7 @@ static int get_dc(SnowEncContext *enc, int mb_x, int mb_y, int plane_index)
     }
     *b= backup;
 
-    return av_clip_uint8( ROUNDED_DIV(ab<<LOG2_OBMC_MAX, aa) ); //FIXME we should not need clipping
+    return av_clip_uint8( ROUNDED_DIV((int64_t)ab<<LOG2_OBMC_MAX, aa) ); //FIXME we should not need clipping
 }
 
 static inline int get_block_bits(SnowContext *s, int x, int y, int w){
@@ -838,12 +838,12 @@ static int get_block_rd(SnowEncContext *enc, int mb_x, int mb_y,
             distortion = 0;
             for(i=0; i<4; i++){
                 int off = sx+16*(i&1) + (sy+16*(i>>1))*ref_stride;
-                distortion += enc->mecc.me_cmp[0](&enc->m, src + off, dst + off, ref_stride, 16);
+                distortion += enc->m.me.me_cmp[0](&enc->m, src + off, dst + off, ref_stride, 16);
             }
         }
     }else{
         av_assert2(block_w==8);
-        distortion = enc->mecc.me_cmp[0](&enc->m, src + sx + sy*ref_stride, dst + sx + sy*ref_stride, ref_stride, block_w*2);
+        distortion = enc->m.me.me_cmp[0](&enc->m, src + sx + sy*ref_stride, dst + sx + sy*ref_stride, ref_stride, block_w*2);
     }
 
     if(plane_index==0){
@@ -909,7 +909,7 @@ static int get_4block_rd(SnowEncContext *enc, int mb_x, int mb_y, int plane_inde
         }
 
         av_assert1(block_w== 8 || block_w==16);
-        distortion += enc->mecc.me_cmp[block_w==8](&enc->m, src + x + y*ref_stride, dst + x + y*ref_stride, ref_stride, block_h);
+        distortion += enc->m.me.me_cmp[block_w==8](&enc->m, src + x + y*ref_stride, dst + x + y*ref_stride, ref_stride, block_h);
     }
 
     if(plane_index==0){
@@ -1839,9 +1839,9 @@ static int encode_frame(AVCodecContext *avctx, AVPacket *pkt,
     if (ret < 0)
         return ret;
 
-    mpv->current_picture_ptr    = &mpv->current_picture;
-    mpv->current_picture.f      = s->current_picture;
-    mpv->current_picture.f->pts = pict->pts;
+    mpv->cur_pic.ptr         = &enc->cur_pic;
+    mpv->cur_pic.ptr->f      = s->current_picture;
+    mpv->cur_pic.ptr->f->pts = pict->pts;
     if(pic->pict_type == AV_PICTURE_TYPE_P){
         int block_width = (width +15)>>4;
         int block_height= (height+15)>>4;
@@ -1851,9 +1851,9 @@ static int encode_frame(AVCodecContext *avctx, AVPacket *pkt,
         av_assert0(s->last_picture[0]->data[0]);
 
         mpv->avctx = s->avctx;
-        mpv->last_picture.f   = s->last_picture[0];
-        mpv-> new_picture     = s->input_picture;
-        mpv->last_picture_ptr = &mpv->last_picture;
+        mpv->last_pic.ptr    = &enc->last_pic;
+        mpv->last_pic.ptr->f = s->last_picture[0];
+        mpv-> new_pic     = s->input_picture;
         mpv->linesize   = stride;
         mpv->uvlinesize = s->current_picture->linesize[1];
         mpv->width      = width;
@@ -1875,12 +1875,10 @@ static int encode_frame(AVCodecContext *avctx, AVPacket *pkt,
         mpv->qscale = (mpv->lambda*139 + FF_LAMBDA_SCALE*64) >> (FF_LAMBDA_SHIFT + 7);
         enc->lambda2  = mpv->lambda2 = (mpv->lambda*mpv->lambda + FF_LAMBDA_SCALE/2) >> FF_LAMBDA_SHIFT;
 
-        mpv->mecc = enc->mecc; //move
         mpv->qdsp = enc->qdsp; //move
         mpv->hdsp = s->hdsp;
-        ff_init_me(&enc->m);
+        ff_me_init_pic(&enc->m);
         s->hdsp = mpv->hdsp;
-        enc->mecc = mpv->mecc;
     }
 
     if (enc->pass1_rc) {
@@ -2048,9 +2046,9 @@ redo_frame:
     mpv->frame_bits = 8 * (s->c.bytestream - s->c.bytestream_start);
     mpv->p_tex_bits = mpv->frame_bits - mpv->misc_bits - mpv->mv_bits;
     mpv->total_bits += 8*(s->c.bytestream - s->c.bytestream_start);
-    mpv->current_picture.display_picture_number =
-    mpv->current_picture.coded_picture_number   = avctx->frame_num;
-    mpv->current_picture.f->quality             = pic->quality;
+    enc->cur_pic.display_picture_number =
+    enc->cur_pic.coded_picture_number   = avctx->frame_num;
+    enc->cur_pic.f->quality             = pic->quality;
     if (enc->pass1_rc)
         if (ff_rate_estimate_qscale(mpv, 0) < 0)
             return -1;
@@ -2082,7 +2080,7 @@ static av_cold int encode_end(AVCodecContext *avctx)
     SnowContext *const s = &enc->com;
 
     ff_snow_common_end(s);
-    ff_rate_control_uninit(&enc->m);
+    ff_rate_control_uninit(&enc->m.rc_context);
     av_frame_free(&s->input_picture);
 
     for (int i = 0; i < MAX_REF_FRAMES; i++) {
@@ -2148,6 +2146,7 @@ const FFCodec ff_snow_encoder = {
         AV_PIX_FMT_GRAY8,
         AV_PIX_FMT_NONE
     },
+    .color_ranges   = AVCOL_RANGE_MPEG,
     .p.priv_class   = &snowenc_class,
     .caps_internal  = FF_CODEC_CAP_INIT_CLEANUP,
 };

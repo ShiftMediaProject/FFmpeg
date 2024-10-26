@@ -27,8 +27,8 @@
 #include "libavutil/avassert.h"
 #include "libavutil/bprint.h"
 #include "libavutil/channel_layout.h"
-#include "libavutil/hwcontext.h"
 #include "libavutil/imgutils.h"
+#include "libavutil/mem.h"
 #include "libavutil/opt.h"
 #include "libavutil/pixdesc.h"
 
@@ -36,9 +36,10 @@
 #include "avfilter.h"
 #include "avfilter_internal.h"
 #include "buffersink.h"
+#include "filters.h"
 #include "formats.h"
 #include "framequeue.h"
-#include "internal.h"
+#include "video.h"
 
 #define OFFSET(x) offsetof(AVFilterGraph, x)
 #define F AV_OPT_FLAG_FILTERING_PARAM
@@ -106,7 +107,7 @@ void ff_filter_graph_remove_filter(AVFilterGraph *graph, AVFilterContext *filter
             filter->graph = NULL;
             for (j = 0; j<filter->nb_outputs; j++)
                 if (filter->outputs[j])
-                    filter->outputs[j]->graph = NULL;
+                    ff_filter_link(filter->outputs[j])->graph = NULL;
 
             return;
         }
@@ -351,7 +352,52 @@ static int filter_query_formats(AVFilterContext *ctx)
                        ctx->name, av_err2str(ret));
             return ret;
         }
+    } else if (ctx->filter->formats_state == FF_FILTER_FORMATS_QUERY_FUNC2) {
+        AVFilterFormatsConfig *cfg_in_stack[64], *cfg_out_stack[64];
+        AVFilterFormatsConfig **cfg_in_dyn = NULL, **cfg_out_dyn = NULL;
+        AVFilterFormatsConfig **cfg_in, **cfg_out;
 
+        if (ctx->nb_inputs > FF_ARRAY_ELEMS(cfg_in_stack)) {
+            cfg_in_dyn = av_malloc_array(ctx->nb_inputs, sizeof(*cfg_in_dyn));
+            if (!cfg_in_dyn)
+                return AVERROR(ENOMEM);
+            cfg_in = cfg_in_dyn;
+        } else
+            cfg_in = ctx->nb_inputs ? cfg_in_stack : NULL;
+
+        for (unsigned i = 0; i < ctx->nb_inputs; i++) {
+            AVFilterLink *l = ctx->inputs[i];
+            cfg_in[i] = &l->outcfg;
+        }
+
+        if (ctx->nb_outputs > FF_ARRAY_ELEMS(cfg_out_stack)) {
+            cfg_out_dyn = av_malloc_array(ctx->nb_outputs, sizeof(*cfg_out_dyn));
+            if (!cfg_out_dyn) {
+                av_freep(&cfg_in_dyn);
+                return AVERROR(ENOMEM);
+            }
+            cfg_out = cfg_out_dyn;
+        } else
+            cfg_out = ctx->nb_outputs ? cfg_out_stack : NULL;
+
+        for (unsigned i = 0; i < ctx->nb_outputs; i++) {
+            AVFilterLink *l = ctx->outputs[i];
+            cfg_out[i] = &l->incfg;
+        }
+
+        ret = ctx->filter->formats.query_func2(ctx, cfg_in, cfg_out);
+        av_freep(&cfg_in_dyn);
+        av_freep(&cfg_out_dyn);
+        if (ret < 0) {
+            if (ret != AVERROR(EAGAIN))
+                av_log(ctx, AV_LOG_ERROR, "Query format failed for '%s': %s\n",
+                       ctx->name, av_err2str(ret));
+            return ret;
+        }
+    }
+
+    if (ctx->filter->formats_state == FF_FILTER_FORMATS_QUERY_FUNC ||
+        ctx->filter->formats_state == FF_FILTER_FORMATS_QUERY_FUNC2) {
         ret = filter_check_formats(ctx);
         if (ret < 0)
             return ret;
@@ -610,19 +656,22 @@ int ff_fmt_is_regular_yuv(enum AVPixelFormat fmt)
     if (desc->nb_components < 3)
         return 0; /* Grayscale is explicitly full-range in swscale */
     av_assert1(!(desc->flags & AV_PIX_FMT_FLAG_HWACCEL));
-    if (desc->flags & (AV_PIX_FMT_FLAG_RGB | AV_PIX_FMT_FLAG_PAL |
-                       AV_PIX_FMT_FLAG_XYZ | AV_PIX_FMT_FLAG_FLOAT))
-        return 0;
+    return !(desc->flags & (AV_PIX_FMT_FLAG_RGB | AV_PIX_FMT_FLAG_PAL |
+                            AV_PIX_FMT_FLAG_XYZ | AV_PIX_FMT_FLAG_FLOAT));
+}
 
+
+int ff_fmt_is_forced_full_range(enum AVPixelFormat fmt)
+{
     switch (fmt) {
     case AV_PIX_FMT_YUVJ420P:
     case AV_PIX_FMT_YUVJ422P:
     case AV_PIX_FMT_YUVJ444P:
     case AV_PIX_FMT_YUVJ440P:
     case AV_PIX_FMT_YUVJ411P:
-        return 0;
-    default:
         return 1;
+    default:
+        return 0;
     }
 }
 
@@ -698,14 +747,18 @@ static int pick_format(AVFilterLink *link, AVFilterLink *ref)
             link->incfg.color_spaces->nb_formats = 1;
             link->colorspace = link->incfg.color_spaces->formats[0];
 
-            if (!link->incfg.color_ranges->nb_formats) {
-                av_log(link->src, AV_LOG_ERROR, "Cannot select color range for"
-                       " the link between filters %s and %s.\n", link->src->name,
-                       link->dst->name);
-                return AVERROR(EINVAL);
+            if (ff_fmt_is_forced_full_range(swfmt)) {
+                link->color_range = AVCOL_RANGE_JPEG;
+            } else {
+                if (!link->incfg.color_ranges->nb_formats) {
+                    av_log(link->src, AV_LOG_ERROR, "Cannot select color range for"
+                           " the link between filters %s and %s.\n", link->src->name,
+                           link->dst->name);
+                    return AVERROR(EINVAL);
+                }
+                link->incfg.color_ranges->nb_formats = 1;
+                link->color_range = link->incfg.color_ranges->formats[0];
             }
-            link->incfg.color_ranges->nb_formats = 1;
-            link->color_range = link->incfg.color_ranges->formats[0];
         }
     } else if (link->type == AVMEDIA_TYPE_AUDIO) {
         int ret;
@@ -1208,11 +1261,9 @@ static int graph_config_pointers(AVFilterGraph *graph, void *log_ctx)
     for (i = 0; i < graph->nb_filters; i++) {
         f = graph->filters[i];
         for (j = 0; j < f->nb_inputs; j++) {
-            f->inputs[j]->graph     = graph;
             ff_link_internal(f->inputs[j])->age_index  = -1;
         }
         for (j = 0; j < f->nb_outputs; j++) {
-            f->outputs[j]->graph    = graph;
             ff_link_internal(f->outputs[j])->age_index = -1;
         }
         if (!f->nb_outputs) {
@@ -1374,13 +1425,13 @@ int avfilter_graph_request_oldest(AVFilterGraph *graph)
 {
     FFFilterGraph *graphi = fffiltergraph(graph);
     FilterLinkInternal *oldesti = graphi->sink_links[0];
-    AVFilterLink *oldest = &oldesti->l;
+    AVFilterLink *oldest = &oldesti->l.pub;
     int64_t frame_count;
     int r;
 
     while (graphi->sink_links_count) {
         oldesti = graphi->sink_links[0];
-        oldest  = &oldesti->l;
+        oldest  = &oldesti->l.pub;
         if (oldest->dst->filter->activate) {
             r = av_buffersink_get_frame_flags(oldest->dst, NULL,
                                               AV_BUFFERSINK_FLAG_PEEK);
@@ -1404,11 +1455,11 @@ int avfilter_graph_request_oldest(AVFilterGraph *graph)
         return AVERROR_EOF;
     av_assert1(!oldest->dst->filter->activate);
     av_assert1(oldesti->age_index >= 0);
-    frame_count = oldest->frame_count_out;
-    while (frame_count == oldest->frame_count_out) {
+    frame_count = oldesti->l.frame_count_out;
+    while (frame_count == oldesti->l.frame_count_out) {
         r = ff_filter_graph_run_once(graph);
         if (r == AVERROR(EAGAIN) &&
-            !oldest->frame_wanted_out && !oldesti->frame_blocked_in &&
+            !oldesti->frame_wanted_out && !oldesti->frame_blocked_in &&
             !oldesti->status_in)
             (void)ff_request_frame(oldest);
         else if (r < 0)

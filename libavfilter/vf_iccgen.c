@@ -29,7 +29,7 @@
 
 #include "avfilter.h"
 #include "fflcms2.h"
-#include "internal.h"
+#include "filters.h"
 #include "video.h"
 
 typedef struct IccGenContext {

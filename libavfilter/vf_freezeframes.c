@@ -25,7 +25,6 @@
 
 #include "avfilter.h"
 #include "filters.h"
-#include "internal.h"
 #include "video.h"
 
 typedef struct FreezeFramesContext {
@@ -52,6 +51,8 @@ static int config_output(AVFilterLink *outlink)
     AVFilterContext *ctx = outlink->src;
     AVFilterLink *sourcelink = ctx->inputs[0];
     AVFilterLink *replacelink = ctx->inputs[1];
+    FilterLink       *il = ff_filter_link(sourcelink);
+    FilterLink       *ol = ff_filter_link(outlink);
 
     if (sourcelink->w != replacelink->w || sourcelink->h != replacelink->h) {
         av_log(ctx, AV_LOG_ERROR,
@@ -65,19 +66,21 @@ static int config_output(AVFilterLink *outlink)
     outlink->h = sourcelink->h;
     outlink->time_base = sourcelink->time_base;
     outlink->sample_aspect_ratio = sourcelink->sample_aspect_ratio;
-    outlink->frame_rate = sourcelink->frame_rate;
+    ol->frame_rate = il->frame_rate;
 
     return 0;
 }
 
 static int activate(AVFilterContext *ctx)
 {
+    FilterLink *inl0 = ff_filter_link(ctx->inputs[0]);
+    FilterLink *inl1 = ff_filter_link(ctx->inputs[1]);
     AVFilterLink *outlink = ctx->outputs[0];
     FreezeFramesContext *s = ctx->priv;
     AVFrame *frame = NULL;
-    int drop = ctx->inputs[0]->frame_count_out >= s->first &&
-               ctx->inputs[0]->frame_count_out <= s->last;
-    int replace = ctx->inputs[1]->frame_count_out == s->replace;
+    int drop = inl0->frame_count_out >= s->first &&
+               inl0->frame_count_out <= s->last;
+    int replace = inl1->frame_count_out == s->replace;
     int ret;
 
     FF_FILTER_FORWARD_STATUS_BACK_ALL(outlink, ctx);

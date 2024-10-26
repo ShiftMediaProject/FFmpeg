@@ -28,6 +28,7 @@
 
 #include "libavutil/internal.h"
 #include "libavutil/common.h"
+#include "libavutil/mem.h"
 #include "libavutil/opt.h"
 #include "libavutil/pixdesc.h"
 #include "libavutil/pixfmt.h"
@@ -196,7 +197,8 @@ static int get_conf(AVCodecContext *avctx, XEVE_CDSC *cdsc)
 
     if (avctx->framerate.num > 0) {
         // fps can be float number, but xeve API doesn't support it
-        cdsc->param.fps = lrintf(av_q2d(avctx->framerate));
+        cdsc->param.fps.num = avctx->framerate.num;
+        cdsc->param.fps.den = avctx->framerate.den;
     }
 
     // GOP size (key-frame interval, I-picture period)
@@ -480,8 +482,8 @@ static int libxeve_encode(AVCodecContext *avctx, AVPacket *avpkt,
 
                 memcpy(avpkt->data, xectx->bitb.addr, xectx->stat.write);
 
-                avpkt->time_base.num = 1;
-                avpkt->time_base.den = xectx->cdsc.param.fps;
+                avpkt->time_base.num = xectx->cdsc.param.fps.den;
+                avpkt->time_base.den = xectx->cdsc.param.fps.num;
 
                 avpkt->pts = xectx->bitb.ts[XEVE_TS_PTS];
                 avpkt->dts = xectx->bitb.ts[XEVE_TS_DTS];
@@ -612,5 +614,6 @@ const FFCodec ff_libxeve_encoder = {
     .p.profiles         = NULL_IF_CONFIG_SMALL(ff_evc_profiles),
     .p.wrapper_name     = "libxeve",
     .p.pix_fmts         = supported_pixel_formats,
+    .color_ranges       = AVCOL_RANGE_MPEG, /* FIXME: implement tagging */
     .caps_internal      = FF_CODEC_CAP_INIT_CLEANUP | FF_CODEC_CAP_NOT_INIT_THREADSAFE,
 };

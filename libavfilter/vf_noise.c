@@ -25,14 +25,14 @@
  */
 
 #include "libavutil/emms.h"
+#include "libavutil/mem.h"
 #include "libavutil/opt.h"
 #include "libavutil/imgutils.h"
 #include "libavutil/lfg.h"
-#include "libavutil/parseutils.h"
 #include "libavutil/pixdesc.h"
 #include "avfilter.h"
+#include "filters.h"
 #include "formats.h"
-#include "internal.h"
 #include "vf_noise.h"
 #include "video.h"
 

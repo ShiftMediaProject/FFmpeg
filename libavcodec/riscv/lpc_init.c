@@ -33,7 +33,7 @@ av_cold void ff_lpc_init_riscv(LPCContext *c)
 #if HAVE_RVV && (__riscv_xlen >= 64)
     int flags = av_get_cpu_flags();
 
-    if ((flags & AV_CPU_FLAG_RVV_F64) && (flags & AV_CPU_FLAG_RVB_ADDR)) {
+    if ((flags & AV_CPU_FLAG_RVV_F64) && (flags & AV_CPU_FLAG_RVB)) {
         c->lpc_apply_welch_window = ff_lpc_apply_welch_window_rvv;
 
         if (ff_get_rv_vlenb() > c->max_order)

@@ -31,7 +31,6 @@
 #include "ffmpeg_sched.h"
 #include "cmdutils.h"
 #include "opt_common.h"
-#include "sync_queue.h"
 
 #include "libavformat/avformat.h"
 
@@ -43,16 +42,11 @@
 #include "libavutil/avassert.h"
 #include "libavutil/avstring.h"
 #include "libavutil/avutil.h"
-#include "libavutil/bprint.h"
-#include "libavutil/channel_layout.h"
-#include "libavutil/display.h"
-#include "libavutil/intreadwrite.h"
-#include "libavutil/fifo.h"
 #include "libavutil/mathematics.h"
+#include "libavutil/mem.h"
 #include "libavutil/opt.h"
 #include "libavutil/parseutils.h"
-#include "libavutil/pixdesc.h"
-#include "libavutil/pixfmt.h"
+#include "libavutil/stereo3d.h"
 
 HWDevice *filter_hw_device;
 
@@ -94,8 +88,6 @@ int recast_media = 0;
 
 static void uninit_options(OptionsContext *o)
 {
-    int i;
-
     /* all OPT_SPEC and OPT_TYPE_STRING can be freed in generic way */
     for (const OptionDef *po = options; po->name; po++) {
         void *dst;
@@ -108,6 +100,8 @@ static void uninit_options(OptionsContext *o)
             SpecifierOptList *so = dst;
             for (int i = 0; i < so->nb_opt; i++) {
                 av_freep(&so->opt[i].specifier);
+                if (po->flags & OPT_FLAG_PERSTREAM)
+                    stream_specifier_uninit(&so->opt[i].stream_spec);
                 if (po->type == OPT_TYPE_STRING)
                     av_freep(&so->opt[i].u.str);
             }
@@ -117,11 +111,11 @@ static void uninit_options(OptionsContext *o)
             av_freep(dst);
     }
 
-    for (i = 0; i < o->nb_stream_maps; i++)
+    for (int i = 0; i < o->nb_stream_maps; i++)
         av_freep(&o->stream_maps[i].linklabel);
     av_freep(&o->stream_maps);
 
-    for (i = 0; i < o->nb_attachments; i++)
+    for (int i = 0; i < o->nb_attachments; i++)
         av_freep(&o->attachments[i]);
     av_freep(&o->attachments);
 
@@ -158,24 +152,6 @@ static int show_hwaccels(void *optctx, const char *opt, const char *arg)
     return 0;
 }
 
-/* return a copy of the input with the stream specifiers removed from the keys */
-AVDictionary *strip_specifiers(const AVDictionary *dict)
-{
-    const AVDictionaryEntry *e = NULL;
-    AVDictionary    *ret = NULL;
-
-    while ((e = av_dict_iterate(dict, e))) {
-        char *p = strchr(e->key, ':');
-
-        if (p)
-            *p = 0;
-        av_dict_set(&ret, e->key, e->value, 0);
-        if (p)
-            *p = ':';
-    }
-    return ret;
-}
-
 const char *opt_match_per_type_str(const SpecifierOptList *sol,
                                    char mediatype)
 {
@@ -187,6 +163,123 @@ const char *opt_match_per_type_str(const SpecifierOptList *sol,
             return sol->opt[i].u.str;
     }
     return NULL;
+}
+
+static unsigned opt_match_per_stream(void *logctx, enum OptionType type,
+                                     const SpecifierOptList *sol,
+                                     AVFormatContext *fc, AVStream *st)
+{
+    int matches = 0, match_idx = -1;
+
+    av_assert0((type == sol->type) || !sol->nb_opt);
+
+    for (int i = 0; i < sol->nb_opt; i++) {
+        const StreamSpecifier *ss = &sol->opt[i].stream_spec;
+
+        if (stream_specifier_match(ss, fc, st, logctx)) {
+            match_idx = i;
+            matches++;
+        }
+    }
+
+    if (matches > 1 && sol->opt_canon) {
+        const SpecifierOpt *so = &sol->opt[match_idx];
+        const char *spec = so->specifier && so->specifier[0] ? so->specifier : "";
+
+        char namestr[128] = "";
+        char optval_buf[32];
+        const char *optval = optval_buf;
+
+        snprintf(namestr, sizeof(namestr), "-%s", sol->opt_canon->name);
+        if (sol->opt_canon->flags & OPT_HAS_ALT) {
+            const char * const *names_alt = sol->opt_canon->u1.names_alt;
+            for (int i = 0; names_alt[i]; i++)
+                av_strlcatf(namestr, sizeof(namestr), "/-%s", names_alt[i]);
+        }
+
+        switch (sol->type) {
+        case OPT_TYPE_STRING: optval = so->u.str;                                             break;
+        case OPT_TYPE_INT:    snprintf(optval_buf, sizeof(optval_buf), "%d", so->u.i);        break;
+        case OPT_TYPE_INT64:  snprintf(optval_buf, sizeof(optval_buf), "%"PRId64, so->u.i64); break;
+        case OPT_TYPE_FLOAT:  snprintf(optval_buf, sizeof(optval_buf), "%f", so->u.f);        break;
+        case OPT_TYPE_DOUBLE: snprintf(optval_buf, sizeof(optval_buf), "%f", so->u.dbl);      break;
+        default: av_assert0(0);
+        }
+
+        av_log(logctx, AV_LOG_WARNING, "Multiple %s options specified for "
+               "stream %d, only the last option '-%s%s%s %s' will be used.\n",
+               namestr, st->index, sol->opt_canon->name, spec[0] ? ":" : "",
+               spec, optval);
+    }
+
+    return match_idx + 1;
+}
+
+#define OPT_MATCH_PER_STREAM(name, type, opt_type, m)                                   \
+void opt_match_per_stream_ ## name(void *logctx, const SpecifierOptList *sol,           \
+                                   AVFormatContext *fc, AVStream *st, type *out)        \
+{                                                                                       \
+    unsigned ret = opt_match_per_stream(logctx, opt_type, sol, fc, st);                 \
+    if (ret > 0)                                                                        \
+        *out = sol->opt[ret - 1].u.m;                                                   \
+}
+
+OPT_MATCH_PER_STREAM(str,   const char *, OPT_TYPE_STRING, str);
+OPT_MATCH_PER_STREAM(int,   int,          OPT_TYPE_INT,    i);
+OPT_MATCH_PER_STREAM(int64, int64_t,      OPT_TYPE_INT64,  i64);
+OPT_MATCH_PER_STREAM(dbl,   double,       OPT_TYPE_DOUBLE, dbl);
+
+int view_specifier_parse(const char **pspec, ViewSpecifier *vs)
+{
+    const char *spec = *pspec;
+    char *endptr;
+
+    vs->type = VIEW_SPECIFIER_TYPE_NONE;
+
+    if (!strncmp(spec, "view:", 5)) {
+        spec += 5;
+
+        if (!strncmp(spec, "all", 3)) {
+            spec += 3;
+            vs->type = VIEW_SPECIFIER_TYPE_ALL;
+        } else {
+            vs->type = VIEW_SPECIFIER_TYPE_ID;
+            vs->val  = strtoul(spec, &endptr, 0);
+            if (endptr == spec) {
+                av_log(NULL, AV_LOG_ERROR, "Invalid view ID: %s\n", spec);
+                return AVERROR(EINVAL);
+            }
+            spec = endptr;
+        }
+    } else if (!strncmp(spec, "vidx:", 5)) {
+        spec += 5;
+        vs->type = VIEW_SPECIFIER_TYPE_IDX;
+        vs->val  = strtoul(spec, &endptr, 0);
+        if (endptr == spec) {
+            av_log(NULL, AV_LOG_ERROR, "Invalid view index: %s\n", spec);
+            return AVERROR(EINVAL);
+        }
+        spec = endptr;
+    } else if (!strncmp(spec, "vpos:", 5)) {
+        spec += 5;
+        vs->type = VIEW_SPECIFIER_TYPE_POS;
+
+        if (!strncmp(spec, "left", 4) && !cmdutils_isalnum(spec[4])) {
+            spec += 4;
+            vs->val = AV_STEREO3D_VIEW_LEFT;
+        } else if (!strncmp(spec, "right", 5) && !cmdutils_isalnum(spec[5])) {
+            spec += 5;
+            vs->val = AV_STEREO3D_VIEW_RIGHT;
+        } else {
+            av_log(NULL, AV_LOG_ERROR, "Invalid view position: %s\n", spec);
+            return AVERROR(EINVAL);
+        }
+    } else
+        return 0;
+
+    *pspec = spec;
+
+    return 0;
 }
 
 int parse_and_set_vsync(const char *arg, int *vsync_var, int file_idx, int st_idx, int is_global)
@@ -324,7 +417,7 @@ static int opt_filter_threads(void *optctx, const char *opt, const char *arg)
 static int opt_abort_on(void *optctx, const char *opt, const char *arg)
 {
     static const AVOption opts[] = {
-        { "abort_on"           , NULL, 0, AV_OPT_TYPE_FLAGS, { .i64 = 0 }, INT64_MIN, INT64_MAX,           .unit = "flags" },
+        { "abort_on"           , NULL, 0, AV_OPT_TYPE_FLAGS, { .i64 = 0 }, INT64_MIN, (double)INT64_MAX,   .unit = "flags" },
         { "empty_output"       , NULL, 0, AV_OPT_TYPE_CONST, { .i64 = ABORT_ON_FLAG_EMPTY_OUTPUT        }, .unit = "flags" },
         { "empty_output_stream", NULL, 0, AV_OPT_TYPE_CONST, { .i64 = ABORT_ON_FLAG_EMPTY_OUTPUT_STREAM }, .unit = "flags" },
         { NULL },
@@ -386,22 +479,20 @@ static int opt_map(void *optctx, const char *opt, const char *arg)
 {
     OptionsContext *o = optctx;
     StreamMap *m = NULL;
+    StreamSpecifier ss;
     int i, negative = 0, file_idx, disabled = 0;
-    int ret;
-    char *map, *p;
-    char *allow_unused;
+    int ret, allow_unused = 0;
+
+    memset(&ss, 0, sizeof(ss));
 
     if (*arg == '-') {
         negative = 1;
         arg++;
     }
-    map = av_strdup(arg);
-    if (!map)
-        return AVERROR(ENOMEM);
 
-    if (map[0] == '[') {
+    if (arg[0] == '[') {
         /* this mapping refers to lavfi output */
-        const char *c = map + 1;
+        const char *c = arg + 1;
 
         ret = GROW_ARRAY(o->stream_maps, o->nb_stream_maps);
         if (ret < 0)
@@ -410,33 +501,62 @@ static int opt_map(void *optctx, const char *opt, const char *arg)
         m = &o->stream_maps[o->nb_stream_maps - 1];
         m->linklabel = av_get_token(&c, "]");
         if (!m->linklabel) {
-            av_log(NULL, AV_LOG_ERROR, "Invalid output link label: %s.\n", map);
+            av_log(NULL, AV_LOG_ERROR, "Invalid output link label: %s.\n", arg);
             ret = AVERROR(EINVAL);
             goto fail;
         }
     } else {
-        if (allow_unused = strchr(map, '?'))
-            *allow_unused = 0;
-        file_idx = strtol(map, &p, 0);
+        ViewSpecifier vs;
+        char *endptr;
+
+        file_idx = strtol(arg, &endptr, 0);
         if (file_idx >= nb_input_files || file_idx < 0) {
             av_log(NULL, AV_LOG_FATAL, "Invalid input file index: %d.\n", file_idx);
             ret = AVERROR(EINVAL);
             goto fail;
         }
+        arg = endptr;
+
+        ret = stream_specifier_parse(&ss, *arg == ':' ? arg + 1 : arg, 1, NULL);
+        if (ret < 0) {
+            av_log(NULL, AV_LOG_ERROR, "Invalid stream specifier: %s\n", arg);
+            goto fail;
+        }
+
+        arg = ss.remainder ? ss.remainder : "";
+
+        ret = view_specifier_parse(&arg, &vs);
+        if (ret < 0)
+            goto fail;
+
+        if (*arg) {
+            if (!strcmp(arg, "?"))
+                allow_unused = 1;
+            else {
+                av_log(NULL, AV_LOG_ERROR,
+                       "Trailing garbage after stream specifier: %s\n", arg);
+                ret = AVERROR(EINVAL);
+                goto fail;
+            }
+        }
+
         if (negative)
             /* disable some already defined maps */
             for (i = 0; i < o->nb_stream_maps; i++) {
                 m = &o->stream_maps[i];
                 if (file_idx == m->file_index &&
-                    check_stream_specifier(input_files[m->file_index]->ctx,
+                    stream_specifier_match(&ss,
+                                           input_files[m->file_index]->ctx,
                                            input_files[m->file_index]->ctx->streams[m->stream_index],
-                                           *p == ':' ? p + 1 : p) > 0)
+                                           NULL))
                     m->disabled = 1;
             }
         else
             for (i = 0; i < input_files[file_idx]->nb_streams; i++) {
-                if (check_stream_specifier(input_files[file_idx]->ctx, input_files[file_idx]->ctx->streams[i],
-                            *p == ':' ? p + 1 : p) <= 0)
+                if (!stream_specifier_match(&ss,
+                                            input_files[file_idx]->ctx,
+                                            input_files[file_idx]->ctx->streams[i],
+                                            NULL))
                     continue;
                 if (input_files[file_idx]->streams[i]->user_set_discard == AVDISCARD_ALL) {
                     disabled = 1;
@@ -450,6 +570,7 @@ static int opt_map(void *optctx, const char *opt, const char *arg)
 
                 m->file_index   = file_idx;
                 m->stream_index = i;
+                m->vs           = vs;
             }
     }
 
@@ -470,7 +591,7 @@ static int opt_map(void *optctx, const char *opt, const char *arg)
     }
     ret = 0;
 fail:
-    av_freep(&map);
+    stream_specifier_uninit(&ss);
     return ret;
 }
 
@@ -1271,12 +1392,10 @@ int ffmpeg_parse_options(int argc, char **argv, Scheduler *sch)
     }
 
     // bind unbound filtegraph inputs/outputs and check consistency
-    for (int i = 0; i < nb_filtergraphs; i++) {
-        ret = fg_finalise_bindings(filtergraphs[i]);
-        if (ret < 0) {
-            errmsg = "binding filtergraph inputs/outputs";
-            goto fail;
-        }
+    ret = fg_finalise_bindings();
+    if (ret < 0) {
+        errmsg = "binding filtergraph inputs/outputs";
+        goto fail;
     }
 
     correct_input_start_times();
@@ -1504,9 +1623,6 @@ const OptionDef options[] = {
     { "bitexact",               OPT_TYPE_BOOL, OPT_EXPERT | OPT_OFFSET | OPT_OUTPUT | OPT_INPUT,
         { .off = OFFSET(bitexact) },
         "bitexact mode" },
-    { "apad",                   OPT_TYPE_STRING, OPT_PERSTREAM | OPT_EXPERT | OPT_OUTPUT,
-        { .off = OFFSET(apad) },
-        "audio pad", "" },
     { "dts_delta_threshold",    OPT_TYPE_FLOAT, OPT_EXPERT,
         { &dts_delta_threshold },
         "timestamp discontinuity delta threshold", "threshold" },
@@ -1735,12 +1851,15 @@ const OptionDef options[] = {
     { "hwaccels",                   OPT_TYPE_FUNC,   OPT_EXIT | OPT_EXPERT,
         { .func_arg = show_hwaccels },
         "show available HW acceleration methods" },
-    { "autorotate",                 OPT_TYPE_BOOL,   OPT_PERSTREAM | OPT_EXPERT | OPT_INPUT,
+    { "autorotate",                 OPT_TYPE_BOOL,   OPT_VIDEO | OPT_PERSTREAM | OPT_EXPERT | OPT_INPUT,
         { .off = OFFSET(autorotate) },
         "automatically insert correct rotate filters" },
-    { "autoscale",                  OPT_TYPE_BOOL,   OPT_PERSTREAM | OPT_EXPERT | OPT_OUTPUT,
+    { "autoscale",                  OPT_TYPE_BOOL,   OPT_VIDEO | OPT_PERSTREAM | OPT_EXPERT | OPT_OUTPUT,
         { .off = OFFSET(autoscale) },
         "automatically insert a scale filter at the end of the filter graph" },
+    { "apply_cropping",             OPT_TYPE_STRING, OPT_VIDEO | OPT_PERSTREAM | OPT_EXPERT | OPT_INPUT,
+        { .off = OFFSET(apply_cropping) },
+        "select the cropping to apply" },
     { "fix_sub_duration_heartbeat", OPT_TYPE_BOOL,   OPT_VIDEO | OPT_EXPERT | OPT_PERSTREAM | OPT_OUTPUT,
         { .off = OFFSET(fix_sub_duration_heartbeat) },
         "set this video output stream to be a heartbeat stream for "
@@ -1771,6 +1890,9 @@ const OptionDef options[] = {
     { "ab",               OPT_TYPE_FUNC,    OPT_AUDIO | OPT_FUNC_ARG | OPT_PERFILE | OPT_OUTPUT,
         { .func_arg = opt_bitrate },
         "alias for -b:a (select bitrate for audio streams)", "bitrate" },
+    { "apad",             OPT_TYPE_STRING,  OPT_AUDIO | OPT_PERSTREAM | OPT_EXPERT | OPT_OUTPUT,
+        { .off = OFFSET(apad) },
+        "audio pad", "" },
     { "atag",             OPT_TYPE_FUNC,    OPT_AUDIO | OPT_FUNC_ARG  | OPT_EXPERT | OPT_PERFILE | OPT_OUTPUT | OPT_HAS_CANON,
         { .func_arg = opt_old2new },
         "force audio tag/fourcc", "fourcc/tag",

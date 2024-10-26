@@ -27,6 +27,13 @@
 static void get_pixels_16_c(int16_t *restrict block, const uint8_t *pixels,
                             ptrdiff_t stride)
 {
+    for (int i = 0; i < 8; i++)
+        AV_COPY128(block + i * 8, pixels + i * stride);
+}
+
+static void get_pixels_unaligned_16_c(int16_t *restrict block,
+                                      const uint8_t *pixels, ptrdiff_t stride)
+{
     AV_COPY128U(block + 0 * 8, pixels + 0 * stride);
     AV_COPY128U(block + 1 * 8, pixels + 1 * stride);
     AV_COPY128U(block + 2 * 8, pixels + 2 * stride);
@@ -90,7 +97,7 @@ av_cold void ff_pixblockdsp_init(PixblockDSPContext *c, AVCodecContext *avctx)
     case 10:
     case 12:
     case 14:
-        c->get_pixels_unaligned =
+        c->get_pixels_unaligned = get_pixels_unaligned_16_c;
         c->get_pixels = get_pixels_16_c;
         break;
     default:
@@ -103,8 +110,6 @@ av_cold void ff_pixblockdsp_init(PixblockDSPContext *c, AVCodecContext *avctx)
 
 #if ARCH_AARCH64
     ff_pixblockdsp_init_aarch64(c, avctx, high_bit_depth);
-#elif ARCH_ALPHA
-    ff_pixblockdsp_init_alpha(c, avctx, high_bit_depth);
 #elif ARCH_ARM
     ff_pixblockdsp_init_arm(c, avctx, high_bit_depth);
 #elif ARCH_PPC

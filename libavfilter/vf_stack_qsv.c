@@ -23,6 +23,7 @@
 
 #include "config_components.h"
 
+#include "libavutil/mem.h"
 #include "libavutil/opt.h"
 #include "libavutil/common.h"
 #include "libavutil/pixdesc.h"
@@ -34,7 +35,6 @@
 #include "libavutil/mathematics.h"
 #include "libavutil/parseutils.h"
 
-#include "internal.h"
 #include "filters.h"
 #include "formats.h"
 #include "video.h"
@@ -70,13 +70,16 @@ static int process_frame(FFFrameSync *fs)
 {
     AVFilterContext *ctx = fs->parent;
     QSVVPPContext *qsv = fs->opaque;
-    AVFrame *frame = NULL;
+    AVFrame *frame = NULL, *propref = NULL;
     int ret = 0;
 
     for (int i = 0; i < ctx->nb_inputs; i++) {
         ret = ff_framesync_get_frame(fs, i, &frame, 0);
-        if (ret == 0)
-            ret = ff_qsvvpp_filter_frame(qsv, ctx->inputs[i], frame);
+        if (ret == 0) {
+            if (i == 0)
+                propref = frame;
+            ret = ff_qsvvpp_filter_frame(qsv, ctx->inputs[i], frame, propref);
+        }
         if (ret < 0 && ret != AVERROR(EAGAIN))
             break;
     }
@@ -96,15 +99,16 @@ static int config_output(AVFilterLink *outlink)
     AVFilterContext *ctx = outlink->src;
     StackQSVContext *sctx = ctx->priv;
     AVFilterLink *inlink0 = ctx->inputs[0];
+    FilterLink      *inl0 = ff_filter_link(inlink0);
     enum AVPixelFormat in_format;
     int depth = 8, ret;
     mfxVPPCompInputStream *is = sctx->comp_conf.InputStream;
 
     if (inlink0->format == AV_PIX_FMT_QSV) {
-         if (!inlink0->hw_frames_ctx || !inlink0->hw_frames_ctx->data)
+         if (!inl0->hw_frames_ctx || !inl0->hw_frames_ctx->data)
              return AVERROR(EINVAL);
 
-         in_format = ((AVHWFramesContext*)inlink0->hw_frames_ctx->data)->sw_format;
+         in_format = ((AVHWFramesContext*)inl0->hw_frames_ctx->data)->sw_format;
     } else
         in_format = inlink0->format;
 
@@ -112,10 +116,11 @@ static int config_output(AVFilterLink *outlink)
 
     for (int i = 1; i < sctx->base.nb_inputs; i++) {
         AVFilterLink *inlink = ctx->inputs[i];
+        FilterLink      *inl = ff_filter_link(inlink);
 
         if (inlink0->format == AV_PIX_FMT_QSV) {
-            AVHWFramesContext *hwfc0 = (AVHWFramesContext *)inlink0->hw_frames_ctx->data;
-            AVHWFramesContext *hwfc = (AVHWFramesContext *)inlink->hw_frames_ctx->data;
+            AVHWFramesContext *hwfc0 = (AVHWFramesContext *)inl0->hw_frames_ctx->data;
+            AVHWFramesContext *hwfc = (AVHWFramesContext *)inl->hw_frames_ctx->data;
 
             if (inlink0->format != inlink->format) {
                 av_log(ctx, AV_LOG_ERROR, "Mixing hardware and software pixel formats is not supported.\n");

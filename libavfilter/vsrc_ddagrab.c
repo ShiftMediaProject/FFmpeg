@@ -34,6 +34,7 @@
 #include <dxgi1_5.h>
 #endif
 
+#include "libavutil/mem.h"
 #include "libavutil/opt.h"
 #include "libavutil/time.h"
 #include "libavutil/avstring.h"
@@ -42,7 +43,7 @@
 #include "libavutil/hwcontext_d3d11va.h"
 #include "compat/w32dlfcn.h"
 #include "avfilter.h"
-#include "internal.h"
+#include "filters.h"
 #include "video.h"
 
 #include "vsrc_ddagrab_shaders.h"
@@ -853,6 +854,7 @@ fail:
 
 static int ddagrab_config_props(AVFilterLink *outlink)
 {
+    FilterLink *l = ff_filter_link(outlink);
     AVFilterContext *avctx = outlink->src;
     DdagrabContext *dda = avctx->priv;
     int ret;
@@ -914,14 +916,14 @@ static int ddagrab_config_props(AVFilterLink *outlink)
     if (ret < 0)
         return ret;
 
-    outlink->hw_frames_ctx = av_buffer_ref(dda->frames_ref);
-    if (!outlink->hw_frames_ctx)
+    l->hw_frames_ctx = av_buffer_ref(dda->frames_ref);
+    if (!l->hw_frames_ctx)
         return AVERROR(ENOMEM);
 
     outlink->w = dda->width;
     outlink->h = dda->height;
     outlink->time_base = (AVRational){1, TIMER_RES};
-    outlink->frame_rate = dda->framerate;
+    l->frame_rate = dda->framerate;
 
     return 0;
 }

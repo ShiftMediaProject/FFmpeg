@@ -25,9 +25,10 @@
  */
 
 #include "libavutil/avassert.h"
+#include "libavutil/mem.h"
 #include "libavutil/opt.h"
 
-#include "internal.h"
+#include "filters.h"
 #include "qp_table.h"
 #include "video.h"
 

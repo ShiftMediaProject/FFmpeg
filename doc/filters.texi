@@ -11092,8 +11092,8 @@ By default, a component curve is defined by the two points @var{(0;0)} and
 "adjusted" to its own value, which means no change to the image.
 
 The filter allows you to redefine these two points and add some more. A new
-curve will be define to pass smoothly through all these new coordinates. The
-new defined points needs to be strictly increasing over the x-axis, and their
+curve will be defined to pass smoothly through all these new coordinates. The
+new defined points need to be strictly increasing over the x-axis, and their
 @var{x} and @var{y} values must be in the @var{[0;1]} interval. The curve is
 formed by using a natural or monotonic cubic spline interpolation, depending
 on the @var{interp} option (default: @code{natural}). The @code{natural}
@@ -17071,8 +17071,8 @@ ffmpeg \
     -hwaccel cuda -hwaccel_output_format cuda -codec:v av1_cuvid -i dis.obu \
     -hwaccel cuda -hwaccel_output_format cuda -codec:v av1_cuvid -i ref.obu \
     -filter_complex "
-        [0:v]scale_cuda=format=yuv420p[ref]; \
-        [1:v]scale_cuda=format=yuv420p[dis]; \
+        [0:v]scale_cuda=format=yuv420p[dis]; \
+        [1:v]scale_cuda=format=yuv420p[ref]; \
         [dis][ref]libvmaf_cuda=log_fmt=json:log_path=output.json
     " \
     -f null -
@@ -17290,6 +17290,9 @@ The command accepts the same syntax of the corresponding option.
 If the specified expression is not valid, it is kept at its current
 value.
 
+@anchor{lutrgb}
+@anchor{lutyuv}
+@anchor{lut}
 @section lut, lutrgb, lutyuv
 
 Compute a look-up table for binding each pixel component input value
@@ -19941,6 +19944,7 @@ pseudocolor="'if(between(val,ymax,amax),lerp(ymin,ymax,(val-ymax)/(amax-ymax)),-
 @end example
 @end itemize
 
+@anchor{psnr}
 @section psnr
 
 Obtain the average, maximum and minimum PSNR (Peak Signal to Noise
@@ -20989,8 +20993,8 @@ the next filter, the scale filter will convert the input to the
 requested format.
 
 @subsection Options
-The filter accepts the following options, or any of the options
-supported by the libswscale scaler.
+The filter accepts the following options, any of the options supported
+by the libswscale scaler, as well as any of the @ref{framesync} options.
 
 See @ref{scaler_options,,the ffmpeg-scaler manual,ffmpeg-scaler} for
 the complete list of scaler options.
@@ -21134,6 +21138,21 @@ Set full range (0-255 in case of 8-bit luma).
 Set "MPEG" range (16-235 in case of 8-bit luma).
 @end table
 
+@item in_chroma_loc
+@item out_chroma_loc
+Set in/output chroma sample location. If not specified, center-sited chroma
+is used by default. Possible values:
+
+@table @samp
+@item auto, unknown
+@item left
+@item center
+@item topleft
+@item top
+@item bottomleft
+@item bottom
+@end table
+
 @item force_original_aspect_ratio
 Enable decreasing or increasing output video width or height if necessary to
 keep the original aspect ratio. Possible values:
@@ -21228,6 +21247,16 @@ The position (byte offset) of the frame in the input stream, or NaN if
 this information is unavailable and/or meaningless (for example in case of synthetic video).
 Only available with @code{eval=frame}.
 Deprecated, do not use.
+
+@item ref_w, rw
+@item ref_h, rh
+@item ref_a
+@item ref_dar, rdar
+@item ref_n
+@item ref_t
+@item ref_pos
+Eqvuialent to the above, but for a second reference input. If any of these
+variables are present, this filter accepts two inputs.
 @end table
 
 @subsection Examples
@@ -21328,6 +21357,20 @@ Make pixels square by combining scale and setsar,
 making sure the resulting resolution is even (required by some codecs):
 @example
 scale='trunc(ih*dar/2)*2:trunc(ih/2)*2',setsar=1/1
+@end example
+
+@item
+Scale a subtitle stream (sub) to match the main video (main) in size before
+overlaying. ("scale2ref")
+@example
+'[main]split[a][b]; [ref][a]scale=rw:rh[c]; [b][c]overlay'
+@end example
+
+@item
+Scale a logo to 1/10th the height of a video, while preserving its display
+aspect ratio.
+@example
+[logo-in][video-in]scale=w=oh*dar:h=rh/10[logo-out]
 @end example
 @end itemize
 
@@ -21562,79 +21605,6 @@ The position (byte offset) of the frame in the input stream, or NaN if
 this information is unavailable and/or meaningless (for example in case of synthetic video).
 Only available with @code{eval=frame}.
 Deprecated, do not use.
-@end table
-
-@section scale2ref
-
-Scale (resize) the input video, based on a reference video.
-
-See the scale filter for available options, scale2ref supports the same but
-uses the reference video instead of the main input as basis. scale2ref also
-supports the following additional constants for the @option{w} and
-@option{h} options:
-
-@table @var
-@item main_w
-@item main_h
-The main input video's width and height
-
-@item main_a
-The same as @var{main_w} / @var{main_h}
-
-@item main_sar
-The main input video's sample aspect ratio
-
-@item main_dar, mdar
-The main input video's display aspect ratio. Calculated from
-@code{(main_w / main_h) * main_sar}.
-
-@item main_hsub
-@item main_vsub
-The main input video's horizontal and vertical chroma subsample values.
-For example for the pixel format "yuv422p" @var{hsub} is 2 and @var{vsub}
-is 1.
-
-@item main_n
-The (sequential) number of the main input frame, starting from 0.
-Only available with @code{eval=frame}.
-
-@item main_t
-The presentation timestamp of the main input frame, expressed as a number of
-seconds. Only available with @code{eval=frame}.
-
-@item main_pos
-The position (byte offset) of the frame in the main input stream, or NaN if
-this information is unavailable and/or meaningless (for example in case of synthetic video).
-Only available with @code{eval=frame}.
-@end table
-
-@subsection Examples
-
-@itemize
-@item
-Scale a subtitle stream (b) to match the main video (a) in size before overlaying
-@example
-'scale2ref[b][a];[a][b]overlay'
-@end example
-
-@item
-Scale a logo to 1/10th the height of a video, while preserving its display aspect ratio.
-@example
-[logo-in][video-in]scale2ref=w=oh*mdar:h=ih/10[logo-out][video-out]
-@end example
-@end itemize
-
-@subsection Commands
-
-This filter supports the following commands:
-@table @option
-@item width, w
-@item height, h
-Set the output video dimension expression.
-The command accepts the same syntax of the corresponding option.
-
-If the specified expression is not valid, it is kept at its current
-value.
 @end table
 
 @section scale2ref_npp
@@ -22118,6 +22088,23 @@ Keep the same colorspace property (default).
 @item chroma-derived-nc
 @item chroma-derived-c
 @item ictcp
+@end table
+
+@item chroma_location
+Set the chroma sample location.
+Available values are:
+
+@table @samp
+@item auto
+Keep the same chroma location (default).
+
+@item unspecified, unknown
+@item left
+@item center
+@item topleft
+@item top
+@item bottomleft
+@item bottom
 @end table
 @end table
 
@@ -22702,9 +22689,27 @@ whether a pixel should be blurred or not. The option value must be an
 integer in the range [-30,30]. A value of 0 will filter all the image,
 a value included in [0,30] will filter flat areas and a value included
 in [-30,0] will filter edges. Default value is @option{luma_threshold}.
+
+@item alpha_radius, ar
+Set the alpha radius. The option value must be a float number in
+the range [0.1,5.0] that specifies the variance of the gaussian filter
+used to blur the image (slower if larger). Default value is @option{luma_radius}.
+
+@item alpha_strength, as
+Set the alpha strength. The option value must be a float number
+in the range [-1.0,1.0] that configures the blurring. A value included
+in [0.0,1.0] will blur the image whereas a value included in
+[-1.0,0.0] will sharpen the image. Default value is @option{luma_strength}.
+
+@item alpha_threshold, at
+Set the alpha threshold used as a coefficient to determine
+whether a pixel should be blurred or not. The option value must be an
+integer in the range [-30,30]. A value of 0 will filter all the image,
+a value included in [0,30] will filter flat areas and a value included
+in [-30,0] will filter edges. Default value is @option{luma_threshold}.
 @end table
 
-If a chroma option is not explicitly set, the corresponding luma value
+If a chroma or alpha option is not explicitly set, the corresponding luma value
 is set.
 
 @section sobel
@@ -23574,12 +23579,13 @@ tile=3x2:nb_frames=5:padding=7:margin=2
 @end itemize
 
 @section tiltandshift
+Apply tilt-and-shift effect.
 
 What happens when you invert time and space?
 
 Normally a video is composed of several frames that represent a different
-instant of time and shows a scence that evolves in the space captured by the
-frame. This filter is the antipode of that concept, taking inspiration by
+instant of time and shows a scene that evolves in the space captured by the
+frame. This filter is the antipode of that concept, taking inspiration from
 tilt and shift photography.
 
 A filtered frame contains the whole timeline of events composing the sequence,
@@ -23587,13 +23593,13 @@ and this is obtained by placing a slice of pixels from each frame into a single
 one. However, since there are no infinite-width frames, this is done up the
 width of the input frame, and a video is recomposed by shifting away one
 column for each subsequent frame. In order to map space to time, the filter
-tilts each input frame as well, so that motion is preseved. This is accomplished
+tilts each input frame as well, so that motion is preserved. This is accomplished
 by progressively selecting a different column from each input frame.
 
-The end result is a sort of inverted parralax, so that far away objects move
+The end result is a sort of inverted parallax, so that far away objects move
 much faster that the ones in the front. The ideal conditions for this video
 effect are when there is either very little motion and the backgroud is static,
-or when there is a lot of motion and a very wide depth of field (eg. wide
+or when there is a lot of motion and a very wide depth of field (e.g. wide
 panorama, while moving on a train).
 
 The filter accepts the following parameters:
@@ -23618,7 +23624,7 @@ How many columns should be inserted before end of filtering.
 
 @end table
 
-Normally the filter shifts and tils from the very first frame, and stops when
+Normally the filter shifts and tilts from the very first frame, and stops when
 the last one is received. However, before filtering starts, normal video may
 be preseved, so that the effect is slowly shifted in its place. Similarly,
 the last video frame may be reconstructed at the end. Alternatively it is
@@ -23626,7 +23632,7 @@ possible to just start and end with black.
 
 @table @samp
 @item none
-Filtering is starts immediately and ends when the last frame is received.
+Filtering starts immediately and ends when the last frame is received.
 
 @item frame
 The first frames or the very last frame are kept intact during processing.
@@ -24458,7 +24464,7 @@ The way this differs from the behavior of spp is that uspp actually encodes &
 decodes each case with libavcodec Snow, whereas spp uses a simplified intra only 8x8
 DCT similar to MJPEG.
 
-This filter is only available in ffmpeg version 4.4 or earlier.
+This filter is not available in ffmpeg versions between 5.0 and 6.0.
 
 The filter accepts the following options:
 
@@ -26058,6 +26064,73 @@ minimum values, and @code{1} maximum values.
 @subsection Commands
 
 This filter supports all above options as @ref{commands}, excluding option @code{inputs}.
+
+@anchor{xpsnr}
+@section xpsnr
+
+Obtain the average (across all input frames) and minimum (across all color plane averages)
+eXtended Perceptually weighted peak Signal-to-Noise Ratio (XPSNR) between two input videos.
+
+The XPSNR is a low-complexity psychovisually motivated distortion measurement algorithm for
+assessing the difference between two video streams or images. This is especially useful for
+objectively quantifying the distortions caused by video and image codecs, as an alternative
+to a formal subjective test. The logarithmic XPSNR output values are in a similar range as
+those of traditional @ref{psnr} assessments but better reflect human impressions of visual
+coding quality. More details on the XPSNR measure, which essentially represents a blockwise
+weighted variant of the PSNR measure, can be found in the following freely available papers:
+
+@itemize
+@item
+C. R. Helmrich, M. Siekmann, S. Becker, S. Bosse, D. Marpe, and T. Wiegand, "XPSNR: A
+Low-Complexity Extension of the Perceptually Weighted Peak Signal-to-Noise Ratio for
+High-Resolution Video Quality Assessment," in Proc. IEEE Int. Conf. Acoustics, Speech,
+Sig. Process. (ICASSP), virt./online, May 2020. @url{www.ecodis.de/xpsnr.htm}
+
+@item
+C. R. Helmrich, S. Bosse, H. Schwarz, D. Marpe, and T. Wiegand, "A Study of the
+Extended Perceptually Weighted Peak Signal-to-Noise Ratio (XPSNR) for Video Compression
+with Different Resolutions and Bit Depths," ITU Journal: ICT Discoveries, vol. 3, no.
+1, pp. 65 - 72, May 2020. @url{http://handle.itu.int/11.1002/pub/8153d78b-en}
+@end itemize
+
+When publishing the results of XPSNR assessments obtained using, e.g., this FFmpeg filter, a
+reference to the above papers as a means of documentation is strongly encouraged. The filter
+requires two input videos. The first input is considered a (usually not distorted) reference
+source and is passed unchanged to the output, whereas the second input is a (distorted) test
+signal. Except for the bit depth, these two video inputs must have the same pixel format. In
+addition, for best performance, both compared input videos should be in YCbCr color format.
+
+The obtained overall XPSNR values mentioned above are printed through the logging system. In
+case of input with multiple color planes, we suggest reporting of the minimum XPSNR average.
+
+The following parameter, which behaves like the one for the @ref{psnr} filter, is accepted:
+
+@table @option
+@item stats_file, f
+If specified, the filter will use the named file to save the XPSNR value of each individual
+frame and color plane. When the file name equals "-", that data is sent to standard output.
+@end table
+
+This filter also supports the @ref{framesync} options.
+
+@subsection Examples
+@itemize
+@item
+XPSNR analysis of two 1080p HD videos, ref_source.yuv and test_video.yuv, both at 24 frames
+per second, with color format 4:2:0, bit depth 8, and output of a logfile named "xpsnr.log":
+@example
+ffmpeg -s 1920x1080 -framerate 24 -pix_fmt yuv420p -i ref_source.yuv -s 1920x1080 -framerate
+24 -pix_fmt yuv420p -i test_video.yuv -lavfi xpsnr="stats_file=xpsnr.log" -f null -
+@end example
+
+@item
+XPSNR analysis of two 2160p UHD videos, ref_source.yuv with bit depth 8 and test_video.yuv
+with bit depth 10, both at 60 frames per second with color format 4:2:0, no logfile output:
+@example
+ffmpeg -s 3840x2160 -framerate 60 -pix_fmt yuv420p -i ref_source.yuv -s 3840x2160 -framerate
+60 -pix_fmt yuv420p10le -i test_video.yuv -lavfi xpsnr="stats_file=-" -f null -
+@end example
+@end itemize
 
 @anchor{xstack}
 @section xstack
@@ -27832,8 +27905,7 @@ The inputs have same memory layout for color channels, the overlay has additiona
 
 @section tonemap_vaapi
 
-Perform HDR(High Dynamic Range) to SDR(Standard Dynamic Range) conversion with tone-mapping.
-It maps the dynamic range of HDR10 content to the SDR content.
+Perform HDR-to-SDR or HDR-to-HDR tone-mapping.
 It currently only accepts HDR10 as input.
 
 It accepts the following parameters:
@@ -27842,28 +27914,42 @@ It accepts the following parameters:
 @item format
 Specify the output pixel format.
 
-Currently supported formats are:
-@table @var
-@item p010
-@item nv12
-@end table
-
-Default is nv12.
+Default is nv12 for HDR-to-SDR tone-mapping and p010 for HDR-to-HDR
+tone-mapping.
 
 @item primaries, p
 Set the output color primaries.
 
-Default is same as input.
+Default is bt709 for HDR-to-SDR tone-mapping and same as input for HDR-to-HDR
+tone-mapping.
 
 @item transfer, t
 Set the output transfer characteristics.
 
-Default is bt709.
+Default is bt709 for HDR-to-SDR tone-mapping and same as input for HDR-to-HDR
+tone-mapping.
 
 @item matrix, m
 Set the output colorspace matrix.
 
-Default is same as input.
+Default is bt709 for HDR-to-SDR tone-mapping and same as input for HDR-to-HDR
+tone-mapping.
+
+@item display
+Set the output mastering display colour volume. It is given by a '|'-separated
+list of two values, two values are space separated. It set display primaries
+x & y in G, B, R order, then white point x & y, the nominal minimum & maximum
+display luminances.
+
+HDR-to-HDR tone-mapping will be performed when this option is set.
+
+@item light
+Set the output content light level information. It accepts 2 space-separated
+values, the first input is the maximum light level and the second input is
+the maximum average light level.
+
+It is ignored for HDR-to-SDR tone-mapping, and optional for HDR-to-HDR
+tone-mapping.
 
 @end table
 
@@ -27874,6 +27960,11 @@ Default is same as input.
 Convert HDR(HDR10) video to bt2020-transfer-characteristic p010 format
 @example
 tonemap_vaapi=format=p010:t=bt2020-10
+@end example
+@item
+Convert HDR video to HDR video
+@example
+tonemap_vaapi=display=7500\ 3000|34000\ 16000|13250\ 34500|15635\ 16450|500\ 10000000
 @end example
 @end itemize
 
@@ -27954,6 +28045,168 @@ first input stream. For the syntax of this option, check the
 @item fill
 See @ref{xstack}.
 @end table
+
+@section pad_vaapi
+
+Add paddings to the input image, and place the original input at the
+provided @var{x}, @var{y} coordinates.
+
+It accepts the following options:
+
+@table @option
+@item width, w
+@item height, h
+Specify an expression for the size of the output image with the
+paddings added. If the value for @var{width} or @var{height} is 0, the
+corresponding input size is used for the output.
+
+The @var{width} expression can reference the value set by the
+@var{height} expression, and vice versa.
+
+The default value of @var{width} and @var{height} is 0.
+
+@item x
+@item y
+Specify the offsets to place the input image at within the padded area,
+with respect to the top/left border of the output image.
+
+The @var{x} expression can reference the value set by the @var{y}
+expression, and vice versa.
+
+The default value of @var{x} and @var{y} is 0.
+
+If @var{x} or @var{y} evaluate to a negative number, they'll be changed
+so the input image is centered on the padded area.
+
+@item color
+Specify the color of the padded area. For the syntax of this option,
+check the @ref{color syntax,,"Color" section in the ffmpeg-utils
+manual,ffmpeg-utils}.
+
+@item aspect
+Pad to an aspect instead to a resolution.
+@end table
+
+The value for the @var{width}, @var{height}, @var{x}, and @var{y}
+options are expressions containing the following constants:
+
+@table @option
+@item in_w
+@item in_h
+The input video width and height.
+
+@item iw
+@item ih
+These are the same as @var{in_w} and @var{in_h}.
+
+@item out_w
+@item out_h
+The output width and height (the size of the padded area), as
+specified by the @var{width} and @var{height} expressions.
+
+@item ow
+@item oh
+These are the same as @var{out_w} and @var{out_h}.
+
+@item x
+@item y
+The x and y offsets as specified by the @var{x} and @var{y}
+expressions, or NAN if not yet specified.
+
+@item a
+same as @var{iw} / @var{ih}
+
+@item sar
+input sample aspect ratio
+
+@item dar
+input display aspect ratio, it is the same as (@var{iw} / @var{ih}) * @var{sar}
+@end table
+
+@section drawbox_vaapi
+
+Draw a colored box on the input image.
+
+It accepts the following parameters:
+
+@table @option
+@item x
+@item y
+The expressions which specify the top left corner coordinates of the box. It defaults to 0.
+
+@item width, w
+@item height, h
+The expressions which specify the width and height of the box; if 0 they are interpreted as
+the input width and height. It defaults to 0.
+
+@item color, c
+Specify the color of the box to write. For the general syntax of this option,
+check the @ref{color syntax,,"Color" section in the ffmpeg-utils manual,ffmpeg-utils}.
+
+@item thickness, t
+The expression which sets the thickness of the box edge.
+A value of @code{fill} will create a filled box. Default value is @code{3}.
+
+See below for the list of accepted constants.
+
+@item replace
+With value @code{1}, the pixels of the painted box will overwrite the video's color and alpha pixels.
+Default is @code{0}, which composites the box onto the input video.
+@end table
+
+The parameters for @var{x}, @var{y}, @var{w} and @var{h} and @var{t} are expressions containing the
+following constants:
+
+@table @option
+@item in_h, ih
+@item in_w, iw
+The input width and height.
+
+@item x
+@item y
+The x and y offset coordinates where the box is drawn.
+
+@item w
+@item h
+The width and height of the drawn box.
+
+@item t
+The thickness of the drawn box.
+
+@end table
+
+@subsection Examples
+
+@itemize
+@item
+Draw a black box around the edge of the input image:
+@example
+drawbox
+@end example
+
+@item
+Draw a box with color red and an opacity of 50%:
+@example
+drawbox=10:20:200:60:red@@0.5
+@end example
+
+The previous example can be specified as:
+@example
+drawbox=x=10:y=20:w=200:h=60:color=red@@0.5
+@end example
+
+@item
+Fill the box with pink color:
+@example
+drawbox=x=10:y=10:w=100:h=100:color=pink@@0.5:t=fill
+@end example
+
+@item
+Draw a 2-pixel red 2.40:1 mask:
+@example
+drawbox=x=-t:y=0.5*(ih-iw/2.4)-t:w=iw+t*2:h=iw/2.4+t*2:t=2:c=red
+@end example
+@end itemize
 
 @c man end VAAPI VIDEO FILTERS
 
@@ -29128,6 +29381,107 @@ life=rule=S14/B34
 Full example with slow death effect (mold) using @command{ffplay}:
 @example
 ffplay -f lavfi life=s=300x200:mold=10:r=60:ratio=0.1:death_color=#C83232:life_color=#00ff00,scale=1200:800:flags=16
+@end example
+@end itemize
+
+@section perlin
+Generate Perlin noise.
+
+Perlin noise is a kind of noise with local continuity in space. This
+can be used to generate patterns with continuity in space and time,
+e.g. to simulate smoke, fluids, or terrain.
+
+In case more than one octave is specified through the @option{octaves}
+option, Perlin noise is generated as a sum of components, each one
+with doubled frequency. In this case the @option{persistence} option
+specify the ratio of the amplitude with respect to the previous
+component. More octave components enable to specify more high
+frequency details in the generated noise (e.g. small size variations
+due to boulders in a generated terrain).
+
+@subsection Options
+@table @option
+
+@item size, s
+Specify the size (width and height) of the buffered video frames. For the
+syntax of this option, check the
+@ref{video size syntax,,"Video size" section in the ffmpeg-utils manual,ffmpeg-utils}.
+Default value is @code{320x240}.
+
+@item rate, r
+Specify the frame rate expected for the video stream, expressed as a
+number of frames per second. Default value is @code{25}.
+
+@item octaves
+Specify the total number of components making up the noise, each one
+with doubled frequency. Default value is @code{1}.
+
+@item persistence
+Set the ratio used to compute the amplitude of the next octave
+component with respect to the previous component amplitude. Default
+value is @code{1}.
+
+@item xscale
+@item yscale
+Define a scale factor used to multiple the x, y coordinates. This can
+be useful to define an effect with a pattern stretched along the x or
+y axis. Default value is @code{1}.
+
+@item tscale
+Define a scale factor used to multiple the time coordinate. This can
+be useful to change the time variation speed. Default value is @code{1}.
+
+@item random_mode
+Set random mode used to compute initial pattern.
+
+Supported values are:
+@table @option
+@item random
+Compute and use random seed.
+
+@item ken
+Use the predefined initial pattern defined by Ken Perlin in the
+original article, can be useful to compare the output with other
+sources.
+
+@item seed
+Use the value specified by @option{random_seed} option.
+@end table
+
+Default value is @code{random}.
+
+@item random_seed, seed
+When @option{random_mode} is set to @var{random_seed}, use this value
+to compute the initial pattern. Default value is @code{0}.
+@end table
+
+@subsection Examples
+@itemize
+@item
+Generate single component:
+@example
+perlin
+@end example
+
+@item
+Use Perlin noise with 7 components, each one with a halved contribution
+to total amplitude:
+@example
+perlin=octaves=7:persistence=0.5
+@end example
+
+@item
+Chain Perlin noise with the @ref{lutyuv} to generate a black&white
+effect:
+@example
+perlin=octaves=3:tscale=0.3,lutyuv=y='if(lt(val\,128)\,255\,0)'
+@end example
+
+@item
+Stretch noise along the y axis, and convert gray level to red-only
+signal:
+@example
+perlin=octaves=7:tscale=0.4:yscale=0.3,lutrgb=r=val:b=0:g=0
 @end example
 @end itemize
 
@@ -30750,6 +31104,15 @@ missing.
 
 That basically means that an input frame is selected if its pts is within the
 interval set by the concat demuxer.
+
+@item iw @emph{(video only)}
+Represents the width of the input video frame.
+
+@item ih @emph{(video only)}
+Represents the height of the input video frame.
+
+@item view @emph{(video only)}
+View ID for multi-view video.
 
 @end table
 

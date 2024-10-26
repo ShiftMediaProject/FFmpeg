@@ -19,11 +19,11 @@
  */
 
 #include "libavutil/avassert.h"
+#include "libavutil/mem.h"
 #include "libavutil/opt.h"
 #include "avfilter.h"
 #include "filters.h"
 #include "framesync.h"
-#include "internal.h"
 
 #define OFFSET(member) offsetof(FFFrameSync, member)
 #define FLAGS AV_OPT_FLAG_VIDEO_PARAM | AV_OPT_FLAG_FILTERING_PARAM
@@ -51,7 +51,7 @@ static const AVOption framesync_options[] = {
             0, AV_OPT_TYPE_CONST, { .i64 = TS_NEAREST }, .flags = FLAGS, .unit = "ts_sync_mode" },
     { NULL }
 };
-static const AVClass framesync_class = {
+const AVClass ff_framesync_class = {
     .version                   = LIBAVUTIL_VERSION_INT,
     .class_name                = "framesync",
     .item_name                 = framesync_name,
@@ -62,7 +62,7 @@ static const AVClass framesync_class = {
 
 const AVClass *ff_framesync_child_class_iterate(void **iter)
 {
-    const AVClass *c = *iter ? NULL : &framesync_class;
+    const AVClass *c = *iter ? NULL : &ff_framesync_class;
     *iter = (void *)(uintptr_t)c;
     return c;
 }
@@ -79,7 +79,7 @@ void ff_framesync_preinit(FFFrameSync *fs)
 {
     if (fs->class)
         return;
-    fs->class  = &framesync_class;
+    fs->class  = &ff_framesync_class;
     av_opt_set_defaults(fs);
 }
 
@@ -95,8 +95,11 @@ int ff_framesync_init(FFFrameSync *fs, AVFilterContext *parent, unsigned nb_in)
     fs->nb_in  = nb_in;
 
     fs->in = av_calloc(nb_in, sizeof(*fs->in));
-    if (!fs->in)
+    if (!fs->in) {
+        fs->nb_in = 0;
         return AVERROR(ENOMEM);
+    }
+
     return 0;
 }
 
@@ -270,7 +273,6 @@ int ff_framesync_get_frame(FFFrameSync *fs, unsigned in, AVFrame **rframe,
     AVFrame *frame;
     unsigned need_copy = 0, i;
     int64_t pts_next;
-    int ret;
 
     if (!fs->in[in].frame) {
         *rframe = NULL;
@@ -288,10 +290,6 @@ int ff_framesync_get_frame(FFFrameSync *fs, unsigned in, AVFrame **rframe,
         if (need_copy) {
             if (!(frame = av_frame_clone(frame)))
                 return AVERROR(ENOMEM);
-            if ((ret = ff_inlink_make_frame_writable(fs->parent->inputs[in], &frame)) < 0) {
-                av_frame_free(&frame);
-                return ret;
-            }
         } else {
             fs->in[in].frame = NULL;
         }

@@ -32,7 +32,7 @@
 
 #include "config_components.h"
 
-#include "libavutil/pixdesc.h"
+#include "libavutil/mem.h"
 
 #include "avcodec.h"
 #include "codec_internal.h"
@@ -80,7 +80,7 @@ static av_cold void init_uni_ac_vlc(const uint8_t huff_size_ac[256],
 
 static void mjpeg_encode_picture_header(MpegEncContext *s)
 {
-    ff_mjpeg_encode_picture_header(s->avctx, &s->pb, s->picture->f, s->mjpeg_ctx,
+    ff_mjpeg_encode_picture_header(s->avctx, &s->pb, s->cur_pic.ptr->f, s->mjpeg_ctx,
                                    s->intra_scantable.permutated, 0,
                                    s->intra_matrix, s->chroma_intra_matrix,
                                    s->slice_context_count > 1);
@@ -595,9 +595,7 @@ static int amv_encode_picture(AVCodecContext *avctx, AVPacket *pkt,
     MpegEncContext *s = avctx->priv_data;
     AVFrame *pic;
     int i, ret;
-    int chroma_h_shift, chroma_v_shift;
-
-    av_pix_fmt_get_chroma_sub_sample(avctx->pix_fmt, &chroma_h_shift, &chroma_v_shift);
+    int chroma_v_shift = 1; /* AMV is 420-only */
 
     if ((avctx->height & 15) && avctx->strict_std_compliance > FF_COMPLIANCE_UNOFFICIAL) {
         av_log(avctx, AV_LOG_ERROR,
@@ -642,7 +640,27 @@ static const AVClass mjpeg_class = {
     .version    = LIBAVUTIL_VERSION_INT,
 };
 
-const FFCodec ff_mjpeg_encoder = {
+static int mjpeg_get_supported_config(const AVCodecContext *avctx,
+                                      const AVCodec *codec,
+                                      enum AVCodecConfig config,
+                                      unsigned flags, const void **out,
+                                      int *out_num)
+{
+    if (config == AV_CODEC_CONFIG_COLOR_RANGE) {
+        static const enum AVColorRange mjpeg_ranges[] = {
+            AVCOL_RANGE_MPEG, AVCOL_RANGE_JPEG, AVCOL_RANGE_UNSPECIFIED,
+        };
+        int strict = avctx ? avctx->strict_std_compliance : 0;
+        int index = strict > FF_COMPLIANCE_UNOFFICIAL ? 1 : 0;
+        *out = &mjpeg_ranges[index];
+        *out_num = FF_ARRAY_ELEMS(mjpeg_ranges) - index - 1;
+        return 0;
+    }
+
+    return ff_default_get_supported_config(avctx, codec, config, flags, out, out_num);
+}
+
+FFCodec ff_mjpeg_encoder = {
     .p.name         = "mjpeg",
     CODEC_LONG_NAME("MJPEG (Motion JPEG)"),
     .p.type         = AVMEDIA_TYPE_VIDEO,
@@ -661,6 +679,7 @@ const FFCodec ff_mjpeg_encoder = {
     },
     .p.priv_class   = &mjpeg_class,
     .p.profiles     = NULL_IF_CONFIG_SMALL(ff_mjpeg_profiles),
+    .get_supported_config = mjpeg_get_supported_config,
 };
 #endif
 
@@ -685,6 +704,7 @@ const FFCodec ff_amv_encoder = {
     .p.pix_fmts     = (const enum AVPixelFormat[]) {
         AV_PIX_FMT_YUVJ420P, AV_PIX_FMT_NONE
     },
+    .color_ranges   = AVCOL_RANGE_JPEG,
     .p.priv_class   = &amv_class,
     .p.capabilities = AV_CODEC_CAP_ENCODER_REORDERED_OPAQUE,
 };

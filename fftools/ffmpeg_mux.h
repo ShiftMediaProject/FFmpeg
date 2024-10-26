@@ -75,6 +75,11 @@ typedef struct MuxStream {
     int             copy_initial_nonkeyframes;
     int             copy_prior_start;
     int             streamcopy_started;
+#if FFMPEG_OPT_VSYNC_DROP
+    int             ts_drop;
+#endif
+
+    const char     *apad;
 } MuxStream;
 
 typedef struct Muxer {
@@ -93,6 +98,9 @@ typedef struct Muxer {
     int                  nb_sch_stream_idx;
 
     AVDictionary           *opts;
+
+    // used to validate that all encoder avoptions have been actually used
+    AVDictionary           *enc_opts_used;
 
     /* filesize limit expressed in bytes */
     int64_t                 limit_filesize;

@@ -16,6 +16,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include "libavutil/mem.h"
 #include "bytestream.h"
 #include "get_bits.h"
 #include "golomb.h"
@@ -367,9 +368,10 @@ static int decode_extradata_ps(const uint8_t *data, int size, H264ParamSets *ps,
                                int is_avc, void *logctx)
 {
     H2645Packet pkt = { 0 };
+    int flags = (H2645_FLAG_IS_NALFF * !!is_avc) | H2645_FLAG_SMALL_PADDING;
     int i, ret = 0;
 
-    ret = ff_h2645_packet_split(&pkt, data, size, logctx, is_avc, 2, AV_CODEC_ID_H264, 1, 0);
+    ret = ff_h2645_packet_split(&pkt, data, size, logctx, 2, AV_CODEC_ID_H264, flags);
     if (ret < 0) {
         ret = 0;
         goto fail;
@@ -468,7 +470,7 @@ int ff_h264_decode_extradata(const uint8_t *data, int size, H264ParamSets *ps,
     int ret;
 
     if (!data || size <= 0)
-        return -1;
+        return AVERROR(EINVAL);
 
     if (data[0] == 1) {
         int i, cnt, nalsize;

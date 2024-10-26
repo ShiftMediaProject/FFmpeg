@@ -28,16 +28,14 @@
 
 #include "config_components.h"
 
-#include <float.h>
 #include <stdint.h>
 
 #include "libavutil/attributes.h"
 #include "libavutil/avstring.h"
 #include "libavutil/channel_layout.h"
+#include "libavutil/mem.h"
 #include "libavutil/opt.h"
-#include "libavutil/imgutils.h"
 #include "libavutil/internal.h"
-#include "libavutil/timestamp.h"
 
 #include "libavcodec/avcodec.h"
 
@@ -47,7 +45,6 @@
 #include "avfilter.h"
 #include "filters.h"
 #include "formats.h"
-#include "internal.h"
 #include "video.h"
 
 typedef struct MovieStream {
@@ -452,6 +449,7 @@ static int movie_query_formats(AVFilterContext *ctx)
 
 static int movie_config_output_props(AVFilterLink *outlink)
 {
+    FilterLink *l = ff_filter_link(outlink);
     AVFilterContext *ctx = outlink->src;
     MovieContext *movie  = ctx->priv;
     unsigned out_id = FF_OUTLINK_IDX(outlink);
@@ -464,7 +462,7 @@ static int movie_config_output_props(AVFilterLink *outlink)
     case AVMEDIA_TYPE_VIDEO:
         outlink->w          = c->width;
         outlink->h          = c->height;
-        outlink->frame_rate = st->st->r_frame_rate;
+        l->frame_rate = st->st->r_frame_rate;
         break;
     case AVMEDIA_TYPE_AUDIO:
         break;

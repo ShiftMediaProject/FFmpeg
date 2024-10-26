@@ -229,12 +229,16 @@ successive integers starting at zero. These indices should then be used to refer
 to loopback decoders in complex filtergraph link labels, as described in the
 documentation for @option{-filter_complex}.
 
+Decoding AVOptions can be passed to loopback decoders by placing them before
+@code{-dec}, analogously to input/output options.
+
 E.g. the following example:
 
 @example
 ffmpeg -i INPUT                                        \
   -map 0:v:0 -c:v libx264 -crf 45 -f null -            \
-  -dec 0:0 -filter_complex '[0:v][dec:0]hstack[stack]' \
+  -threads 3 -dec 0:0                                  \
+  -filter_complex '[0:v][dec:0]hstack[stack]'          \
   -map '[stack]' -c:v ffv1 OUTPUT
 @end example
 
@@ -244,11 +248,13 @@ reads an input video and
 (line 2) encodes it with @code{libx264} at low quality;
 
 @item
-(line 3) decodes this encoded stream and places it side by side with the
-original input video;
+(line 3) decodes this encoded stream using 3 threads;
 
 @item
-(line 4) combined video is then losslessly encoded and written into
+(line 4) places decoded video side by side with the original input video;
+
+@item
+(line 5) combined video is then losslessly encoded and written into
 @file{OUTPUT}.
 
 @end itemize
@@ -657,10 +663,11 @@ Not all muxers support embedded thumbnails, and those who do, only support a few
 Creates a program with the specified @var{title}, @var{program_num} and adds the specified
 @var{stream}(s) to it.
 
-@item -stream_group type=@var{type}:st=@var{stream}[:st=@var{stream}][:stg=@var{stream_group}][:id=@var{stream_group_id}...] (@emph{output})
+@item -stream_group [map=@var{input_file_id}=@var{stream_group}][type=@var{type}:]st=@var{stream}[:st=@var{stream}][:stg=@var{stream_group}][:id=@var{stream_group_id}...] (@emph{output})
 
-Creates a stream group of the specified @var{type}, @var{stream_group_id} and adds the specified
-@var{stream}(s) and/or previously defined @var{stream_group}(s) to it.
+Creates a stream group of the specified @var{type} and @var{stream_group_id}, or by
+@var{map}ping an input group, adding the specified @var{stream}(s) and/or previously
+defined @var{stream_group}(s) to it.
 
 @var{type} can be one of the following:
 @table @option
@@ -856,6 +863,27 @@ all sub-mix element's @var{annotations}s
 @end table
 
 @end table
+
+E.g. to create an scalable 5.1 IAMF file from several WAV input files
+@example
+ffmpeg -i front.wav -i back.wav -i center.wav -i lfe.wav
+-map 0:0 -map 1:0 -map 2:0 -map 3:0 -c:a opus
+-stream_group type=iamf_audio_element:id=1:st=0:st=1:st=2:st=3,
+demixing=parameter_id=998,
+recon_gain=parameter_id=101,
+layer=ch_layout=stereo,
+layer=ch_layout=5.1,
+-stream_group type=iamf_mix_presentation:id=2:stg=0:annotations=en-us=Mix_Presentation,
+submix=parameter_id=100:parameter_rate=48000|element=stg=0:parameter_id=100:annotations=en-us=Scalable_Submix|layout=sound_system=stereo|layout=sound_system=5.1
+-streamid 0:0 -streamid 1:1 -streamid 2:2 -streamid 3:3 output.iamf
+@end example
+
+To copy the two stream groups (Audio Element and Mix Presentation) from an input IAMF file with four
+streams into an mp4 output
+@example
+ffmpeg -i input.iamf -c:a copy -stream_group map=0=0:st=0:st=1:st=2:st=3 -stream_group map=0=1:stg=0
+-streamid 0:0 -streamid 1:1 -streamid 2:2 -streamid 3:3 output.mp4
+@end example
 
 @item -target @var{type} (@emph{output})
 Specify target file type (@code{vcd}, @code{svcd}, @code{dvd}, @code{dv},
@@ -1351,6 +1379,21 @@ Note that forcing too many keyframes is very harmful for the lookahead
 algorithms of certain encoders: using fixed-GOP options or similar
 would be more efficient.
 
+@item -apply_cropping[:@var{stream_specifier}] @var{source} (@emph{input,per-stream})
+Automatically crop the video after decoding according to file metadata.
+Default is @emph{all}.
+
+@table @option
+@item none (0)
+Don't apply any cropping metadata.
+@item all (1)
+Apply both codec and container level croppping. This is the default mode.
+@item codec (2)
+Apply codec level croppping.
+@item container (3)
+Apply container level croppping.
+@end table
+
 @item -copyinkf[:@var{stream_specifier}] (@emph{output,per-stream})
 When doing stream copy, copy also non-key frames found at the
 beginning.
@@ -1415,6 +1458,11 @@ The following options are recognized:
 When @var{device} is not specified, use this option to specify the name of the kernel
 driver associated with the desired device. This option is available only when
 the hardware acceleration method @emph{drm} and @emph{vaapi} are enabled.
+@item vendor_id
+When @var{device} and @var{kernel_driver} are not specified, use this option to specify
+the vendor id associated with the desired device. This option is available only when the
+hardware acceleration method @emph{drm} and @emph{vaapi} are enabled and @emph{kernel_driver}
+is not specified.
 @end table
 
 Examples:
@@ -1430,6 +1478,9 @@ Create a vaapi device on DirectX adapter 1.
 
 @item -init_hw_device vaapi:,kernel_driver=i915
 Create a vaapi device on a device associated with kernel driver @samp{i915}.
+
+@item -init_hw_device vaapi:,vendor_id=0x8086
+Create a vaapi device on a device associated with vendor id @samp{0x8086}.
 @end table
 
 @item vdpau
@@ -1691,12 +1742,21 @@ This is an alias for @code{-filter:a}, see the @ref{filter_option,,-filter optio
 @table @option
 @item -atag @var{fourcc/tag} (@emph{output})
 Force audio tag/fourcc. This is an alias for @code{-tag:a}.
+@item -ch_layout[:@var{stream_specifier}] @var{layout} (@emph{input/output,per-stream})
+Alias for @code{-channel_layout}.
+@item -channel_layout[:@var{stream_specifier}] @var{layout} (@emph{input/output,per-stream})
+Set the audio channel layout. For output streams it is set by default to the
+input channel layout. For input streams it overrides the channel layout of the
+input. Not all decoders respect the overridden channel layout. This option
+also sets the channel layout for audio grabbing devices and raw demuxers
+and is mapped to the corresponding demuxer option.
 @item -guess_layout_max @var{channels} (@emph{input,per-stream})
 If some input channel layout is not known, try to guess only if it
 corresponds to at most the specified number of channels. For example, 2
 tells to @command{ffmpeg} to recognize 1 channel as mono and 2 channels as
 stereo but not 6 channels as 5.1. The default is to always try to guess. Use
-0 to disable all guessing.
+0 to disable all guessing. Using the @code{-channel_layout} option to
+explicitly specify an input layout also disables guessing.
 @end table
 
 @section Subtitle options
@@ -1739,7 +1799,7 @@ Set the size of the canvas used to render subtitles.
 @section Advanced options
 
 @table @option
-@item -map [-]@var{input_file_id}[:@var{stream_specifier}][?] | @var{[linklabel]} (@emph{output})
+@item -map [-]@var{input_file_id}[:@var{stream_specifier}][:@var{view_specifier}][?] | @var{[linklabel]} (@emph{output})
 
 Create one or more streams in the output file. This option has two forms for
 specifying the data source(s): the first selects one or more streams from some
@@ -1753,6 +1813,26 @@ only those streams that match the specifier are used (see the
 
 A @code{-} character before the stream identifier creates a "negative" mapping.
 It disables matching streams from already created mappings.
+
+An optional @var{view_specifier} may be given after the stream specifier, which
+for multiview video specifies the view to be used. The view specifier may have
+one of the following formats:
+@table @option
+@item view:@var{view_id}
+select a view by its ID; @var{view_id} may be set to 'all' to use all the views
+interleaved into one stream;
+
+@item vidx:@var{view_idx}
+select a view by its index; i.e. 0 is the base view, 1 is the first non-base
+view, etc.
+
+@item vpos:@var{position}
+select a view by its display position; @var{position} may be @code{left} or
+@code{right}
+@end table
+The default for transcoding is to only use the base view, i.e. the equivalent of
+@code{vidx:0}. For streamcopy, view specifiers are not supported and all views
+are always copied.
 
 A trailing @code{?} after the stream index will allow the map to be
 optional: if the map matches no streams the map will be ignored instead
@@ -2137,15 +2217,68 @@ Define a complex filtergraph, i.e. one with arbitrary number of inputs and/or
 outputs. For simple graphs -- those with one input and one output of the same
 type -- see the @option{-filter} options. @var{filtergraph} is a description of
 the filtergraph, as described in the ``Filtergraph syntax'' section of the
-ffmpeg-filters manual.
+ffmpeg-filters manual. This option may be specified multiple times - each use
+creates a new complex filtergraph.
 
-Input link labels must refer to either input streams or loopback decoders. For
-input streams, use the @code{[file_index:stream_specifier]} syntax (i.e. the
-same as @option{-map} uses). If @var{stream_specifier} matches multiple streams,
-the first one will be used.
+Inputs to a complex filtergraph may come from different source types,
+distinguished by the format of the corresponding link label:
+@itemize
+@item
+To connect an input stream, use @code{[file_index:stream_specifier]} (i.e. the
+same syntax as @option{-map}). If @var{stream_specifier} matches multiple
+streams, the first one will be used. For multiview video, the stream specifier
+may be followed by the view specifier, see documentation for the @option{-map}
+option for its syntax.
 
-For decoders, the link label must be [dec:@var{dec_idx}], where @var{dec_idx} is
-the index of the loopback decoder to be connected to given input.
+@item
+To connect a loopback decoder use [dec:@var{dec_idx}], where @var{dec_idx} is
+the index of the loopback decoder to be connected to given input. For multiview
+video, the decoder index may be followed by the view specifier, see
+documentation for the @option{-map} option for its syntax.
+
+@item
+To connect an output from another complex filtergraph, use its link label. E.g
+the following example:
+
+@example
+ffmpeg -i input.mkv \
+  -filter_complex '[0:v]scale=size=hd1080,split=outputs=2[for_enc][orig_scaled]' \
+  -c:v libx264 -map '[for_enc]' output.mkv \
+  -dec 0:0 \
+  -filter_complex '[dec:0][orig_scaled]hstack[stacked]' \
+  -map '[stacked]' -c:v ffv1 comparison.mkv
+@end example
+
+reads an input video and
+@itemize
+@item
+(line 2) uses a complex filtergraph with one input and two outputs
+to scale the video to 1920x1080 and duplicate the result to both
+outputs;
+
+@item
+(line 3) encodes one scaled output with @code{libx264} and writes the result to
+@file{output.mkv};
+
+@item
+(line 4) decodes this encoded stream with a loopback decoder;
+
+@item
+(line 5) places the output of the loopback decoder (i.e. the
+@code{libx264}-encoded video) side by side with the scaled original input;
+
+@item
+(line 6) combined video is then losslessly encoded and written into
+@file{comparison.mkv}.
+
+@end itemize
+
+Note that the two filtergraphs cannot be combined into one, because then there
+would be a cycle in the transcoding pipeline (filtergraph output goes to
+encoding, from there to decoding, then back to the same graph), and such cycles
+are not allowed.
+
+@end itemize
 
 An unlabeled input will be connected to the first unused input stream of the
 matching type.

@@ -34,7 +34,9 @@
 #include "libavutil/pixfmt.h"
 #include "libavutil/pixdesc.h"
 #include "libavutil/slicethread.h"
+#if HAVE_ALTIVEC
 #include "libavutil/ppc/util_altivec.h"
+#endif
 #include "libavutil/half2float.h"
 
 #define STR(s) AV_TOSTRING(s) // AV_STRINGIFY is too long
@@ -43,8 +45,6 @@
 #define YUVRGB_TABLE_LUMA_HEADROOM 512
 
 #define MAX_FILTER_SIZE SWS_MAX_FILTER_SIZE
-
-#define DITHER1XBPP
 
 #if HAVE_BIGENDIAN
 #define ALT32_CORR (-1)
@@ -695,6 +695,9 @@ void ff_yuv2rgb_init_tables_ppc(SwsContext *c, const int inv_table[4],
 void ff_updateMMXDitherTables(SwsContext *c, int dstY);
 
 av_cold void ff_sws_init_range_convert(SwsContext *c);
+av_cold void ff_sws_init_range_convert_aarch64(SwsContext *c);
+av_cold void ff_sws_init_range_convert_loongarch(SwsContext *c);
+av_cold void ff_sws_init_range_convert_x86(SwsContext *c);
 
 SwsFunc ff_yuv2rgb_init_x86(SwsContext *c);
 SwsFunc ff_yuv2rgb_init_ppc(SwsContext *c);
@@ -985,6 +988,7 @@ void ff_sws_init_swscale_x86(SwsContext *c);
 void ff_sws_init_swscale_aarch64(SwsContext *c);
 void ff_sws_init_swscale_arm(SwsContext *c);
 void ff_sws_init_swscale_loongarch(SwsContext *c);
+void ff_sws_init_swscale_riscv(SwsContext *c);
 
 void ff_hyscale_fast_c(SwsContext *c, int16_t *dst, int dstWidth,
                        const uint8_t *src, int srcW, int xInc);
@@ -1001,46 +1005,31 @@ void ff_hcscale_fast_mmxext(SwsContext *c, int16_t *dst1, int16_t *dst2,
                             int dstWidth, const uint8_t *src1,
                             const uint8_t *src2, int srcW, int xInc);
 
-/**
- * Allocate and return an SwsContext.
- * This is like sws_getContext() but does not perform the init step, allowing
- * the user to set additional AVOptions.
- *
- * @see sws_getContext()
- */
-struct SwsContext *sws_alloc_set_opts(int srcW, int srcH, enum AVPixelFormat srcFormat,
-                                      int dstW, int dstH, enum AVPixelFormat dstFormat,
-                                      int flags, const double *param);
-
 int ff_sws_alphablendaway(SwsContext *c, const uint8_t *src[],
                           int srcStride[], int srcSliceY, int srcSliceH,
                           uint8_t *dst[], int dstStride[]);
 
+void ff_copyPlane(const uint8_t *src, int srcStride,
+                  int srcSliceY, int srcSliceH, int width,
+                  uint8_t *dst, int dstStride);
+
 static inline void fillPlane16(uint8_t *plane, int stride, int width, int height, int y,
                                int alpha, int bits, const int big_endian)
 {
-    int i, j;
     uint8_t *ptr = plane + stride * y;
     int v = alpha ? 0xFFFF>>(16-bits) : (1<<(bits-1));
-    for (i = 0; i < height; i++) {
-#define FILL(wfunc) \
-        for (j = 0; j < width; j++) {\
-            wfunc(ptr+2*j, v);\
-        }
-        if (big_endian) {
-            FILL(AV_WB16);
-        } else {
-            FILL(AV_WL16);
-        }
+    if (big_endian != HAVE_BIGENDIAN)
+        v = av_bswap16(v);
+    for (int i = 0; i < height; i++) {
+        for (int j = 0; j < width; j++)
+            AV_WN16(ptr + 2 * j, v);
         ptr += stride;
     }
-#undef FILL
 }
 
 static inline void fillPlane32(uint8_t *plane, int stride, int width, int height, int y,
                                int alpha, int bits, const int big_endian, int is_float)
 {
-    int i, j;
     uint8_t *ptr = plane + stride * y;
     uint32_t v;
     uint32_t onef32 = 0x3f800000;
@@ -1048,20 +1037,14 @@ static inline void fillPlane32(uint8_t *plane, int stride, int width, int height
         v = alpha ? onef32 : 0;
     else
         v = alpha ? 0xFFFFFFFF>>(32-bits) : (1<<(bits-1));
+    if (big_endian != HAVE_BIGENDIAN)
+        v = av_bswap32(v);
 
-    for (i = 0; i < height; i++) {
-#define FILL(wfunc) \
-        for (j = 0; j < width; j++) {\
-            wfunc(ptr+4*j, v);\
-        }
-        if (big_endian) {
-            FILL(AV_WB32);
-        } else {
-            FILL(AV_WL32);
-        }
+    for (int i = 0; i < height; i++) {
+        for (int j = 0; j < width; j++)
+            AV_WN32(ptr + 4 * j, v);
         ptr += stride;
     }
-#undef FILL
 }
 
 

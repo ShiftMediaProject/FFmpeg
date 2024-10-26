@@ -21,7 +21,7 @@
 #include "libavutil/opt.h"
 #include "audio.h"
 #include "avfilter.h"
-#include "internal.h"
+#include "filters.h"
 
 enum FilterType {
     DC_TYPE,

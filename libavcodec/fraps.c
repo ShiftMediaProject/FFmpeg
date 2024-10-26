@@ -35,6 +35,7 @@
 
 #define CACHED_BITSTREAM_READER HAVE_FAST_64BIT
 #define UNCHECKED_BITSTREAM_READER 1
+#include "libavutil/mem.h"
 #include "avcodec.h"
 #include "get_bits.h"
 #include "huffman.h"
@@ -213,9 +214,6 @@ static int decode_frame(AVCodecContext *avctx, AVFrame *f,
                 return AVERROR(ENOMEM);
         }
     }
-
-    f->pict_type = AV_PICTURE_TYPE_I;
-    f->flags |= AV_FRAME_FLAG_KEY;
 
     avctx->pix_fmt = version & 1 ? is_pal ? AV_PIX_FMT_PAL8 : AV_PIX_FMT_BGR24 : AV_PIX_FMT_YUVJ420P;
     avctx->color_range = version & 1 ? AVCOL_RANGE_UNSPECIFIED

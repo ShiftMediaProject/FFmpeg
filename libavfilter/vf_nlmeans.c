@@ -30,10 +30,11 @@
  */
 
 #include "libavutil/avassert.h"
+#include "libavutil/mem.h"
 #include "libavutil/opt.h"
 #include "libavutil/pixdesc.h"
 #include "avfilter.h"
-#include "internal.h"
+#include "filters.h"
 #include "vf_nlmeans.h"
 #include "vf_nlmeans_init.h"
 #include "video.h"

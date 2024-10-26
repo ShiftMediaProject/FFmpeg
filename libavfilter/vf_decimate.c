@@ -19,12 +19,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include "libavutil/mem.h"
 #include "libavutil/opt.h"
 #include "libavutil/pixdesc.h"
-#include "libavutil/timestamp.h"
 #include "avfilter.h"
 #include "filters.h"
-#include "internal.h"
 
 #define INPUT_MAIN     0
 #define INPUT_CLEANSRC 1
@@ -381,10 +380,12 @@ static const enum AVPixelFormat pix_fmts[] = {
 
 static int config_output(AVFilterLink *outlink)
 {
+    FilterLink *outl     = ff_filter_link(outlink);
     AVFilterContext *ctx = outlink->src;
     DecimateContext *dm = ctx->priv;
     const AVFilterLink *inlink = ctx->inputs[INPUT_MAIN];
-    AVRational fps = inlink->frame_rate;
+    FilterLink *inl = ff_filter_link(ctx->inputs[INPUT_MAIN]);
+    AVRational fps = inl->frame_rate;
     int max_value;
     const AVPixFmtDescriptor *pix_desc = av_pix_fmt_desc_get(inlink->format);
     const int w = inlink->w;
@@ -426,9 +427,9 @@ static int config_output(AVFilterLink *outlink)
             fps.num, fps.den, outlink->time_base.den, outlink->time_base.num);
     } else {
         outlink->time_base = dm->dec_tb;
-        outlink->frame_rate = av_inv_q(outlink->time_base);
+        outl->frame_rate = av_inv_q(outlink->time_base);
         av_log(ctx, AV_LOG_VERBOSE, "FPS: %d/%d -> %d/%d\n",
-            fps.num, fps.den, outlink->frame_rate.num, outlink->frame_rate.den);
+            fps.num, fps.den, outl->frame_rate.num, outl->frame_rate.den);
     }
     outlink->sample_aspect_ratio = inlink->sample_aspect_ratio;
     if (dm->ppsrc) {

@@ -173,11 +173,10 @@ void avcodec_free_context(AVCodecContext **pavctx)
     av_freep(&avctx->extradata);
     av_freep(&avctx->subtitle_header);
     av_freep(&avctx->intra_matrix);
+    av_freep(&avctx->chroma_intra_matrix);
     av_freep(&avctx->inter_matrix);
     av_freep(&avctx->rc_override);
     av_channel_layout_uninit(&avctx->ch_layout);
-    av_frame_side_data_free(
-        &avctx->decoded_side_data, &avctx->nb_decoded_side_data);
 
     av_freep(pavctx);
 }

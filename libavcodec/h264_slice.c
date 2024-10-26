@@ -28,6 +28,7 @@
 #include "config_components.h"
 
 #include "libavutil/avassert.h"
+#include "libavutil/mem.h"
 #include "libavutil/pixdesc.h"
 #include "libavutil/timecode.h"
 #include "decode.h"
@@ -387,7 +388,6 @@ int ff_h264_update_thread_context(AVCodecContext *dst,
 
     h->width_from_caller    = h1->width_from_caller;
     h->height_from_caller   = h1->height_from_caller;
-    h->coded_picture_number = h1->coded_picture_number;
     h->first_field          = h1->first_field;
     h->picture_structure    = h1->picture_structure;
     h->mb_aff_frame         = h1->mb_aff_frame;
@@ -482,7 +482,7 @@ static int h264_frame_start(H264Context *h)
 
     if (!ff_thread_can_start_frame(h->avctx)) {
         av_log(h->avctx, AV_LOG_ERROR, "Attempt to start a frame outside SETUP state\n");
-        return -1;
+        return AVERROR_BUG;
     }
 
     release_unused_pictures(h, 1);
@@ -1637,8 +1637,8 @@ static int h264_field_start(H264Context *h, const H264SliceContext *sl,
             h->valid_recovery_point = 1;
 
         if (   h->recovery_frame < 0
-            || av_mod_uintp2(h->recovery_frame - h->poc.frame_num, h->ps.sps->log2_max_frame_num) > sei_recovery_frame_cnt) {
-            h->recovery_frame = av_mod_uintp2(h->poc.frame_num + sei_recovery_frame_cnt, h->ps.sps->log2_max_frame_num);
+            || av_zero_extend(h->recovery_frame - h->poc.frame_num, h->ps.sps->log2_max_frame_num) > sei_recovery_frame_cnt) {
+            h->recovery_frame = av_zero_extend(h->poc.frame_num + sei_recovery_frame_cnt, h->ps.sps->log2_max_frame_num);
 
             if (!h->valid_recovery_point)
                 h->recovery_frame = h->poc.frame_num;

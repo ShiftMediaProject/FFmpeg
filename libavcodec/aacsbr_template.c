@@ -32,29 +32,32 @@
  * @author Zoran Basaric ( zoran.basaric@imgtec.com )
  */
 
-#include "aacdec.h"
-#include "aacdectab.h"
+#include "aac/aacdec.h"
+#include "aac/aacdec_tab.h"
 #include "avcodec.h"
 #include "libavutil/qsort.h"
+#include "libavutil/mem.h"
 
-static av_cold void aacsbr_tableinit(void)
+typedef struct ExtChannelElement {
+    ChannelElement ch;
+    PredictorState predictor_state[2][MAX_PREDICTORS];
+    SpectralBandReplication sbr;
+} ExtChannelElement;
+
+static inline SpectralBandReplication *get_sbr(ChannelElement *ch)
 {
-    int n;
-
-    for (n = 0; n < 320; n++)
-        sbr_qmf_window_ds[n] = sbr_qmf_window_us[2*n];
+    return &((ExtChannelElement*)ch)->sbr;
 }
 
 av_cold void AAC_RENAME(ff_aac_sbr_init)(void)
 {
-    aacsbr_tableinit();
-
     AAC_RENAME(ff_ps_init)();
 }
 
 /** Places SBR in pure upsampling mode. */
 static void sbr_turnoff(SpectralBandReplication *sbr) {
     sbr->start = 0;
+    sbr->usac = 0;
     sbr->ready_for_dequant = 0;
     // Init defults used in pure upsampling mode
     sbr->kx[1] = 32; //Typo in spec, kx' inits to 32
@@ -64,13 +67,20 @@ static void sbr_turnoff(SpectralBandReplication *sbr) {
     memset(&sbr->spectrum_params, -1, sizeof(SpectrumParameters));
 }
 
-av_cold int AAC_RENAME(ff_aac_sbr_ctx_init)(AACDecContext *ac, SpectralBandReplication *sbr, int id_aac)
+av_cold int AAC_RENAME(ff_aac_sbr_ctx_alloc_init)(AACDecContext *ac,
+                                                  ChannelElement **che, int id_aac)
 {
+    SpectralBandReplication *sbr;
+    ExtChannelElement *ext = av_mallocz(sizeof(*ext));
     int ret;
     float scale;
 
-    if (sbr->mdct)
-        return 0;
+    if (!ext)
+        return AVERROR(ENOMEM);
+    *che = &ext->ch;
+    sbr  = &ext->sbr;
+    ext->ch.ch[0].AAC_RENAME(predictor_state) = ext->predictor_state[0];
+    ext->ch.ch[1].AAC_RENAME(predictor_state) = ext->predictor_state[1];
 
     sbr->kx[0] = sbr->kx[1];
     sbr->id_aac = id_aac;
@@ -102,8 +112,9 @@ av_cold int AAC_RENAME(ff_aac_sbr_ctx_init)(AACDecContext *ac, SpectralBandRepli
     return 0;
 }
 
-av_cold void AAC_RENAME(ff_aac_sbr_ctx_close)(SpectralBandReplication *sbr)
+av_cold void AAC_RENAME(ff_aac_sbr_ctx_close)(ChannelElement *che)
 {
+    SpectralBandReplication *sbr = get_sbr(che);
     av_tx_uninit(&sbr->mdct);
     av_tx_uninit(&sbr->mdct_ana);
 }
@@ -174,7 +185,8 @@ static void sbr_make_f_tablelim(SpectralBandReplication *sbr)
     }
 }
 
-static unsigned int read_sbr_header(SpectralBandReplication *sbr, GetBitContext *gb)
+static unsigned int read_sbr_header(SpectralBandReplication *sbr,
+                                    GetBitContext *gb, int is_usac)
 {
     unsigned int cnt = get_bits_count(gb);
     uint8_t bs_header_extra_1;
@@ -184,15 +196,20 @@ static unsigned int read_sbr_header(SpectralBandReplication *sbr, GetBitContext 
 
     sbr->start = 1;
     sbr->ready_for_dequant = 0;
+    sbr->usac = is_usac;
 
     // Save last spectrum parameters variables to compare to new ones
     memcpy(&old_spectrum_params, &sbr->spectrum_params, sizeof(SpectrumParameters));
 
-    sbr->bs_amp_res_header              = get_bits1(gb);
+    if (!is_usac)
+        sbr->bs_amp_res_header          = get_bits1(gb);
+
     sbr->spectrum_params.bs_start_freq  = get_bits(gb, 4);
     sbr->spectrum_params.bs_stop_freq   = get_bits(gb, 4);
-    sbr->spectrum_params.bs_xover_band  = get_bits(gb, 3);
-                                          skip_bits(gb, 2); // bs_reserved
+
+    if (!is_usac)
+        sbr->spectrum_params.bs_xover_band = get_bits(gb, 3);
+                                             skip_bits(gb, 2); // bs_reserved
 
     bs_header_extra_1 = get_bits1(gb);
     bs_header_extra_2 = get_bits1(gb);
@@ -635,7 +652,7 @@ static int read_sbr_grid(AACDecContext *ac, SpectralBandReplication *sbr,
     switch (bs_frame_class = get_bits(gb, 2)) {
     case FIXFIX:
         bs_num_env = 1 << get_bits(gb, 2);
-        if (bs_num_env > 4) {
+        if (bs_num_env > (sbr->usac ? 8 : 5)) {
             av_log(ac->avctx, AV_LOG_ERROR,
                    "Invalid bitstream, too many SBR envelopes in FIXFIX type SBR frame: %d\n",
                    bs_num_env);
@@ -783,10 +800,26 @@ static void copy_sbr_grid(SBRData *dst, const SBRData *src) {
 
 /// Read how the envelope and noise floor data is delta coded
 static void read_sbr_dtdf(SpectralBandReplication *sbr, GetBitContext *gb,
-                          SBRData *ch_data)
+                          SBRData *ch_data, int indep_flag)
 {
-    get_bits1_vector(gb, ch_data->bs_df_env,   ch_data->bs_num_env);
-    get_bits1_vector(gb, ch_data->bs_df_noise, ch_data->bs_num_noise);
+    if (sbr->usac) {
+        if (indep_flag) {
+            ch_data->bs_df_env[0] = 0;
+            get_bits1_vector(gb, &ch_data->bs_df_env[1], ch_data->bs_num_env - 1);
+        } else {
+            get_bits1_vector(gb, ch_data->bs_df_env, ch_data->bs_num_env);
+        }
+
+        if (indep_flag) {
+            ch_data->bs_df_noise[0] = 0;
+            get_bits1_vector(gb, &ch_data->bs_df_noise[1], ch_data->bs_num_noise - 1);
+        } else {
+            get_bits1_vector(gb, ch_data->bs_df_noise, ch_data->bs_num_noise);
+        }
+    } else {
+        get_bits1_vector(gb, ch_data->bs_df_env,   ch_data->bs_num_env);
+        get_bits1_vector(gb, ch_data->bs_df_noise, ch_data->bs_num_noise);
+    }
 }
 
 /// Read inverse filtering data
@@ -801,7 +834,7 @@ static void read_sbr_invf(SpectralBandReplication *sbr, GetBitContext *gb,
 }
 
 static int read_sbr_envelope(AACDecContext *ac, SpectralBandReplication *sbr, GetBitContext *gb,
-                              SBRData *ch_data, int ch)
+                             SBRData *ch_data, int ch)
 {
     int bits;
     int i, j, k;
@@ -869,6 +902,13 @@ static int read_sbr_envelope(AACDecContext *ac, SpectralBandReplication *sbr, Ge
                     av_log(ac->avctx, AV_LOG_ERROR, "env_facs_q %d is invalid\n", ch_data->env_facs_q[i + 1][j]);
                     return AVERROR_INVALIDDATA;
                 }
+            }
+        }
+        if (sbr->usac) {
+            if (sbr->inter_tes) {
+                ch_data->temp_shape[i] = get_bits(gb, 1);
+                if (ch_data->temp_shape[i])
+                    ch_data->temp_shape_mode[i] = get_bits(gb, 2);
             }
         }
     }
@@ -960,7 +1000,7 @@ static int read_sbr_single_channel_element(AACDecContext *ac,
 
     if (read_sbr_grid(ac, sbr, gb, &sbr->data[0]))
         return -1;
-    read_sbr_dtdf(sbr, gb, &sbr->data[0]);
+    read_sbr_dtdf(sbr, gb, &sbr->data[0], 0);
     read_sbr_invf(sbr, gb, &sbr->data[0]);
     if((ret = read_sbr_envelope(ac, sbr, gb, &sbr->data[0], 0)) < 0)
         return ret;
@@ -986,8 +1026,8 @@ static int read_sbr_channel_pair_element(AACDecContext *ac,
         if (read_sbr_grid(ac, sbr, gb, &sbr->data[0]))
             return -1;
         copy_sbr_grid(&sbr->data[1], &sbr->data[0]);
-        read_sbr_dtdf(sbr, gb, &sbr->data[0]);
-        read_sbr_dtdf(sbr, gb, &sbr->data[1]);
+        read_sbr_dtdf(sbr, gb, &sbr->data[0], 0);
+        read_sbr_dtdf(sbr, gb, &sbr->data[1], 0);
         read_sbr_invf(sbr, gb, &sbr->data[0]);
         memcpy(sbr->data[1].bs_invf_mode[1], sbr->data[1].bs_invf_mode[0], sizeof(sbr->data[1].bs_invf_mode[0]));
         memcpy(sbr->data[1].bs_invf_mode[0], sbr->data[0].bs_invf_mode[0], sizeof(sbr->data[1].bs_invf_mode[0]));
@@ -1003,8 +1043,8 @@ static int read_sbr_channel_pair_element(AACDecContext *ac,
         if (read_sbr_grid(ac, sbr, gb, &sbr->data[0]) ||
             read_sbr_grid(ac, sbr, gb, &sbr->data[1]))
             return -1;
-        read_sbr_dtdf(sbr, gb, &sbr->data[0]);
-        read_sbr_dtdf(sbr, gb, &sbr->data[1]);
+        read_sbr_dtdf(sbr, gb, &sbr->data[0], 0);
+        read_sbr_dtdf(sbr, gb, &sbr->data[1], 0);
         read_sbr_invf(sbr, gb, &sbr->data[0]);
         read_sbr_invf(sbr, gb, &sbr->data[1]);
         if((ret = read_sbr_envelope(ac, sbr, gb, &sbr->data[0], 0)) < 0)
@@ -1090,9 +1130,11 @@ static void sbr_reset(AACDecContext *ac, SpectralBandReplication *sbr)
  *
  * @return  Returns number of bytes consumed from the TYPE_FIL element.
  */
-int AAC_RENAME(ff_decode_sbr_extension)(AACDecContext *ac, SpectralBandReplication *sbr,
-                            GetBitContext *gb_host, int crc, int cnt, int id_aac)
+int AAC_RENAME(ff_aac_sbr_decode_extension)(AACDecContext *ac, ChannelElement *che,
+                                            GetBitContext *gb_host, int crc,
+                                            int cnt, int id_aac)
 {
+    SpectralBandReplication *sbr = get_sbr(che);
     unsigned int num_sbr_bits = 0, num_align_bits;
     unsigned bytes_read;
     GetBitContext gbc = *gb_host, *gb = &gbc;
@@ -1117,7 +1159,7 @@ int AAC_RENAME(ff_decode_sbr_extension)(AACDecContext *ac, SpectralBandReplicati
 
     num_sbr_bits++;
     if (get_bits1(gb)) // bs_header_flag
-        num_sbr_bits += read_sbr_header(sbr, gb);
+        num_sbr_bits += read_sbr_header(sbr, gb, 0);
 
     if (sbr->reset)
         sbr_reset(ac, sbr);
@@ -1135,6 +1177,176 @@ int AAC_RENAME(ff_decode_sbr_extension)(AACDecContext *ac, SpectralBandReplicati
     }
     return cnt;
 }
+
+#if !USE_FIXED
+static void copy_usac_default_header(SpectralBandReplication *sbr,
+                                     AACUsacElemConfig *ue)
+{
+    sbr->inter_tes = ue->sbr.bs_intertes;
+
+    sbr->spectrum_params.bs_start_freq = ue->sbr.dflt.start_freq;
+    sbr->spectrum_params.bs_stop_freq = ue->sbr.dflt.stop_freq;
+
+    sbr->spectrum_params.bs_freq_scale = ue->sbr.dflt.freq_scale;
+    sbr->spectrum_params.bs_alter_scale = ue->sbr.dflt.alter_scale;
+    sbr->spectrum_params.bs_noise_bands = ue->sbr.dflt.noise_bands;
+
+    sbr->bs_limiter_bands = ue->sbr.dflt.limiter_bands;
+    sbr->bs_limiter_gains = ue->sbr.dflt.limiter_gains;
+    sbr->bs_interpol_freq = ue->sbr.dflt.interpol_freq;
+    sbr->bs_smoothing_mode = ue->sbr.dflt.smoothing_mode;
+}
+
+int ff_aac_sbr_config_usac(AACDecContext *ac, ChannelElement *che,
+                           AACUsacElemConfig *ue)
+{
+    SpectralBandReplication *sbr = get_sbr(che);
+    sbr_turnoff(sbr);
+    return 0;
+}
+
+int ff_aac_sbr_decode_usac_data(AACDecContext *ac, ChannelElement *che,
+                                AACUsacElemConfig *ue, GetBitContext *gb,
+                                int sbr_ch, int indep_flag)
+{
+    int ret;
+    SpectralBandReplication *sbr = get_sbr(che);
+    int info_present = 1;
+    int header_present = 1;
+
+    sbr->reset = 0;
+    sbr->usac = 1;
+
+    sbr->sample_rate = ac->oc[1].m4ac.ext_sample_rate;
+    sbr->id_aac = sbr_ch == 2 ? TYPE_CPE : TYPE_SCE;
+
+    if (!indep_flag) {
+        info_present = get_bits1(gb);
+        if (info_present)
+            header_present = get_bits1(gb);
+        else
+            header_present = 0;
+    }
+
+    if (info_present) {
+        /* SbrInfo() */
+        sbr->bs_amp_res_header = get_bits1(gb);
+        sbr->spectrum_params.bs_xover_band = get_bits(gb, 4);
+        sbr->bs_sbr_preprocessing = get_bits1(gb);
+        /* if (bs_pvc) ... */
+    }
+
+    if (header_present) {
+        if (get_bits1(gb)) {
+            int old_bs_limiter_bands = sbr->bs_limiter_bands;
+            SpectrumParameters old_spectrum_params;
+            memcpy(&old_spectrum_params, &sbr->spectrum_params,
+                   sizeof(SpectrumParameters));
+
+            copy_usac_default_header(sbr, ue);
+            // Check if spectrum parameters changed
+            if (memcmp(&old_spectrum_params, &sbr->spectrum_params,
+                       sizeof(SpectrumParameters)))
+                sbr->reset = 1;
+
+            if (sbr->bs_limiter_bands != old_bs_limiter_bands && !sbr->reset)
+                sbr_make_f_tablelim(sbr);
+        } else {
+            read_sbr_header(sbr, gb, 1);
+        }
+
+        sbr->start = 1;
+    }
+
+    //Save some state from the previous frame.
+    sbr->kx[0] = sbr->kx[1];
+    sbr->m[0] = sbr->m[1];
+    sbr->kx_and_m_pushed = 1;
+
+    if (sbr->reset)
+        sbr_reset(ac, sbr);
+
+    sbr->ready_for_dequant = 1;
+
+    if (sbr_ch == 1) { /* sbr_single_channel_element */
+        /* if (harmonicSBR) ... */
+
+        if (read_sbr_grid(ac, sbr, gb, &sbr->data[0]))
+            return -1;
+
+        read_sbr_dtdf(sbr, gb, &sbr->data[0], indep_flag);
+        read_sbr_invf(sbr, gb, &sbr->data[0]);
+
+        if ((ret = read_sbr_envelope(ac, sbr, gb, &sbr->data[0], 0)) < 0)
+            return ret;
+
+        if ((ret = read_sbr_noise(ac, sbr, gb, &sbr->data[0], 0)) < 0)
+            return ret;
+
+        if ((sbr->data[0].bs_add_harmonic_flag = get_bits1(gb)))
+            get_bits1_vector(gb, sbr->data[0].bs_add_harmonic, sbr->n[1]);
+    } else if (get_bits1(gb)) { /* bs_coupling == 1 */
+        /* if (harmonicSBR) ... */
+
+        if (read_sbr_grid(ac, sbr, gb, &sbr->data[0]))
+            return -1;
+        copy_sbr_grid(&sbr->data[1], &sbr->data[0]);
+
+        read_sbr_dtdf(sbr, gb, &sbr->data[0], indep_flag);
+        read_sbr_dtdf(sbr, gb, &sbr->data[1], indep_flag);
+
+        read_sbr_invf(sbr, gb, &sbr->data[0]);
+        memcpy(sbr->data[1].bs_invf_mode[1], sbr->data[1].bs_invf_mode[0],
+               sizeof(sbr->data[1].bs_invf_mode[0]));
+        memcpy(sbr->data[1].bs_invf_mode[0], sbr->data[0].bs_invf_mode[0],
+               sizeof(sbr->data[1].bs_invf_mode[0]));
+
+        if ((ret = read_sbr_envelope(ac, sbr, gb, &sbr->data[0], 0)) < 0)
+            return ret;
+        if ((ret = read_sbr_noise(ac, sbr, gb, &sbr->data[0], 0)) < 0)
+            return ret;
+
+        if ((ret = read_sbr_envelope(ac, sbr, gb, &sbr->data[1], 1)) < 0)
+            return ret;
+        if ((ret = read_sbr_noise(ac, sbr, gb, &sbr->data[1], 1)) < 0)
+            return ret;
+
+        if ((sbr->data[0].bs_add_harmonic_flag = get_bits1(gb)))
+            get_bits1_vector(gb, sbr->data[0].bs_add_harmonic, sbr->n[1]);
+        if ((sbr->data[1].bs_add_harmonic_flag = get_bits1(gb)))
+            get_bits1_vector(gb, sbr->data[1].bs_add_harmonic, sbr->n[1]);
+    } else { /* bs_coupling == 0 */
+        /* if (harmonicSBR) ... */
+        if (read_sbr_grid(ac, sbr, gb, &sbr->data[0]))
+            return -1;
+        if (read_sbr_grid(ac, sbr, gb, &sbr->data[1]))
+            return -1;
+
+        read_sbr_dtdf(sbr, gb, &sbr->data[0], indep_flag);
+        read_sbr_dtdf(sbr, gb, &sbr->data[1], indep_flag);
+
+        read_sbr_invf(sbr, gb, &sbr->data[0]);
+        read_sbr_invf(sbr, gb, &sbr->data[1]);
+
+        if ((ret = read_sbr_envelope(ac, sbr, gb, &sbr->data[0], 0)) < 0)
+            return ret;
+        if ((ret = read_sbr_envelope(ac, sbr, gb, &sbr->data[1], 1)) < 0)
+            return ret;
+
+        if ((ret = read_sbr_noise(ac, sbr, gb, &sbr->data[0], 0)) < 0)
+            return ret;
+        if ((ret = read_sbr_noise(ac, sbr, gb, &sbr->data[1], 1)) < 0)
+            return ret;
+
+        if ((sbr->data[0].bs_add_harmonic_flag = get_bits1(gb)))
+            get_bits1_vector(gb, sbr->data[0].bs_add_harmonic, sbr->n[1]);
+        if ((sbr->data[1].bs_add_harmonic_flag = get_bits1(gb)))
+            get_bits1_vector(gb, sbr->data[1].bs_add_harmonic, sbr->n[1]);
+    }
+
+    return 0;
+}
+#endif
 
 /**
  * Analysis QMF Bank (14496-3 sp04 p206)
@@ -1456,9 +1668,11 @@ static void sbr_env_estimate(AAC_FLOAT (*e_curr)[48], INTFLOAT X_high[64][40][2]
     }
 }
 
-void AAC_RENAME(ff_sbr_apply)(AACDecContext *ac, SpectralBandReplication *sbr, int id_aac,
-                  INTFLOAT* L, INTFLOAT* R)
+void AAC_RENAME(ff_aac_sbr_apply)(AACDecContext *ac, ChannelElement *che,
+                                  int id_aac, void *L_, void *R_)
 {
+    INTFLOAT *L = L_, *R = R_;
+    SpectralBandReplication *sbr = get_sbr(che);
     int downsampled = ac->oc[1].m4ac.ext_sample_rate < sbr->sample_rate;
     int ch;
     int nch = (id_aac == TYPE_CPE) ? 2 : 1;
@@ -1556,10 +1770,4 @@ static void aacsbr_func_ptr_init(AACSBRContext *c)
     c->sbr_hf_assemble       = sbr_hf_assemble;
     c->sbr_x_gen             = sbr_x_gen;
     c->sbr_hf_inverse_filter = sbr_hf_inverse_filter;
-
-#if !USE_FIXED
-#if ARCH_MIPS
-    ff_aacsbr_func_ptr_init_mips(c);
-#endif
-#endif
 }

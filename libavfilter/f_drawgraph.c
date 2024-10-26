@@ -20,15 +20,14 @@
 
 #include "config_components.h"
 
-#include "float.h"
-
 #include "libavutil/avstring.h"
 #include "libavutil/eval.h"
 #include "libavutil/intreadwrite.h"
+#include "libavutil/mem.h"
 #include "libavutil/opt.h"
 #include "avfilter.h"
+#include "filters.h"
 #include "formats.h"
-#include "internal.h"
 #include "video.h"
 
 typedef struct DrawGraphContext {
@@ -425,13 +424,14 @@ static int request_frame(AVFilterLink *outlink)
 
 static int config_output(AVFilterLink *outlink)
 {
+    FilterLink *l = ff_filter_link(outlink);
     DrawGraphContext *s = outlink->src->priv;
 
     outlink->w = s->w;
     outlink->h = s->h;
     outlink->sample_aspect_ratio = (AVRational){1,1};
-    outlink->frame_rate = s->frame_rate;
-    outlink->time_base = av_inv_q(outlink->frame_rate);
+    l->frame_rate = s->frame_rate;
+    outlink->time_base = av_inv_q(l->frame_rate);
     s->prev_pts = AV_NOPTS_VALUE;
 
     return 0;

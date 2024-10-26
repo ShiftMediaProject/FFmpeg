@@ -23,8 +23,8 @@
 #include <stdint.h>
 
 #include "libavutil/imgutils.h"
+#include "libavutil/mem.h"
 
-#include "mathops.h"
 #include "avcodec.h"
 #include "bytestream.h"
 #include "codec_internal.h"
@@ -1048,8 +1048,6 @@ static int dxv_decode(AVCodecContext *avctx, AVFrame *frame,
     }
 
     /* Frame is ready to be output. */
-    frame->pict_type = AV_PICTURE_TYPE_I;
-    frame->flags |= AV_FRAME_FLAG_KEY;
     *got_frame = 1;
 
     return avpkt->size;

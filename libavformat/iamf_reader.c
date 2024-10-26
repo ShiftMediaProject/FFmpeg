@@ -22,6 +22,7 @@
 #include "libavutil/avassert.h"
 #include "libavutil/intreadwrite.h"
 #include "libavutil/log.h"
+#include "libavutil/mem.h"
 #include "libavcodec/mathops.h"
 #include "libavcodec/packet.h"
 #include "avformat.h"
@@ -72,8 +73,8 @@ static int audio_frame_obu(AVFormatContext *s, const IAMFDemuxContext *c,
         uint8_t *side_data = av_packet_new_side_data(pkt, AV_PKT_DATA_SKIP_SAMPLES, 10);
         if (!side_data)
             return AVERROR(ENOMEM);
-        AV_WL32(side_data, skip_samples);
-        AV_WL32(side_data + 4, discard_padding);
+        AV_WL32A(side_data, skip_samples);
+        AV_WL32A(side_data + 4, discard_padding);
     }
     if (c->mix) {
         uint8_t *side_data = av_packet_new_side_data(pkt, AV_PKT_DATA_IAMF_MIX_GAIN_PARAM, c->mix_size);
@@ -275,7 +276,8 @@ int ff_iamf_read_packet(AVFormatContext *s, IAMFDemuxContext *c,
         unsigned skip_samples, discard_padding;
         int ret, len, size, start_pos;
 
-        if ((ret = ffio_ensure_seekback(pb, FFMIN(MAX_IAMF_OBU_HEADER_SIZE, max_size))) < 0)
+        ret = ffio_ensure_seekback(pb, FFMIN(MAX_IAMF_OBU_HEADER_SIZE, max_size));
+        if (ret < 0)
             return ret;
         size = avio_read(pb, header, FFMIN(MAX_IAMF_OBU_HEADER_SIZE, max_size));
         if (size < 0)
