@@ -1659,7 +1659,7 @@ int dec_open(Decoder **pdec, Scheduler *sch,
 
     multiview_check_manual(dp, *dec_opts);
 
-    ret = dec_open(dp, dec_opts, o, param_out);
+    ret = dec_open2(dp, dec_opts, o, param_out);
     if (ret < 0)
         goto fail;
 
