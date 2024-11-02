@@ -3352,6 +3352,12 @@
     <ClCompile Include="libavcodec\hw_base_encode_wrap.c">
       <Filter>Source Files\libavcodec</Filter>
     </ClCompile>
+    <ClCompile Include="libavcodec\hw_base_encode_h264_wrap.c">
+      <Filter>Source Files\libavcodec</Filter>
+    </ClCompile>
+    <ClCompile Include="libavcodec\hw_base_encode_h265_wrap.c">
+      <Filter>Source Files\libavcodec</Filter>
+    </ClCompile>
     <ClCompile Include="libavcodec\nvdec_wrap.c">
       <Filter>Source Files\libavcodec</Filter>
     </ClCompile>
@@ -3416,6 +3422,33 @@
       <Filter>Source Files\libavcodec</Filter>
     </ClCompile>
     <ClCompile Include="libavcodec\qsvenc_vp9_wrap.c">
+      <Filter>Source Files\libavcodec</Filter>
+    </ClCompile>
+    <ClCompile Include="libavcodec\vulkan_wrap.c">
+      <Filter>Source Files\libavcodec</Filter>
+    </ClCompile>
+    <ClCompile Include="libavcodec\vulkan_av1_wrap.c">
+      <Filter>Source Files\libavcodec</Filter>
+    </ClCompile>
+    <ClCompile Include="libavcodec\vulkan_decode_wrap.c">
+      <Filter>Source Files\libavcodec</Filter>
+    </ClCompile>
+    <ClCompile Include="libavcodec\vulkan_encode_wrap.c">
+      <Filter>Source Files\libavcodec</Filter>
+    </ClCompile>
+    <ClCompile Include="libavcodec\vulkan_encode_h264_wrap.c">
+      <Filter>Source Files\libavcodec</Filter>
+    </ClCompile>
+    <ClCompile Include="libavcodec\vulkan_encode_h265_wrap.c">
+      <Filter>Source Files\libavcodec</Filter>
+    </ClCompile>
+    <ClCompile Include="libavcodec\vulkan_h264_wrap.c">
+      <Filter>Source Files\libavcodec</Filter>
+    </ClCompile>
+    <ClCompile Include="libavcodec\vulkan_hevc_wrap.c">
+      <Filter>Source Files\libavcodec</Filter>
+    </ClCompile>
+    <ClCompile Include="libavcodec\vulkan_video_wrap.c">
       <Filter>Source Files\libavcodec</Filter>
     </ClCompile>
     <ClCompile Include="libavcodec\dce_defs.c">

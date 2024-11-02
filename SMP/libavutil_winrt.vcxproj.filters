@@ -306,9 +306,6 @@
     <ClCompile Include="..\libavutil\film_grain_params.c">
       <Filter>Source Files\libavutil</Filter>
     </ClCompile>
-    <ClCompile Include="..\libavutil\hwcontext_stub.c">
-      <Filter>Source Files\libavutil</Filter>
-    </ClCompile>
     <ClCompile Include="..\compat\msvcrt\snprintf.c">
       <Filter>Source Files\compat\msvcrt</Filter>
     </ClCompile>
@@ -349,6 +346,15 @@
       <Filter>Source Files\libavutil</Filter>
     </ClCompile>
     <ClCompile Include="libavutil\hwcontext_qsv_wrap.c">
+      <Filter>Source Files\libavutil</Filter>
+    </ClCompile>
+    <ClCompile Include="libavutil\hwcontext_stub_wrap.c">
+      <Filter>Source Files\libavutil</Filter>
+    </ClCompile>
+    <ClCompile Include="libavutil\hwcontext_vulkan_wrap.c">
+      <Filter>Source Files\libavutil</Filter>
+    </ClCompile>
+    <ClCompile Include="libavutil\vulkan_wrap.c">
       <Filter>Source Files\libavutil</Filter>
     </ClCompile>
     <ClCompile Include="..\libavutil\float_dsp.c">

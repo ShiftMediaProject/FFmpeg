@@ -26,7 +26,7 @@
 #   include <sdkddkver.h>
 #   include <winapifamily.h>
 #endif
-#define FFMPEG_CONFIGURATION "--enable-gpl --enable-version3 --enable-bzlib --enable-iconv --enable-lzma --enable-sdl2 --enable-zlib --enable-libmp3lame --enable-libvorbis --enable-libspeex --enable-libopus --enable-libilbc --enable-libtheora --enable-libx264 --enable-libx265 --enable-libxvid --enable-libvpx --enable-libgme --enable-libmodplug --enable-libsoxr --enable-libfreetype --enable-fontconfig --enable-libfribidi --enable-libharfbuzz --enable-libass --enable-libxml2 --enable-gnutls --disable-schannel --enable-gcrypt --enable-libssh --enable-libcdio --enable-libbluray --enable-opengl --enable-libmfx --enable-ffnvcodec --enable-cuda --enable-amf"
+#define FFMPEG_CONFIGURATION "--enable-gpl --enable-version3 --enable-bzlib --enable-iconv --enable-lzma --enable-sdl2 --enable-zlib --enable-libmp3lame --enable-libvorbis --enable-libspeex --enable-libopus --enable-libilbc --enable-libtheora --enable-libx264 --enable-libx265 --enable-libxvid --enable-libvpx --enable-libgme --enable-libmodplug --enable-libsoxr --enable-libfreetype --enable-fontconfig --enable-libfribidi --enable-libharfbuzz --enable-libass --enable-libxml2 --enable-gnutls --disable-schannel --enable-gcrypt --enable-libssh --enable-libcdio --enable-libbluray --enable-opengl --enable-libmfx --enable-ffnvcodec --enable-cuda --enable-amf --enable-vulkan"
 #define FFMPEG_LICENSE "GPL version 3 or later"
 #define CONFIG_THIS_YEAR 2024
 #define FFMPEG_DATADIR "."
@@ -782,7 +782,11 @@
 #define CONFIG_VAAPI 0
 #define CONFIG_VDPAU 0
 #define CONFIG_VIDEOTOOLBOX 0
-#define CONFIG_VULKAN 0
+#if !HAVE_WINRT && !HAVE_UWP
+#   define CONFIG_VULKAN 1
+#else
+#   define CONFIG_VULKAN 0
+#endif
 #define CONFIG_V4L2_M2M 0
 #define CONFIG_FTRAPV 0
 #define CONFIG_GRAY 0
@@ -973,7 +977,11 @@
 #define CONFIG_VP3DSP 1
 #define CONFIG_VP56DSP 1
 #define CONFIG_VP8DSP 1
-#define CONFIG_VULKAN_ENCODE 0
+#if CONFIG_VULKAN
+#   define CONFIG_VULKAN_ENCODE 1
+#else
+#   define CONFIG_VULKAN_ENCODE 0
+#endif
 #define CONFIG_WMA_FREQS 1
 #define CONFIG_WMV2DSP 1
 #endif /* SMP_CONFIG_H */

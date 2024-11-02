@@ -1,4 +1,4 @@
-/** hw_base_encode.c file wrapper for libavcodec
+/** hwcontext_stub.c file wrapper for libavutil
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,6 +21,6 @@
 
 #include "config.h"
 #include "config_components.h"
-#if CONFIG_D3D12VA_ENCODE || CONFIG_H264_VULKAN_ENCODER || CONFIG_HEVC_VULKAN_ENCODER
-#   include "../../libavcodec/hw_base_encode.c"
+#if !CONFIG_VULKAN
+#   include "../../libavutil/hwcontext_stub.c"
 #endif

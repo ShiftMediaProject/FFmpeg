@@ -118,7 +118,7 @@ before_build:
     }
 
 # Download and install nasm integration
-- ps: (New-Object Net.WebClient).DownloadFile('https://github.com/ShiftMediaProject/VSNASM/releases/download/0.8/VSNASM.zip', "$pwd\nasm.zip")
+- ps: (New-Object Net.WebClient).DownloadFile('https://github.com/ShiftMediaProject/VSNASM/releases/download/1.0/VSNASM.zip', "$pwd\nasm.zip")
 - ps: Add-Type -A 'System.IO.Compression.FileSystem'; [IO.Compression.ZipFile]::ExtractToDirectory("$pwd\nasm.zip", "$pwd\TempNASMUnpack")
 - cmd: call ".\TempNASMUnpack\install_script.bat"
 # Additional nasm location in order to fix gitlink error
@@ -149,6 +149,14 @@ before_build:
 - cmd: for /f "tokens=*" %%G IN ('dir amf /ad /s /b') do set FOLDER=%%G
 - cmd: mkdir "%APPVEYOR_BUILD_FOLDER%\..\prebuilt\include\AMF" >NUL 2>&1
 - cmd: xcopy /s /y /q "%FOLDER%\public\include" "%APPVEYOR_BUILD_FOLDER%\..\prebuilt\include\AMF"
+
+# Download required vulkan headers
+- ps: (New-Object Net.WebClient).DownloadFile('https://github.com/KhronosGroup/Vulkan-Headers/archive/master.zip', "$pwd\vulkan.zip")
+- ps: Add-Type -A 'System.IO.Compression.FileSystem'; [IO.Compression.ZipFile]::ExtractToDirectory("$pwd\vulkan.zip", "$pwd\TempvulkanUnpack")
+- cmd: mkdir "%APPVEYOR_BUILD_FOLDER%\..\prebuilt\include\vulkan" >NUL 2>&1
+- cmd: mkdir "%APPVEYOR_BUILD_FOLDER%\..\prebuilt\include\vk_video" >NUL 2>&1
+- cmd: copy ".\TempvulkanUnpack\Vulkan-Headers-main\include\vulkan\*.h" "%APPVEYOR_BUILD_FOLDER%\..\prebuilt\include\vulkan\"
+- cmd: copy ".\TempvulkanUnpack\Vulkan-Headers-main\include\vk_video\*.h" "%APPVEYOR_BUILD_FOLDER%\..\prebuilt\include\vk_video\"
 
 build:
   project: build.vcxproj

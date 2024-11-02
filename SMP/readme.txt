@@ -47,6 +47,7 @@ Required project dependencies include:
     opengl
     ffnvcodec
     libmfx
+    vulkan
 
 Most of the above dependencies are supplied as part of the ShiftMediaProject repositories.
 These repositories can be manually downloaded or automatically cloned using the supplied
@@ -68,6 +69,12 @@ However the following is a list of extra dependency options that require externa
     3) AMF (requires Advanced Media Framework (AMF) SDK headers)
         a) Download the AMF repository from https://github.com/GPUOpen-LibrariesAndSDKs/AMF
         b) Save the contents of the AMF repositories "amf/public/include" into "OutputDir/include/AMF/*".
+    4) vulkan (requires Vulkan headers or Vulkan SDK)
+        a) Download the Vulkan SDK from https://www.lunarg.com/vulkan-sdk/
+        b) Install the downloaded SDK wherever desired.
+      or
+        a) Download the vulkan-headers repository from https://github.com/KhronosGroup/Vulkan-Headers
+        b) Save the contents of the vulkan-headers repositories "include" folder into "OutputDir/include/*".
             
 *OutputDir is the "Output Directory" specified in the project properties. 
 The default value of OutputDir is "..\..\msvc" relative to the FFmpeg source directory. An example of the expected 

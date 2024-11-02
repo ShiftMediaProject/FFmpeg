@@ -227,6 +227,9 @@ static const FFCodec *codec_list[] = {
 #if CONFIG_H264_QSV_ENCODER
     &ff_h264_qsv_encoder,
 #endif
+#if CONFIG_H264_VULKAN_ENCODER
+    &ff_h264_vulkan_encoder,
+#endif
 #if CONFIG_HEVC_AMF_ENCODER
     &ff_hevc_amf_encoder,
 #endif
@@ -239,6 +242,9 @@ static const FFCodec *codec_list[] = {
 #endif
 #if CONFIG_HEVC_QSV_ENCODER
     &ff_hevc_qsv_encoder,
+#endif
+#if CONFIG_HEVC_VULKAN_ENCODER
+    &ff_hevc_vulkan_encoder,
 #endif
 #if CONFIG_MJPEG_QSV_ENCODER
     &ff_mjpeg_qsv_encoder,

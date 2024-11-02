@@ -102,7 +102,6 @@
     <ClCompile Include="..\libavutil\video_enc_params.c" />
     <ClCompile Include="..\libavutil\video_hint.c" />
     <ClCompile Include="..\libavutil\film_grain_params.c" />
-    <ClCompile Include="..\libavutil\hwcontext_stub.c" />
     <ClCompile Include="..\compat\msvcrt\snprintf.c" />
     <ClCompile Include="..\compat\strtod.c" />
     <ClCompile Include="..\compat\getopt.c" />
@@ -117,6 +116,9 @@
     <ClCompile Include="libavutil\hwcontext_d3d12va_wrap.c" />
     <ClCompile Include="libavutil\hwcontext_dxva2_wrap.c" />
     <ClCompile Include="libavutil\hwcontext_qsv_wrap.c" />
+    <ClCompile Include="libavutil\hwcontext_stub_wrap.c" />
+    <ClCompile Include="libavutil\hwcontext_vulkan_wrap.c" />
+    <ClCompile Include="libavutil\vulkan_wrap.c" />
     <ClCompile Include="..\libavutil\float_dsp.c">
       <ObjectFileName>$(IntDir)\libavutil_float_dsp.obj</ObjectFileName>
     </ClCompile>

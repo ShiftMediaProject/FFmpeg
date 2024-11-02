@@ -152,7 +152,7 @@ cd $(ProjectDir)
 )</Command>
     </PreBuildEvent>
     <NASM>
-      <IncludePaths>$(ProjectDir);$(ProjectDir)\..\;$(ProjectDir)\..\\$(ProjectName)\x86;%(IncludePaths)</IncludePaths>
+      <IncludePaths>$(ProjectDir);$(ProjectDir)\..\;$(ProjectDir)\..\\libavutil\x86;%(IncludePaths)</IncludePaths>
       <PreIncludeFiles>config.asm;%(PreIncludeFiles)</PreIncludeFiles>
       <GenerateDebugInformation>false</GenerateDebugInformation>
     </NASM>
@@ -302,7 +302,7 @@ cd $(ProjectDir)
 )</Command>
     </PreBuildEvent>
     <NASM>
-      <IncludePaths>$(ProjectDir);$(ProjectDir)\..\;$(ProjectDir)\..\\$(ProjectName)\x86;%(IncludePaths)</IncludePaths>
+      <IncludePaths>$(ProjectDir);$(ProjectDir)\..\;$(ProjectDir)\..\\libavutil\x86;%(IncludePaths)</IncludePaths>
       <PreIncludeFiles>config.asm;%(PreIncludeFiles)</PreIncludeFiles>
       <GenerateDebugInformation>false</GenerateDebugInformation>
     </NASM>
@@ -453,7 +453,7 @@ cd $(ProjectDir)
 )</Command>
     </PreBuildEvent>
     <NASM>
-      <IncludePaths>$(ProjectDir);$(ProjectDir)\..\;$(ProjectDir)\..\\$(ProjectName)\x86;%(IncludePaths)</IncludePaths>
+      <IncludePaths>$(ProjectDir);$(ProjectDir)\..\;$(ProjectDir)\..\\libavutil\x86;%(IncludePaths)</IncludePaths>
       <PreIncludeFiles>config.asm;%(PreIncludeFiles)</PreIncludeFiles>
       <GenerateDebugInformation>false</GenerateDebugInformation>
     </NASM>
@@ -604,7 +604,7 @@ cd $(ProjectDir)
 )</Command>
     </PreBuildEvent>
     <NASM>
-      <IncludePaths>$(ProjectDir);$(ProjectDir)\..\;$(ProjectDir)\..\\$(ProjectName)\x86;%(IncludePaths)</IncludePaths>
+      <IncludePaths>$(ProjectDir);$(ProjectDir)\..\;$(ProjectDir)\..\\libavutil\x86;%(IncludePaths)</IncludePaths>
       <PreIncludeFiles>config.asm;%(PreIncludeFiles)</PreIncludeFiles>
       <GenerateDebugInformation>false</GenerateDebugInformation>
     </NASM>
@@ -754,7 +754,7 @@ cd $(ProjectDir)
 )</Command>
     </PreBuildEvent>
     <NASM>
-      <IncludePaths>$(ProjectDir);$(ProjectDir)\..\;$(ProjectDir)\..\\$(ProjectName)\x86;%(IncludePaths)</IncludePaths>
+      <IncludePaths>$(ProjectDir);$(ProjectDir)\..\;$(ProjectDir)\..\\libavutil\x86;%(IncludePaths)</IncludePaths>
       <PreIncludeFiles>config.asm;%(PreIncludeFiles)</PreIncludeFiles>
       <GenerateDebugInformation>false</GenerateDebugInformation>
     </NASM>
@@ -904,7 +904,7 @@ cd $(ProjectDir)
 )</Command>
     </PreBuildEvent>
     <NASM>
-      <IncludePaths>$(ProjectDir);$(ProjectDir)\..\;$(ProjectDir)\..\\$(ProjectName)\x86;%(IncludePaths)</IncludePaths>
+      <IncludePaths>$(ProjectDir);$(ProjectDir)\..\;$(ProjectDir)\..\\libavutil\x86;%(IncludePaths)</IncludePaths>
       <PreIncludeFiles>config.asm;%(PreIncludeFiles)</PreIncludeFiles>
       <GenerateDebugInformation>false</GenerateDebugInformation>
     </NASM>
@@ -1055,7 +1055,7 @@ cd $(ProjectDir)
 )</Command>
     </PreBuildEvent>
     <NASM>
-      <IncludePaths>$(ProjectDir);$(ProjectDir)\..\;$(ProjectDir)\..\\$(ProjectName)\x86;%(IncludePaths)</IncludePaths>
+      <IncludePaths>$(ProjectDir);$(ProjectDir)\..\;$(ProjectDir)\..\\libavutil\x86;%(IncludePaths)</IncludePaths>
       <PreIncludeFiles>config.asm;%(PreIncludeFiles)</PreIncludeFiles>
       <GenerateDebugInformation>false</GenerateDebugInformation>
     </NASM>
@@ -1206,7 +1206,7 @@ cd $(ProjectDir)
 )</Command>
     </PreBuildEvent>
     <NASM>
-      <IncludePaths>$(ProjectDir);$(ProjectDir)\..\;$(ProjectDir)\..\\$(ProjectName)\x86;%(IncludePaths)</IncludePaths>
+      <IncludePaths>$(ProjectDir);$(ProjectDir)\..\;$(ProjectDir)\..\\libavutil\x86;%(IncludePaths)</IncludePaths>
       <PreIncludeFiles>config.asm;%(PreIncludeFiles)</PreIncludeFiles>
       <GenerateDebugInformation>false</GenerateDebugInformation>
     </NASM>
@@ -1357,7 +1357,7 @@ cd $(ProjectDir)
 )</Command>
     </PreBuildEvent>
     <NASM>
-      <IncludePaths>$(ProjectDir);$(ProjectDir)\..\;$(ProjectDir)\..\\$(ProjectName)\x86;%(IncludePaths)</IncludePaths>
+      <IncludePaths>$(ProjectDir);$(ProjectDir)\..\;$(ProjectDir)\..\\libavutil\x86;%(IncludePaths)</IncludePaths>
       <PreIncludeFiles>config.asm;%(PreIncludeFiles)</PreIncludeFiles>
       <GenerateDebugInformation>false</GenerateDebugInformation>
     </NASM>
@@ -1508,7 +1508,7 @@ cd $(ProjectDir)
 )</Command>
     </PreBuildEvent>
     <NASM>
-      <IncludePaths>$(ProjectDir);$(ProjectDir)\..\;$(ProjectDir)\..\\$(ProjectName)\x86;%(IncludePaths)</IncludePaths>
+      <IncludePaths>$(ProjectDir);$(ProjectDir)\..\;$(ProjectDir)\..\\libavutil\x86;%(IncludePaths)</IncludePaths>
       <PreIncludeFiles>config.asm;%(PreIncludeFiles)</PreIncludeFiles>
       <GenerateDebugInformation>false</GenerateDebugInformation>
     </NASM>

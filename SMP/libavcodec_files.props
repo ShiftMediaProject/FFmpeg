@@ -1119,6 +1119,8 @@
     <ClCompile Include="libavcodec\dxva2_vp9_wrap.c" />
     <ClCompile Include="libavcodec\hevc\ps_enc_wrap.c" />
     <ClCompile Include="libavcodec\hw_base_encode_wrap.c" />
+    <ClCompile Include="libavcodec\hw_base_encode_h264_wrap.c" />
+    <ClCompile Include="libavcodec\hw_base_encode_h265_wrap.c" />
     <ClCompile Include="libavcodec\nvdec_wrap.c" />
     <ClCompile Include="libavcodec\nvdec_av1_wrap.c" />
     <ClCompile Include="libavcodec\nvdec_h264_wrap.c" />
@@ -1141,6 +1143,15 @@
     <ClCompile Include="libavcodec\qsvenc_jpeg_wrap.c" />
     <ClCompile Include="libavcodec\qsvenc_mpeg2_wrap.c" />
     <ClCompile Include="libavcodec\qsvenc_vp9_wrap.c" />
+    <ClCompile Include="libavcodec\vulkan_wrap.c" />
+    <ClCompile Include="libavcodec\vulkan_av1_wrap.c" />
+    <ClCompile Include="libavcodec\vulkan_decode_wrap.c" />
+    <ClCompile Include="libavcodec\vulkan_encode_wrap.c" />
+    <ClCompile Include="libavcodec\vulkan_encode_h264_wrap.c" />
+    <ClCompile Include="libavcodec\vulkan_encode_h265_wrap.c" />
+    <ClCompile Include="libavcodec\vulkan_h264_wrap.c" />
+    <ClCompile Include="libavcodec\vulkan_hevc_wrap.c" />
+    <ClCompile Include="libavcodec\vulkan_video_wrap.c" />
     <ClCompile Include="libavcodec\dce_defs.c" />
     <ClCompile Include="..\libavcodec\ac3dsp.c">
       <ObjectFileName>$(IntDir)\libavcodec_ac3dsp.obj</ObjectFileName>
