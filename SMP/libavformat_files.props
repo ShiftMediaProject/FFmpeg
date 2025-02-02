@@ -193,6 +193,8 @@
     <ClCompile Include="..\libavformat\dvenc.c" />
     <ClCompile Include="..\libavformat\dvbsub.c" />
     <ClCompile Include="..\libavformat\dvbtxt.c" />
+    <ClCompile Include="..\libavformat\dvdvideodec.c" />
+    <ClCompile Include="..\libavformat\dvdclut.c" />
     <ClCompile Include="..\libavformat\dxa.c" />
     <ClCompile Include="..\libavformat\eacdata.c" />
     <ClCompile Include="..\libavformat\electronicarts.c" />

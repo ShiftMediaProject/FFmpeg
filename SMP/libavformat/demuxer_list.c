@@ -103,6 +103,7 @@ static const FFInputFormat *demuxer_list[] = {
     &ff_dv_demuxer,
     &ff_dvbsub_demuxer,
     &ff_dvbtxt_demuxer,
+    &ff_dvdvideo_demuxer,
     &ff_dxa_demuxer,
     &ff_ea_demuxer,
     &ff_ea_cdata_demuxer,

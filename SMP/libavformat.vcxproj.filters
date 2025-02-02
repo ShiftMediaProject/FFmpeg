@@ -574,6 +574,12 @@
     <ClCompile Include="..\libavformat\dvbtxt.c">
       <Filter>Source Files\libavformat</Filter>
     </ClCompile>
+    <ClCompile Include="..\libavformat\dvdvideodec.c">
+      <Filter>Source Files\libavformat</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libavformat\dvdclut.c">
+      <Filter>Source Files\libavformat</Filter>
+    </ClCompile>
     <ClCompile Include="..\libavformat\dxa.c">
       <Filter>Source Files\libavformat</Filter>
     </ClCompile>

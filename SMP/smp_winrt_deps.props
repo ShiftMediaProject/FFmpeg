@@ -259,6 +259,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <MinimumRequiredVersion Condition="'$(ApplicationTypeRevision)' == '10.0'">10.0</MinimumRequiredVersion>
       <MinimumRequiredVersion Condition="'$(ApplicationTypeRevision)' == '8.1'">8.1</MinimumRequiredVersion>
+      <GenerateWindowsMetadata>false</GenerateWindowsMetadata>
       <WindowsMetadataFile>$(OutDir)\lib\x86\$(RootNamespace).winmd</WindowsMetadataFile>
     </Link>
   </ItemDefinitionGroup>
@@ -284,6 +285,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <MinimumRequiredVersion Condition="'$(ApplicationTypeRevision)' == '10.0'">10.0</MinimumRequiredVersion>
       <MinimumRequiredVersion Condition="'$(ApplicationTypeRevision)' == '8.1'">8.1</MinimumRequiredVersion>
+      <GenerateWindowsMetadata>false</GenerateWindowsMetadata>
       <WindowsMetadataFile>$(OutDir)\lib\x64\$(RootNamespace).winmd</WindowsMetadataFile>
     </Link>
   </ItemDefinitionGroup>
@@ -371,6 +373,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <MinimumRequiredVersion Condition="'$(ApplicationTypeRevision)' == '10.0'">10.0</MinimumRequiredVersion>
       <MinimumRequiredVersion Condition="'$(ApplicationTypeRevision)' == '8.1'">8.1</MinimumRequiredVersion>
+      <GenerateWindowsMetadata>false</GenerateWindowsMetadata>
       <WindowsMetadataFile>$(OutDir)\lib\x86\$(RootNamespace).winmd</WindowsMetadataFile>
     </Link>
   </ItemDefinitionGroup>
@@ -404,6 +407,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <MinimumRequiredVersion Condition="'$(ApplicationTypeRevision)' == '10.0'">10.0</MinimumRequiredVersion>
       <MinimumRequiredVersion Condition="'$(ApplicationTypeRevision)' == '8.1'">8.1</MinimumRequiredVersion>
+      <GenerateWindowsMetadata>false</GenerateWindowsMetadata>
       <WindowsMetadataFile>$(OutDir)\lib\x64\$(RootNamespace).winmd</WindowsMetadataFile>
     </Link>
   </ItemDefinitionGroup>
@@ -438,6 +442,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <MinimumRequiredVersion Condition="'$(ApplicationTypeRevision)' == '10.0'">10.0</MinimumRequiredVersion>
       <MinimumRequiredVersion Condition="'$(ApplicationTypeRevision)' == '8.1'">8.1</MinimumRequiredVersion>
+      <GenerateWindowsMetadata>false</GenerateWindowsMetadata>
       <WindowsMetadataFile>$(OutDir)\lib\x86\$(RootNamespace).winmd</WindowsMetadataFile>
     </Link>
   </ItemDefinitionGroup>
@@ -471,6 +476,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <MinimumRequiredVersion Condition="'$(ApplicationTypeRevision)' == '10.0'">10.0</MinimumRequiredVersion>
       <MinimumRequiredVersion Condition="'$(ApplicationTypeRevision)' == '8.1'">8.1</MinimumRequiredVersion>
+      <GenerateWindowsMetadata>false</GenerateWindowsMetadata>
       <WindowsMetadataFile>$(OutDir)\lib\x64\$(RootNamespace).winmd</WindowsMetadataFile>
     </Link>
   </ItemDefinitionGroup>

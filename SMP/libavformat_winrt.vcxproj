@@ -18,7 +18,7 @@
 	  <LanguageStandard_C Condition="'$(VisualStudioVersion)' > '15.0'">stdc11</LanguageStandard_C>
     </ClCompile>
     <Lib>
-      <AdditionalDependencies>libbz2d_winrt.lib;libiconvd_winrt.lib;libzlibd_winrt.lib;libgcryptd_winrt.lib;libgnutlsd_winrt.lib;libblurayd_winrt.lib;libgmed_winrt.lib;libmodplugd_winrt.lib;libsshd_winrt.lib;libxml2d_winrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libbz2d_winrt.lib;libiconvd_winrt.lib;libzlibd_winrt.lib;libdvdnavd_winrt.lib;libdvdreadd_winrt.lib;libgcryptd_winrt.lib;libgnutlsd_winrt.lib;libblurayd_winrt.lib;libgmed_winrt.lib;libmodplugd_winrt.lib;libsshd_winrt.lib;libxml2d_winrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/IGNORE:4006,4221,4049,4217,4197,4099,4264 %(AdditionalOptions)</AdditionalOptions>
     </Lib>
     <PostBuildEvent>
@@ -71,7 +71,7 @@ cd $(ProjectDir)
 	  <LanguageStandard_C Condition="'$(VisualStudioVersion)' > '15.0'">stdc11</LanguageStandard_C>
     </ClCompile>
     <Lib>
-      <AdditionalDependencies>libbz2d_winrt.lib;libiconvd_winrt.lib;libzlibd_winrt.lib;libgcryptd_winrt.lib;libgnutlsd_winrt.lib;libblurayd_winrt.lib;libgmed_winrt.lib;libmodplugd_winrt.lib;libsshd_winrt.lib;libxml2d_winrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libbz2d_winrt.lib;libiconvd_winrt.lib;libzlibd_winrt.lib;libdvdnavd_winrt.lib;libdvdreadd_winrt.lib;libgcryptd_winrt.lib;libgnutlsd_winrt.lib;libblurayd_winrt.lib;libgmed_winrt.lib;libmodplugd_winrt.lib;libsshd_winrt.lib;libxml2d_winrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/IGNORE:4006,4221,4049,4217,4197,4099,4264 %(AdditionalOptions)</AdditionalOptions>
     </Lib>
     <PostBuildEvent>
@@ -124,7 +124,7 @@ cd $(ProjectDir)
 	  <LanguageStandard_C Condition="'$(VisualStudioVersion)' > '15.0'">stdc11</LanguageStandard_C>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>avcodecd_winrt.lib;avutild_winrt.lib;bz2d_winrt.lib;iconvd_winrt.lib;zlibd_winrt.lib;gcryptd_winrt.lib;gnutlsd_winrt.lib;blurayd_winrt.lib;gmed_winrt.lib;modplugd_winrt.lib;sshd_winrt.lib;xml2d_winrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>avcodecd_winrt.lib;avutild_winrt.lib;bz2d_winrt.lib;iconvd_winrt.lib;zlibd_winrt.lib;dvdnavd_winrt.lib;dvdreadd_winrt.lib;gcryptd_winrt.lib;gnutlsd_winrt.lib;blurayd_winrt.lib;gmed_winrt.lib;modplugd_winrt.lib;sshd_winrt.lib;xml2d_winrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>.\libavformat.def</ModuleDefinitionFile>
       <AdditionalOptions>/IGNORE:4006,4221,4049,4217,4197,4099,4264 %(AdditionalOptions)</AdditionalOptions>
     </Link>
@@ -178,7 +178,7 @@ cd $(ProjectDir)
 	  <LanguageStandard_C Condition="'$(VisualStudioVersion)' > '15.0'">stdc11</LanguageStandard_C>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>avcodecd_winrt.lib;avutild_winrt.lib;bz2d_winrt.lib;iconvd_winrt.lib;zlibd_winrt.lib;gcryptd_winrt.lib;gnutlsd_winrt.lib;blurayd_winrt.lib;gmed_winrt.lib;modplugd_winrt.lib;sshd_winrt.lib;xml2d_winrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>avcodecd_winrt.lib;avutild_winrt.lib;bz2d_winrt.lib;iconvd_winrt.lib;zlibd_winrt.lib;dvdnavd_winrt.lib;dvdreadd_winrt.lib;gcryptd_winrt.lib;gnutlsd_winrt.lib;blurayd_winrt.lib;gmed_winrt.lib;modplugd_winrt.lib;sshd_winrt.lib;xml2d_winrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>.\libavformat.def</ModuleDefinitionFile>
       <AdditionalOptions>/IGNORE:4006,4221,4049,4217,4197,4099,4264 %(AdditionalOptions)</AdditionalOptions>
     </Link>
@@ -232,7 +232,7 @@ cd $(ProjectDir)
 	  <LanguageStandard_C Condition="'$(VisualStudioVersion)' > '15.0'">stdc11</LanguageStandard_C>
     </ClCompile>
     <Lib>
-      <AdditionalDependencies>libbz2_winrt.lib;libiconv_winrt.lib;libzlib_winrt.lib;libgcrypt_winrt.lib;libgnutls_winrt.lib;libbluray_winrt.lib;libgme_winrt.lib;libmodplug_winrt.lib;libssh_winrt.lib;libxml2_winrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libbz2_winrt.lib;libiconv_winrt.lib;libzlib_winrt.lib;libdvdnav_winrt.lib;libdvdread_winrt.lib;libgcrypt_winrt.lib;libgnutls_winrt.lib;libbluray_winrt.lib;libgme_winrt.lib;libmodplug_winrt.lib;libssh_winrt.lib;libxml2_winrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/IGNORE:4006,4221,4049,4217,4197,4099,4264 %(AdditionalOptions)</AdditionalOptions>
     </Lib>
     <PostBuildEvent>
@@ -285,7 +285,7 @@ cd $(ProjectDir)
 	  <LanguageStandard_C Condition="'$(VisualStudioVersion)' > '15.0'">stdc11</LanguageStandard_C>
     </ClCompile>
     <Lib>
-      <AdditionalDependencies>libbz2_winrt.lib;libiconv_winrt.lib;libzlib_winrt.lib;libgcrypt_winrt.lib;libgnutls_winrt.lib;libbluray_winrt.lib;libgme_winrt.lib;libmodplug_winrt.lib;libssh_winrt.lib;libxml2_winrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libbz2_winrt.lib;libiconv_winrt.lib;libzlib_winrt.lib;libdvdnav_winrt.lib;libdvdread_winrt.lib;libgcrypt_winrt.lib;libgnutls_winrt.lib;libbluray_winrt.lib;libgme_winrt.lib;libmodplug_winrt.lib;libssh_winrt.lib;libxml2_winrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/IGNORE:4006,4221,4049,4217,4197,4099,4264 %(AdditionalOptions)</AdditionalOptions>
     </Lib>
     <PostBuildEvent>
@@ -338,7 +338,7 @@ cd $(ProjectDir)
 	  <LanguageStandard_C Condition="'$(VisualStudioVersion)' > '15.0'">stdc11</LanguageStandard_C>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>avcodec_winrt.lib;avutil_winrt.lib;bz2_winrt.lib;iconv_winrt.lib;zlib_winrt.lib;gcrypt_winrt.lib;gnutls_winrt.lib;bluray_winrt.lib;gme_winrt.lib;modplug_winrt.lib;ssh_winrt.lib;xml2_winrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>avcodec_winrt.lib;avutil_winrt.lib;bz2_winrt.lib;iconv_winrt.lib;zlib_winrt.lib;dvdnav_winrt.lib;dvdread_winrt.lib;gcrypt_winrt.lib;gnutls_winrt.lib;bluray_winrt.lib;gme_winrt.lib;modplug_winrt.lib;ssh_winrt.lib;xml2_winrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>.\libavformat.def</ModuleDefinitionFile>
       <AdditionalOptions>/IGNORE:4006,4221,4049,4217,4197,4099,4264 %(AdditionalOptions)</AdditionalOptions>
     </Link>
@@ -392,7 +392,7 @@ cd $(ProjectDir)
 	  <LanguageStandard_C Condition="'$(VisualStudioVersion)' > '15.0'">stdc11</LanguageStandard_C>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>avcodec_winrt.lib;avutil_winrt.lib;bz2_winrt.lib;iconv_winrt.lib;zlib_winrt.lib;gcrypt_winrt.lib;gnutls_winrt.lib;bluray_winrt.lib;gme_winrt.lib;modplug_winrt.lib;ssh_winrt.lib;xml2_winrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>avcodec_winrt.lib;avutil_winrt.lib;bz2_winrt.lib;iconv_winrt.lib;zlib_winrt.lib;dvdnav_winrt.lib;dvdread_winrt.lib;gcrypt_winrt.lib;gnutls_winrt.lib;bluray_winrt.lib;gme_winrt.lib;modplug_winrt.lib;ssh_winrt.lib;xml2_winrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>.\libavformat.def</ModuleDefinitionFile>
       <AdditionalOptions>/IGNORE:4006,4221,4049,4217,4197,4099,4264 %(AdditionalOptions)</AdditionalOptions>
     </Link>
@@ -446,7 +446,7 @@ cd $(ProjectDir)
 	  <LanguageStandard_C Condition="'$(VisualStudioVersion)' > '15.0'">stdc11</LanguageStandard_C>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>avcodec_winrt.lib;avutil_winrt.lib;libbz2_winrt.lib;libiconv_winrt.lib;libzlib_winrt.lib;libgcrypt_winrt.lib;libgnutls_winrt.lib;libbluray_winrt.lib;libgme_winrt.lib;libmodplug_winrt.lib;libssh_winrt.lib;libxml2_winrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>avcodec_winrt.lib;avutil_winrt.lib;libbz2_winrt.lib;libiconv_winrt.lib;libzlib_winrt.lib;libdvdnav_winrt.lib;libdvdread_winrt.lib;libgcrypt_winrt.lib;libgnutls_winrt.lib;libbluray_winrt.lib;libgme_winrt.lib;libmodplug_winrt.lib;libssh_winrt.lib;libxml2_winrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>.\libavformat.def</ModuleDefinitionFile>
       <AdditionalOptions>/IGNORE:4006,4221,4049,4217,4197,4099,4264 %(AdditionalOptions)</AdditionalOptions>
     </Link>
@@ -500,7 +500,7 @@ cd $(ProjectDir)
 	  <LanguageStandard_C Condition="'$(VisualStudioVersion)' > '15.0'">stdc11</LanguageStandard_C>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>avcodec_winrt.lib;avutil_winrt.lib;libbz2_winrt.lib;libiconv_winrt.lib;libzlib_winrt.lib;libgcrypt_winrt.lib;libgnutls_winrt.lib;libbluray_winrt.lib;libgme_winrt.lib;libmodplug_winrt.lib;libssh_winrt.lib;libxml2_winrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>avcodec_winrt.lib;avutil_winrt.lib;libbz2_winrt.lib;libiconv_winrt.lib;libzlib_winrt.lib;libdvdnav_winrt.lib;libdvdread_winrt.lib;libgcrypt_winrt.lib;libgnutls_winrt.lib;libbluray_winrt.lib;libgme_winrt.lib;libmodplug_winrt.lib;libssh_winrt.lib;libxml2_winrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>.\libavformat.def</ModuleDefinitionFile>
       <AdditionalOptions>/IGNORE:4006,4221,4049,4217,4197,4099,4264 %(AdditionalOptions)</AdditionalOptions>
     </Link>
