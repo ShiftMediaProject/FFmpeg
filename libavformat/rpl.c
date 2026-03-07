@@ -102,7 +102,7 @@ static AVRational read_fps(const char* line, int* error)
         line++;
     for (; *line>='0' && *line<='9'; line++) {
         // Truncate any numerator too large to fit into an int64_t
-        if (num > (INT64_MAX - 9) / 10 || den > INT64_MAX / 10)
+        if (num > (INT64_MAX - 9) / 10ULL || den > INT64_MAX / 10ULL)
             break;
         num  = 10 * num + (*line - '0');
         den *= 10;
@@ -205,6 +205,8 @@ static int rpl_read_header(AVFormatContext *s)
         if (ast->codecpar->sample_rate < 0)
             return AVERROR_INVALIDDATA;
         channels                       = read_line_and_int(pb, &error);  // number of audio channels
+        if (channels <= 0)
+            return AVERROR_INVALIDDATA;
         error |= read_line(pb, line, sizeof(line));
         ast->codecpar->bits_per_coded_sample = read_int(line, &endptr, &error);  // audio bits per sample
         av_strlcpy(audio_type, endptr, RPL_LINE_LENGTH);

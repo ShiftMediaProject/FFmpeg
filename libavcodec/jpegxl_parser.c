@@ -352,6 +352,8 @@ static int decode_hybrid_varlen_uint(GetBitContext *gb, JXLEntropyDecoder *dec,
 
     if (bundle->lz77_enabled && token >= bundle->lz77_min_symbol) {
         const JXLSymbolDistribution *lz77dist = &bundle->dists[bundle->cluster_map[bundle->num_dist - 1]];
+        if (!dec->num_decoded)
+            return AVERROR_INVALIDDATA;
         ret = read_hybrid_uint(gb, &bundle->lz_len_conf, token - bundle->lz77_min_symbol, &dec->num_to_copy);
         if (ret < 0)
             return ret;
@@ -531,6 +533,7 @@ static int read_dist_clustering(GetBitContext *gb, JXLEntropyDecoder *dec, JXLDi
         dec->state = -1;
         /* it's not going to necessarily be zero after reading */
         dec->num_to_copy = 0;
+        dec->num_decoded = 0;
         dist_bundle_close(&nested);
         if (use_mtf) {
             uint8_t mtf[256];
@@ -1311,7 +1314,7 @@ static int parse_frame_header(void *avctx, JXLParseContext *ctx, GetBitContext *
     // permuted toc
     if (get_bits1(gb)) {
         JXLEntropyDecoder dec;
-        uint32_t end, lehmer = 0;
+        int64_t end, lehmer = 0;
         ret = entropy_decoder_init(avctx, gb, &dec, 8);
         if (ret < 0)
             return ret;
@@ -1320,13 +1323,13 @@ static int parse_frame_header(void *avctx, JXLParseContext *ctx, GetBitContext *
             return AVERROR_BUFFER_TOO_SMALL;
         }
         end = entropy_decoder_read_symbol(gb, &dec, toc_context(toc_count));
-        if (end > toc_count) {
+        if (end < 0 || end > toc_count) {
             entropy_decoder_close(&dec);
             return AVERROR_INVALIDDATA;
         }
         for (uint32_t i = 0; i < end; i++) {
             lehmer = entropy_decoder_read_symbol(gb, &dec, toc_context(lehmer));
-            if (get_bits_left(gb) < 0) {
+            if (lehmer < 0 || get_bits_left(gb) < 0) {
                 entropy_decoder_close(&dec);
                 return AVERROR_BUFFER_TOO_SMALL;
             }

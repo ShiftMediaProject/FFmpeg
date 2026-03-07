@@ -178,6 +178,7 @@ static av_cold int aac_encode_init(AVCodecContext *avctx)
     AACContext *s = avctx->priv_data;
     int ret = AVERROR(EINVAL);
     AACENC_InfoStruct info = { 0 };
+    AVCPBProperties *cpb_props;
     CHANNEL_MODE mode;
     AACENC_ERROR err;
     int aot = AV_PROFILE_AAC_LOW + 1;
@@ -438,6 +439,14 @@ static av_cold int aac_encode_init(AVCodecContext *avctx)
 
         memcpy(avctx->extradata, info.confBuf, info.confSize);
     }
+
+    cpb_props = ff_encode_add_cpb_side_data(avctx);
+    if (!cpb_props)
+        return AVERROR(ENOMEM);
+    cpb_props->max_bitrate =
+    cpb_props->min_bitrate =
+    cpb_props->avg_bitrate = avctx->bit_rate;
+
     return 0;
 error:
     aac_encode_close(avctx);
@@ -540,6 +549,7 @@ static int aac_encode_frame(AVCodecContext *avctx, AVPacket *avpkt,
     }
 
     avpkt->size     = out_args.numOutBytes;
+    avpkt->flags   |= AV_PKT_FLAG_KEY;
     *got_packet_ptr = 1;
     return 0;
 }

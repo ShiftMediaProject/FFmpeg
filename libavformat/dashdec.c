@@ -446,7 +446,7 @@ static int open_url(AVFormatContext *s, AVIOContext **pb, const char *url,
     av_freep(pb);
     av_dict_copy(&tmp, *opts, 0);
     av_dict_copy(&tmp, opts2, 0);
-    ret = avio_open2(pb, url, AVIO_FLAG_READ, c->interrupt_callback, &tmp);
+    ret = ffio_open_whitelist(pb, url, AVIO_FLAG_READ, c->interrupt_callback, &tmp, s->protocol_whitelist, s->protocol_blacklist);
     if (ret >= 0) {
         // update cookies on http response with setcookies.
         char *new_cookies = NULL;
@@ -1225,7 +1225,7 @@ static int parse_manifest(AVFormatContext *s, const char *url, AVIOContext *in)
         close_in = 1;
 
         av_dict_copy(&opts, c->avio_opts, 0);
-        ret = avio_open2(&in, url, AVIO_FLAG_READ, c->interrupt_callback, &opts);
+        ret = ffio_open_whitelist(&in, url, AVIO_FLAG_READ, c->interrupt_callback, &opts, s->protocol_whitelist, s->protocol_blacklist);
         av_dict_free(&opts);
         if (ret < 0)
             return ret;
@@ -1932,25 +1932,27 @@ static int open_demux_for_component(AVFormatContext *s, struct representation *p
     int i;
 
     pls->parent = s;
-    pls->cur_seq_no  = calc_cur_seg_no(s, pls);
+    pls->cur_seq_no = calc_cur_seg_no(s, pls);
 
-    if (!pls->last_seq_no) {
+    if (!pls->last_seq_no)
         pls->last_seq_no = calc_max_seg_no(pls, s->priv_data);
-    }
 
     ret = reopen_demux_for_component(s, pls);
-    if (ret < 0) {
-        goto fail;
-    }
+    if (ret < 0)
+        return ret;
+
     for (i = 0; i < pls->ctx->nb_streams; i++) {
         AVStream *st = avformat_new_stream(s, NULL);
         AVStream *ist = pls->ctx->streams[i];
-        if (!st) {
-            ret = AVERROR(ENOMEM);
-            goto fail;
-        }
+        if (!st)
+            return AVERROR(ENOMEM);
+
         st->id = i;
-        avcodec_parameters_copy(st->codecpar, ist->codecpar);
+
+        ret = avcodec_parameters_copy(st->codecpar, ist->codecpar);
+        if (ret < 0)
+            return ret;
+
         avpriv_set_pts_info(st, ist->pts_wrap_bits, ist->time_base.num, ist->time_base.den);
 
         // copy disposition
@@ -1958,8 +1960,6 @@ static int open_demux_for_component(AVFormatContext *s, struct representation *p
     }
 
     return 0;
-fail:
-    return ret;
 }
 
 static int is_common_init_section_exist(struct representation **pls, int n_pls)

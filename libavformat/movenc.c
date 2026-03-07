@@ -737,6 +737,9 @@ static struct mpeg4_bit_rate_values calculate_mpeg4_bit_rates(MOVTrack *track)
 
     // utilize values from properties if we have them available
     if (props) {
+        // no avg_bitrate signals that the track is VBR
+        if (!props->avg_bitrate)
+            bit_rates.avg_bit_rate = props->avg_bitrate;
         bit_rates.max_bit_rate = FFMAX(bit_rates.max_bit_rate,
                                        props->max_bitrate);
         bit_rates.buffer_size = props->buffer_size / 8;
@@ -3193,6 +3196,7 @@ static int mov_write_stbl_tag(AVFormatContext *s, AVIOContext *pb, MOVMuxContext
     if ((track->par->codec_type == AVMEDIA_TYPE_VIDEO ||
          track->par->codec_id == AV_CODEC_ID_TRUEHD ||
          track->par->codec_id == AV_CODEC_ID_MPEGH_3D_AUDIO ||
+         (track->par->codec_id == AV_CODEC_ID_AAC && track->par->profile == AV_PROFILE_AAC_USAC) ||
          track->par->codec_tag == MKTAG('r','t','p',' ')) &&
         track->has_keyframes && track->has_keyframes < track->entry)
         mov_write_stss_tag(pb, track, MOV_SYNC_SAMPLE);
@@ -7663,19 +7667,11 @@ static int mov_init(AVFormatContext *s)
                 s->avoid_negative_ts == AVFMT_AVOID_NEG_TS_MAKE_ZERO)
                 mov->use_editlist = 0;
         }
-        if (mov->flags & FF_MOV_FLAG_CMAF) {
-            // CMAF Track requires negative cts offsets without edit lists
-            mov->use_editlist = 0;
-        }
     }
     if (mov->flags & FF_MOV_FLAG_EMPTY_MOOV &&
         !(mov->flags & FF_MOV_FLAG_DELAY_MOOV) && mov->use_editlist)
         av_log(s, AV_LOG_WARNING, "No meaningful edit list will be written when using empty_moov without delay_moov\n");
 
-    if (mov->flags & FF_MOV_FLAG_CMAF && mov->use_editlist) {
-        av_log(s, AV_LOG_WARNING, "Edit list enabled; Assuming writing CMAF Track File\n");
-        mov->flags &= ~FF_MOV_FLAG_NEGATIVE_CTS_OFFSETS;
-    }
     if (!mov->use_editlist && s->avoid_negative_ts == AVFMT_AVOID_NEG_TS_AUTO &&
         !(mov->flags & FF_MOV_FLAG_NEGATIVE_CTS_OFFSETS))
         s->avoid_negative_ts = AVFMT_AVOID_NEG_TS_MAKE_ZERO;

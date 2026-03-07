@@ -1101,8 +1101,9 @@ int fg_create(FilterGraph **pfg, char *graph_desc, Scheduler *sch)
 
     for (unsigned i = 0; i < graph->nb_filters; i++) {
         const AVFilter *f = graph->filters[i]->filter;
-        if (!avfilter_filter_pad_count(f, 0) &&
-            !(f->flags & AVFILTER_FLAG_DYNAMIC_INPUTS)) {
+        if ((!avfilter_filter_pad_count(f, 0) &&
+             !(f->flags & AVFILTER_FLAG_DYNAMIC_INPUTS)) ||
+            !strcmp(f->name, "apad")) {
             fgp->have_sources = 1;
             break;
         }
@@ -1408,8 +1409,10 @@ int fg_finalise_bindings(void)
         for (int j = 0; j < fg->nb_outputs; j++) {
             OutputFilter *output = fg->outputs[j];
             if (!output->bound) {
-                av_log(filtergraphs[j], AV_LOG_FATAL,
-                       "Filter %s has an unconnected output\n", output->name);
+                av_log(fg, AV_LOG_FATAL,
+                       "Filter '%s' has output %d (%s) unconnected\n",
+                       output->name, j,
+                       output->linklabel ? (const char *)output->linklabel : "unlabeled");
                 return AVERROR(EINVAL);
             }
         }
@@ -1495,7 +1498,7 @@ static int insert_filter(AVFilterContext **last_filter, int *pad_idx,
     return 0;
 }
 
-static int configure_output_video_filter(FilterGraph *fg, AVFilterGraph *graph,
+static int configure_output_video_filter(FilterGraphPriv *fgp, AVFilterGraph *graph,
                                          OutputFilter *ofilter, AVFilterInOut *out)
 {
     OutputFilterPriv *ofp = ofp_from_ofilter(ofilter);
@@ -1574,7 +1577,7 @@ static int configure_output_video_filter(FilterGraph *fg, AVFilterGraph *graph,
     return 0;
 }
 
-static int configure_output_audio_filter(FilterGraph *fg, AVFilterGraph *graph,
+static int configure_output_audio_filter(FilterGraphPriv *fgp, AVFilterGraph *graph,
                                          OutputFilter *ofilter, AVFilterInOut *out)
 {
     OutputFilterPriv *ofp = ofp_from_ofilter(ofilter);
@@ -1639,8 +1642,10 @@ static int configure_output_audio_filter(FilterGraph *fg, AVFilterGraph *graph,
         pad_idx = 0;
     }
 
-    if (ofilter->apad)
+    if (ofilter->apad) {
         AUTO_INSERT_FILTER("-apad", "apad", ofilter->apad);
+        fgp->have_sources = 1;
+    }
 
     snprintf(name, sizeof(name), "trim for output %s", ofp->name);
     ret = insert_trim(ofp->trim_start_us, ofp->trim_duration_us,
@@ -1656,12 +1661,12 @@ fail:
     return ret;
 }
 
-static int configure_output_filter(FilterGraph *fg, AVFilterGraph *graph,
+static int configure_output_filter(FilterGraphPriv *fgp, AVFilterGraph *graph,
                                    OutputFilter *ofilter, AVFilterInOut *out)
 {
     switch (ofilter->type) {
-    case AVMEDIA_TYPE_VIDEO: return configure_output_video_filter(fg, graph, ofilter, out);
-    case AVMEDIA_TYPE_AUDIO: return configure_output_audio_filter(fg, graph, ofilter, out);
+    case AVMEDIA_TYPE_VIDEO: return configure_output_video_filter(fgp, graph, ofilter, out);
+    case AVMEDIA_TYPE_AUDIO: return configure_output_audio_filter(fgp, graph, ofilter, out);
     default: av_assert0(0); return 0;
     }
 }
@@ -1938,7 +1943,7 @@ static int configure_filtergraph(FilterGraph *fg, FilterGraphThread *fgt)
     avfilter_inout_free(&inputs);
 
     for (cur = outputs, i = 0; cur; cur = cur->next, i++) {
-        ret = configure_output_filter(fg, fgt->graph, fg->outputs[i], cur);
+        ret = configure_output_filter(fgp, fgt->graph, fg->outputs[i], cur);
         if (ret < 0) {
             avfilter_inout_free(&outputs);
             goto fail;
