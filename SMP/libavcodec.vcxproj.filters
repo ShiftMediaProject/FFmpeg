@@ -3346,8 +3346,8 @@
     <ClCompile Include="libavcodec\dxva2_vp9_wrap.c">
       <Filter>Source Files\libavcodec</Filter>
     </ClCompile>
-    <ClCompile Include="libavcodec\hevc\ps_enc_wrap.c">
-      <Filter>Source Files\libavcodec\hevc</Filter>
+    <ClCompile Include="libavcodec\ps_enc_wrap.c">
+      <Filter>Source Files\libavcodec</Filter>
     </ClCompile>
     <ClCompile Include="libavcodec\hw_base_encode_wrap.c">
       <Filter>Source Files\libavcodec</Filter>

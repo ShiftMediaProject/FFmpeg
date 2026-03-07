@@ -10,8 +10,8 @@
   </ImportGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugWinRT|Win32'">
     <ClCompile>
-      <PreprocessorDefinitions>LIBXML_STATIC;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;DEBUG;BUILDING_avformat;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(OutDir)\include\libxml2\;$(ProjectDir)\..\..\prebuilt\include\libxml2\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>LIBXML_STATIC;_CRT_SUPPRESS_RESTRICT;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;DEBUG;BUILDING_avformat;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(OutBaseDir)\include\libxml2\;$(ProjectDir)\..\..\prebuilt\include\libxml2\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="$([System.String]::Copy($(PlatformToolset)).Contains('Intel'))">/Qvec- /Qsimd- %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(AdditionalOptions)' == '' and '$(VisualStudioVersion)' != '12.0'">/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>4244;4267;4018;4146;4028;4996;4090;4114;4308;4305;4005;4101;4554;4307;4273;4133;4544;4334;4293;4047;4703;%(DisableSpecificWarnings)</DisableSpecificWarnings>
@@ -22,14 +22,14 @@
       <AdditionalOptions>/IGNORE:4006,4221,4049,4217,4197,4099,4264 %(AdditionalOptions)</AdditionalOptions>
     </Lib>
     <PostBuildEvent>
-      <Command>mkdir "$(OutDir)"\include
-mkdir "$(OutDir)"\include\libavformat
-copy ..\libavformat\avformat.h "$(OutDir)"\include\libavformat
-copy ..\libavformat\avio.h "$(OutDir)"\include\libavformat
-copy ..\libavformat\version.h "$(OutDir)"\include\libavformat
-copy ..\libavformat\version_major.h "$(OutDir)"\include\libavformat
-mkdir "$(OutDir)"\licenses
-copy ..\COPYING.GPLv3 "$(OutDir)"\licenses\ffmpeg.txt</Command>
+      <Command>mkdir "$(OutBaseDir)"\include
+mkdir "$(OutBaseDir)"\include\libavformat
+copy ..\libavformat\avformat.h "$(OutBaseDir)"\include\libavformat
+copy ..\libavformat\avio.h "$(OutBaseDir)"\include\libavformat
+copy ..\libavformat\version.h "$(OutBaseDir)"\include\libavformat
+copy ..\libavformat\version_major.h "$(OutBaseDir)"\include\libavformat
+mkdir "$(OutBaseDir)"\licenses
+copy ..\COPYING.GPLv3 "$(OutBaseDir)"\licenses\ffmpeg.txt</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>if exist ..\config.h (
@@ -50,21 +50,21 @@ del ..\libavutil\avconfig.h
 if exist ..\libavutil\ffversion.h (
 del ..\libavutil\ffversion.h
 )
-if exist "$(OutDir)"\include\libavformat (
-rd /s /q "$(OutDir)"\include\libavformat
+if exist "$(OutBaseDir)"\include\libavformat (
+rd /s /q "$(OutBaseDir)"\include\libavformat
 cd ../
 cd $(ProjectDir)
 )</Command>
     </PreBuildEvent>
     <ResourceCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(OutDir)\include\libxml2\;$(ProjectDir)\..\..\prebuilt\include\libxml2\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(OutBaseDir)\include\libxml2\;$(ProjectDir)\..\..\prebuilt\include\libxml2\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>LIBXML_STATIC;_MSC_VER;BUILDING_avformat;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugWinRT|x64'">
     <ClCompile>
-      <PreprocessorDefinitions>LIBXML_STATIC;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;DEBUG;BUILDING_avformat;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(OutDir)\include\libxml2\;$(ProjectDir)\..\..\prebuilt\include\libxml2\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>LIBXML_STATIC;_CRT_SUPPRESS_RESTRICT;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;DEBUG;BUILDING_avformat;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(OutBaseDir)\include\libxml2\;$(ProjectDir)\..\..\prebuilt\include\libxml2\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="$([System.String]::Copy($(PlatformToolset)).Contains('Intel'))">/Qvec- /Qsimd- %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(AdditionalOptions)' == '' and '$(VisualStudioVersion)' != '12.0'">/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>4244;4267;4018;4146;4028;4996;4090;4114;4308;4305;4005;4101;4554;4307;4273;4133;4544;4334;4293;4047;4703;%(DisableSpecificWarnings)</DisableSpecificWarnings>
@@ -75,14 +75,14 @@ cd $(ProjectDir)
       <AdditionalOptions>/IGNORE:4006,4221,4049,4217,4197,4099,4264 %(AdditionalOptions)</AdditionalOptions>
     </Lib>
     <PostBuildEvent>
-      <Command>mkdir "$(OutDir)"\include
-mkdir "$(OutDir)"\include\libavformat
-copy ..\libavformat\avformat.h "$(OutDir)"\include\libavformat
-copy ..\libavformat\avio.h "$(OutDir)"\include\libavformat
-copy ..\libavformat\version.h "$(OutDir)"\include\libavformat
-copy ..\libavformat\version_major.h "$(OutDir)"\include\libavformat
-mkdir "$(OutDir)"\licenses
-copy ..\COPYING.GPLv3 "$(OutDir)"\licenses\ffmpeg.txt</Command>
+      <Command>mkdir "$(OutBaseDir)"\include
+mkdir "$(OutBaseDir)"\include\libavformat
+copy ..\libavformat\avformat.h "$(OutBaseDir)"\include\libavformat
+copy ..\libavformat\avio.h "$(OutBaseDir)"\include\libavformat
+copy ..\libavformat\version.h "$(OutBaseDir)"\include\libavformat
+copy ..\libavformat\version_major.h "$(OutBaseDir)"\include\libavformat
+mkdir "$(OutBaseDir)"\licenses
+copy ..\COPYING.GPLv3 "$(OutBaseDir)"\licenses\ffmpeg.txt</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>if exist ..\config.h (
@@ -103,21 +103,21 @@ del ..\libavutil\avconfig.h
 if exist ..\libavutil\ffversion.h (
 del ..\libavutil\ffversion.h
 )
-if exist "$(OutDir)"\include\libavformat (
-rd /s /q "$(OutDir)"\include\libavformat
+if exist "$(OutBaseDir)"\include\libavformat (
+rd /s /q "$(OutBaseDir)"\include\libavformat
 cd ../
 cd $(ProjectDir)
 )</Command>
     </PreBuildEvent>
     <ResourceCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(OutDir)\include\libxml2\;$(ProjectDir)\..\..\prebuilt\include\libxml2\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(OutBaseDir)\include\libxml2\;$(ProjectDir)\..\..\prebuilt\include\libxml2\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>LIBXML_STATIC;_MSC_VER;BUILDING_avformat;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugDLLWinRT|Win32'">
     <ClCompile>
-      <PreprocessorDefinitions>_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;DEBUG;BUILDING_avformat;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(OutDir)\include\libxml2\;$(ProjectDir)\..\..\prebuilt\include\libxml2\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_SUPPRESS_RESTRICT;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;DEBUG;BUILDING_avformat;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(OutBaseDir)\include\libxml2\;$(ProjectDir)\..\..\prebuilt\include\libxml2\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="$([System.String]::Copy($(PlatformToolset)).Contains('Intel'))">/Qvec- /Qsimd- %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(AdditionalOptions)' == '' and '$(VisualStudioVersion)' != '12.0'">/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>4244;4267;4018;4146;4028;4996;4090;4114;4308;4305;4005;4101;4554;4307;4273;4133;4544;4334;4293;4047;4703;%(DisableSpecificWarnings)</DisableSpecificWarnings>
@@ -129,14 +129,14 @@ cd $(ProjectDir)
       <AdditionalOptions>/IGNORE:4006,4221,4049,4217,4197,4099,4264 %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <PostBuildEvent>
-      <Command>mkdir "$(OutDir)"\include
-mkdir "$(OutDir)"\include\libavformat
-copy ..\libavformat\avformat.h "$(OutDir)"\include\libavformat
-copy ..\libavformat\avio.h "$(OutDir)"\include\libavformat
-copy ..\libavformat\version.h "$(OutDir)"\include\libavformat
-copy ..\libavformat\version_major.h "$(OutDir)"\include\libavformat
-mkdir "$(OutDir)"\licenses
-copy ..\COPYING.GPLv3 "$(OutDir)"\licenses\ffmpeg.txt</Command>
+      <Command>mkdir "$(OutBaseDir)"\include
+mkdir "$(OutBaseDir)"\include\libavformat
+copy ..\libavformat\avformat.h "$(OutBaseDir)"\include\libavformat
+copy ..\libavformat\avio.h "$(OutBaseDir)"\include\libavformat
+copy ..\libavformat\version.h "$(OutBaseDir)"\include\libavformat
+copy ..\libavformat\version_major.h "$(OutBaseDir)"\include\libavformat
+mkdir "$(OutBaseDir)"\licenses
+copy ..\COPYING.GPLv3 "$(OutBaseDir)"\licenses\ffmpeg.txt</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>if exist ..\config.h (
@@ -157,21 +157,21 @@ del ..\libavutil\avconfig.h
 if exist ..\libavutil\ffversion.h (
 del ..\libavutil\ffversion.h
 )
-if exist "$(OutDir)"\include\libavformat (
-rd /s /q "$(OutDir)"\include\libavformat
+if exist "$(OutBaseDir)"\include\libavformat (
+rd /s /q "$(OutBaseDir)"\include\libavformat
 cd ../
 cd $(ProjectDir)
 )</Command>
     </PreBuildEvent>
     <ResourceCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(OutDir)\include\libxml2\;$(ProjectDir)\..\..\prebuilt\include\libxml2\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(OutBaseDir)\include\libxml2\;$(ProjectDir)\..\..\prebuilt\include\libxml2\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_MSC_VER;BUILDING_avformat;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugDLLWinRT|x64'">
     <ClCompile>
-      <PreprocessorDefinitions>_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;DEBUG;BUILDING_avformat;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(OutDir)\include\libxml2\;$(ProjectDir)\..\..\prebuilt\include\libxml2\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_SUPPRESS_RESTRICT;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;DEBUG;BUILDING_avformat;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(OutBaseDir)\include\libxml2\;$(ProjectDir)\..\..\prebuilt\include\libxml2\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="$([System.String]::Copy($(PlatformToolset)).Contains('Intel'))">/Qvec- /Qsimd- %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(AdditionalOptions)' == '' and '$(VisualStudioVersion)' != '12.0'">/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>4244;4267;4018;4146;4028;4996;4090;4114;4308;4305;4005;4101;4554;4307;4273;4133;4544;4334;4293;4047;4703;%(DisableSpecificWarnings)</DisableSpecificWarnings>
@@ -183,14 +183,14 @@ cd $(ProjectDir)
       <AdditionalOptions>/IGNORE:4006,4221,4049,4217,4197,4099,4264 %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <PostBuildEvent>
-      <Command>mkdir "$(OutDir)"\include
-mkdir "$(OutDir)"\include\libavformat
-copy ..\libavformat\avformat.h "$(OutDir)"\include\libavformat
-copy ..\libavformat\avio.h "$(OutDir)"\include\libavformat
-copy ..\libavformat\version.h "$(OutDir)"\include\libavformat
-copy ..\libavformat\version_major.h "$(OutDir)"\include\libavformat
-mkdir "$(OutDir)"\licenses
-copy ..\COPYING.GPLv3 "$(OutDir)"\licenses\ffmpeg.txt</Command>
+      <Command>mkdir "$(OutBaseDir)"\include
+mkdir "$(OutBaseDir)"\include\libavformat
+copy ..\libavformat\avformat.h "$(OutBaseDir)"\include\libavformat
+copy ..\libavformat\avio.h "$(OutBaseDir)"\include\libavformat
+copy ..\libavformat\version.h "$(OutBaseDir)"\include\libavformat
+copy ..\libavformat\version_major.h "$(OutBaseDir)"\include\libavformat
+mkdir "$(OutBaseDir)"\licenses
+copy ..\COPYING.GPLv3 "$(OutBaseDir)"\licenses\ffmpeg.txt</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>if exist ..\config.h (
@@ -211,21 +211,21 @@ del ..\libavutil\avconfig.h
 if exist ..\libavutil\ffversion.h (
 del ..\libavutil\ffversion.h
 )
-if exist "$(OutDir)"\include\libavformat (
-rd /s /q "$(OutDir)"\include\libavformat
+if exist "$(OutBaseDir)"\include\libavformat (
+rd /s /q "$(OutBaseDir)"\include\libavformat
 cd ../
 cd $(ProjectDir)
 )</Command>
     </PreBuildEvent>
     <ResourceCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(OutDir)\include\libxml2\;$(ProjectDir)\..\..\prebuilt\include\libxml2\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(OutBaseDir)\include\libxml2\;$(ProjectDir)\..\..\prebuilt\include\libxml2\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_MSC_VER;BUILDING_avformat;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseWinRT|Win32'">
     <ClCompile>
-      <PreprocessorDefinitions>LIBXML_STATIC;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;BUILDING_avformat;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(OutDir)\include\libxml2\;$(ProjectDir)\..\..\prebuilt\include\libxml2\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>LIBXML_STATIC;_CRT_SUPPRESS_RESTRICT;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;BUILDING_avformat;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(OutBaseDir)\include\libxml2\;$(ProjectDir)\..\..\prebuilt\include\libxml2\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="$([System.String]::Copy($(PlatformToolset)).Contains('Intel'))">/Qvec- /Qsimd- %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(AdditionalOptions)' == '' and '$(VisualStudioVersion)' != '12.0'">/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>4244;4267;4018;4146;4028;4996;4090;4114;4308;4305;4005;4101;4554;4307;4273;4133;4544;4334;4293;4047;4703;%(DisableSpecificWarnings)</DisableSpecificWarnings>
@@ -236,14 +236,14 @@ cd $(ProjectDir)
       <AdditionalOptions>/IGNORE:4006,4221,4049,4217,4197,4099,4264 %(AdditionalOptions)</AdditionalOptions>
     </Lib>
     <PostBuildEvent>
-      <Command>mkdir "$(OutDir)"\include
-mkdir "$(OutDir)"\include\libavformat
-copy ..\libavformat\avformat.h "$(OutDir)"\include\libavformat
-copy ..\libavformat\avio.h "$(OutDir)"\include\libavformat
-copy ..\libavformat\version.h "$(OutDir)"\include\libavformat
-copy ..\libavformat\version_major.h "$(OutDir)"\include\libavformat
-mkdir "$(OutDir)"\licenses
-copy ..\COPYING.GPLv3 "$(OutDir)"\licenses\ffmpeg.txt</Command>
+      <Command>mkdir "$(OutBaseDir)"\include
+mkdir "$(OutBaseDir)"\include\libavformat
+copy ..\libavformat\avformat.h "$(OutBaseDir)"\include\libavformat
+copy ..\libavformat\avio.h "$(OutBaseDir)"\include\libavformat
+copy ..\libavformat\version.h "$(OutBaseDir)"\include\libavformat
+copy ..\libavformat\version_major.h "$(OutBaseDir)"\include\libavformat
+mkdir "$(OutBaseDir)"\licenses
+copy ..\COPYING.GPLv3 "$(OutBaseDir)"\licenses\ffmpeg.txt</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>if exist ..\config.h (
@@ -264,21 +264,21 @@ del ..\libavutil\avconfig.h
 if exist ..\libavutil\ffversion.h (
 del ..\libavutil\ffversion.h
 )
-if exist "$(OutDir)"\include\libavformat (
-rd /s /q "$(OutDir)"\include\libavformat
+if exist "$(OutBaseDir)"\include\libavformat (
+rd /s /q "$(OutBaseDir)"\include\libavformat
 cd ../
 cd $(ProjectDir)
 )</Command>
     </PreBuildEvent>
     <ResourceCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(OutDir)\include\libxml2\;$(ProjectDir)\..\..\prebuilt\include\libxml2\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(OutBaseDir)\include\libxml2\;$(ProjectDir)\..\..\prebuilt\include\libxml2\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>LIBXML_STATIC;_MSC_VER;BUILDING_avformat;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseWinRT|x64'">
     <ClCompile>
-      <PreprocessorDefinitions>LIBXML_STATIC;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;BUILDING_avformat;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(OutDir)\include\libxml2\;$(ProjectDir)\..\..\prebuilt\include\libxml2\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>LIBXML_STATIC;_CRT_SUPPRESS_RESTRICT;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;BUILDING_avformat;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(OutBaseDir)\include\libxml2\;$(ProjectDir)\..\..\prebuilt\include\libxml2\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="$([System.String]::Copy($(PlatformToolset)).Contains('Intel'))">/Qvec- /Qsimd- %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(AdditionalOptions)' == '' and '$(VisualStudioVersion)' != '12.0'">/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>4244;4267;4018;4146;4028;4996;4090;4114;4308;4305;4005;4101;4554;4307;4273;4133;4544;4334;4293;4047;4703;%(DisableSpecificWarnings)</DisableSpecificWarnings>
@@ -289,14 +289,14 @@ cd $(ProjectDir)
       <AdditionalOptions>/IGNORE:4006,4221,4049,4217,4197,4099,4264 %(AdditionalOptions)</AdditionalOptions>
     </Lib>
     <PostBuildEvent>
-      <Command>mkdir "$(OutDir)"\include
-mkdir "$(OutDir)"\include\libavformat
-copy ..\libavformat\avformat.h "$(OutDir)"\include\libavformat
-copy ..\libavformat\avio.h "$(OutDir)"\include\libavformat
-copy ..\libavformat\version.h "$(OutDir)"\include\libavformat
-copy ..\libavformat\version_major.h "$(OutDir)"\include\libavformat
-mkdir "$(OutDir)"\licenses
-copy ..\COPYING.GPLv3 "$(OutDir)"\licenses\ffmpeg.txt</Command>
+      <Command>mkdir "$(OutBaseDir)"\include
+mkdir "$(OutBaseDir)"\include\libavformat
+copy ..\libavformat\avformat.h "$(OutBaseDir)"\include\libavformat
+copy ..\libavformat\avio.h "$(OutBaseDir)"\include\libavformat
+copy ..\libavformat\version.h "$(OutBaseDir)"\include\libavformat
+copy ..\libavformat\version_major.h "$(OutBaseDir)"\include\libavformat
+mkdir "$(OutBaseDir)"\licenses
+copy ..\COPYING.GPLv3 "$(OutBaseDir)"\licenses\ffmpeg.txt</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>if exist ..\config.h (
@@ -317,21 +317,21 @@ del ..\libavutil\avconfig.h
 if exist ..\libavutil\ffversion.h (
 del ..\libavutil\ffversion.h
 )
-if exist "$(OutDir)"\include\libavformat (
-rd /s /q "$(OutDir)"\include\libavformat
+if exist "$(OutBaseDir)"\include\libavformat (
+rd /s /q "$(OutBaseDir)"\include\libavformat
 cd ../
 cd $(ProjectDir)
 )</Command>
     </PreBuildEvent>
     <ResourceCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(OutDir)\include\libxml2\;$(ProjectDir)\..\..\prebuilt\include\libxml2\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(OutBaseDir)\include\libxml2\;$(ProjectDir)\..\..\prebuilt\include\libxml2\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>LIBXML_STATIC;_MSC_VER;BUILDING_avformat;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseDLLWinRT|Win32'">
     <ClCompile>
-      <PreprocessorDefinitions>_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;BUILDING_avformat;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(OutDir)\include\libxml2\;$(ProjectDir)\..\..\prebuilt\include\libxml2\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_SUPPRESS_RESTRICT;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;BUILDING_avformat;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(OutBaseDir)\include\libxml2\;$(ProjectDir)\..\..\prebuilt\include\libxml2\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="$([System.String]::Copy($(PlatformToolset)).Contains('Intel'))">/Qvec- /Qsimd- %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(AdditionalOptions)' == '' and '$(VisualStudioVersion)' != '12.0'">/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>4244;4267;4018;4146;4028;4996;4090;4114;4308;4305;4005;4101;4554;4307;4273;4133;4544;4334;4293;4047;4703;%(DisableSpecificWarnings)</DisableSpecificWarnings>
@@ -343,14 +343,14 @@ cd $(ProjectDir)
       <AdditionalOptions>/IGNORE:4006,4221,4049,4217,4197,4099,4264 %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <PostBuildEvent>
-      <Command>mkdir "$(OutDir)"\include
-mkdir "$(OutDir)"\include\libavformat
-copy ..\libavformat\avformat.h "$(OutDir)"\include\libavformat
-copy ..\libavformat\avio.h "$(OutDir)"\include\libavformat
-copy ..\libavformat\version.h "$(OutDir)"\include\libavformat
-copy ..\libavformat\version_major.h "$(OutDir)"\include\libavformat
-mkdir "$(OutDir)"\licenses
-copy ..\COPYING.GPLv3 "$(OutDir)"\licenses\ffmpeg.txt</Command>
+      <Command>mkdir "$(OutBaseDir)"\include
+mkdir "$(OutBaseDir)"\include\libavformat
+copy ..\libavformat\avformat.h "$(OutBaseDir)"\include\libavformat
+copy ..\libavformat\avio.h "$(OutBaseDir)"\include\libavformat
+copy ..\libavformat\version.h "$(OutBaseDir)"\include\libavformat
+copy ..\libavformat\version_major.h "$(OutBaseDir)"\include\libavformat
+mkdir "$(OutBaseDir)"\licenses
+copy ..\COPYING.GPLv3 "$(OutBaseDir)"\licenses\ffmpeg.txt</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>if exist ..\config.h (
@@ -371,21 +371,21 @@ del ..\libavutil\avconfig.h
 if exist ..\libavutil\ffversion.h (
 del ..\libavutil\ffversion.h
 )
-if exist "$(OutDir)"\include\libavformat (
-rd /s /q "$(OutDir)"\include\libavformat
+if exist "$(OutBaseDir)"\include\libavformat (
+rd /s /q "$(OutBaseDir)"\include\libavformat
 cd ../
 cd $(ProjectDir)
 )</Command>
     </PreBuildEvent>
     <ResourceCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(OutDir)\include\libxml2\;$(ProjectDir)\..\..\prebuilt\include\libxml2\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(OutBaseDir)\include\libxml2\;$(ProjectDir)\..\..\prebuilt\include\libxml2\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_MSC_VER;BUILDING_avformat;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseDLLWinRT|x64'">
     <ClCompile>
-      <PreprocessorDefinitions>_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;BUILDING_avformat;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(OutDir)\include\libxml2\;$(ProjectDir)\..\..\prebuilt\include\libxml2\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_SUPPRESS_RESTRICT;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;BUILDING_avformat;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(OutBaseDir)\include\libxml2\;$(ProjectDir)\..\..\prebuilt\include\libxml2\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="$([System.String]::Copy($(PlatformToolset)).Contains('Intel'))">/Qvec- /Qsimd- %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(AdditionalOptions)' == '' and '$(VisualStudioVersion)' != '12.0'">/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>4244;4267;4018;4146;4028;4996;4090;4114;4308;4305;4005;4101;4554;4307;4273;4133;4544;4334;4293;4047;4703;%(DisableSpecificWarnings)</DisableSpecificWarnings>
@@ -397,14 +397,14 @@ cd $(ProjectDir)
       <AdditionalOptions>/IGNORE:4006,4221,4049,4217,4197,4099,4264 %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <PostBuildEvent>
-      <Command>mkdir "$(OutDir)"\include
-mkdir "$(OutDir)"\include\libavformat
-copy ..\libavformat\avformat.h "$(OutDir)"\include\libavformat
-copy ..\libavformat\avio.h "$(OutDir)"\include\libavformat
-copy ..\libavformat\version.h "$(OutDir)"\include\libavformat
-copy ..\libavformat\version_major.h "$(OutDir)"\include\libavformat
-mkdir "$(OutDir)"\licenses
-copy ..\COPYING.GPLv3 "$(OutDir)"\licenses\ffmpeg.txt</Command>
+      <Command>mkdir "$(OutBaseDir)"\include
+mkdir "$(OutBaseDir)"\include\libavformat
+copy ..\libavformat\avformat.h "$(OutBaseDir)"\include\libavformat
+copy ..\libavformat\avio.h "$(OutBaseDir)"\include\libavformat
+copy ..\libavformat\version.h "$(OutBaseDir)"\include\libavformat
+copy ..\libavformat\version_major.h "$(OutBaseDir)"\include\libavformat
+mkdir "$(OutBaseDir)"\licenses
+copy ..\COPYING.GPLv3 "$(OutBaseDir)"\licenses\ffmpeg.txt</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>if exist ..\config.h (
@@ -425,21 +425,21 @@ del ..\libavutil\avconfig.h
 if exist ..\libavutil\ffversion.h (
 del ..\libavutil\ffversion.h
 )
-if exist "$(OutDir)"\include\libavformat (
-rd /s /q "$(OutDir)"\include\libavformat
+if exist "$(OutBaseDir)"\include\libavformat (
+rd /s /q "$(OutBaseDir)"\include\libavformat
 cd ../
 cd $(ProjectDir)
 )</Command>
     </PreBuildEvent>
     <ResourceCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(OutDir)\include\libxml2\;$(ProjectDir)\..\..\prebuilt\include\libxml2\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(OutBaseDir)\include\libxml2\;$(ProjectDir)\..\..\prebuilt\include\libxml2\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_MSC_VER;BUILDING_avformat;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseDLLWinRTStaticDeps|Win32'">
     <ClCompile>
-      <PreprocessorDefinitions>LIBXML_STATIC;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;BUILDING_avformat;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(OutDir)\include\libxml2\;$(ProjectDir)\..\..\prebuilt\include\libxml2\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>LIBXML_STATIC;_CRT_SUPPRESS_RESTRICT;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;BUILDING_avformat;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(OutBaseDir)\include\libxml2\;$(ProjectDir)\..\..\prebuilt\include\libxml2\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="$([System.String]::Copy($(PlatformToolset)).Contains('Intel'))">/Qvec- /Qsimd- %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(AdditionalOptions)' == '' and '$(VisualStudioVersion)' != '12.0'">/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>4244;4267;4018;4146;4028;4996;4090;4114;4308;4305;4005;4101;4554;4307;4273;4133;4544;4334;4293;4047;4703;%(DisableSpecificWarnings)</DisableSpecificWarnings>
@@ -451,14 +451,14 @@ cd $(ProjectDir)
       <AdditionalOptions>/IGNORE:4006,4221,4049,4217,4197,4099,4264 %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <PostBuildEvent>
-      <Command>mkdir "$(OutDir)"\include
-mkdir "$(OutDir)"\include\libavformat
-copy ..\libavformat\avformat.h "$(OutDir)"\include\libavformat
-copy ..\libavformat\avio.h "$(OutDir)"\include\libavformat
-copy ..\libavformat\version.h "$(OutDir)"\include\libavformat
-copy ..\libavformat\version_major.h "$(OutDir)"\include\libavformat
-mkdir "$(OutDir)"\licenses
-copy ..\COPYING.GPLv3 "$(OutDir)"\licenses\ffmpeg.txt</Command>
+      <Command>mkdir "$(OutBaseDir)"\include
+mkdir "$(OutBaseDir)"\include\libavformat
+copy ..\libavformat\avformat.h "$(OutBaseDir)"\include\libavformat
+copy ..\libavformat\avio.h "$(OutBaseDir)"\include\libavformat
+copy ..\libavformat\version.h "$(OutBaseDir)"\include\libavformat
+copy ..\libavformat\version_major.h "$(OutBaseDir)"\include\libavformat
+mkdir "$(OutBaseDir)"\licenses
+copy ..\COPYING.GPLv3 "$(OutBaseDir)"\licenses\ffmpeg.txt</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>if exist ..\config.h (
@@ -479,21 +479,21 @@ del ..\libavutil\avconfig.h
 if exist ..\libavutil\ffversion.h (
 del ..\libavutil\ffversion.h
 )
-if exist "$(OutDir)"\include\libavformat (
-rd /s /q "$(OutDir)"\include\libavformat
+if exist "$(OutBaseDir)"\include\libavformat (
+rd /s /q "$(OutBaseDir)"\include\libavformat
 cd ../
 cd $(ProjectDir)
 )</Command>
     </PreBuildEvent>
     <ResourceCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(OutDir)\include\libxml2\;$(ProjectDir)\..\..\prebuilt\include\libxml2\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(OutBaseDir)\include\libxml2\;$(ProjectDir)\..\..\prebuilt\include\libxml2\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>LIBXML_STATIC;_MSC_VER;BUILDING_avformat;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseDLLWinRTStaticDeps|x64'">
     <ClCompile>
-      <PreprocessorDefinitions>LIBXML_STATIC;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;BUILDING_avformat;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(OutDir)\include\libxml2\;$(ProjectDir)\..\..\prebuilt\include\libxml2\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>LIBXML_STATIC;_CRT_SUPPRESS_RESTRICT;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;BUILDING_avformat;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(OutBaseDir)\include\libxml2\;$(ProjectDir)\..\..\prebuilt\include\libxml2\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="$([System.String]::Copy($(PlatformToolset)).Contains('Intel'))">/Qvec- /Qsimd- %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(AdditionalOptions)' == '' and '$(VisualStudioVersion)' != '12.0'">/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>4244;4267;4018;4146;4028;4996;4090;4114;4308;4305;4005;4101;4554;4307;4273;4133;4544;4334;4293;4047;4703;%(DisableSpecificWarnings)</DisableSpecificWarnings>
@@ -505,14 +505,14 @@ cd $(ProjectDir)
       <AdditionalOptions>/IGNORE:4006,4221,4049,4217,4197,4099,4264 %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <PostBuildEvent>
-      <Command>mkdir "$(OutDir)"\include
-mkdir "$(OutDir)"\include\libavformat
-copy ..\libavformat\avformat.h "$(OutDir)"\include\libavformat
-copy ..\libavformat\avio.h "$(OutDir)"\include\libavformat
-copy ..\libavformat\version.h "$(OutDir)"\include\libavformat
-copy ..\libavformat\version_major.h "$(OutDir)"\include\libavformat
-mkdir "$(OutDir)"\licenses
-copy ..\COPYING.GPLv3 "$(OutDir)"\licenses\ffmpeg.txt</Command>
+      <Command>mkdir "$(OutBaseDir)"\include
+mkdir "$(OutBaseDir)"\include\libavformat
+copy ..\libavformat\avformat.h "$(OutBaseDir)"\include\libavformat
+copy ..\libavformat\avio.h "$(OutBaseDir)"\include\libavformat
+copy ..\libavformat\version.h "$(OutBaseDir)"\include\libavformat
+copy ..\libavformat\version_major.h "$(OutBaseDir)"\include\libavformat
+mkdir "$(OutBaseDir)"\licenses
+copy ..\COPYING.GPLv3 "$(OutBaseDir)"\licenses\ffmpeg.txt</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>if exist ..\config.h (
@@ -533,14 +533,14 @@ del ..\libavutil\avconfig.h
 if exist ..\libavutil\ffversion.h (
 del ..\libavutil\ffversion.h
 )
-if exist "$(OutDir)"\include\libavformat (
-rd /s /q "$(OutDir)"\include\libavformat
+if exist "$(OutBaseDir)"\include\libavformat (
+rd /s /q "$(OutBaseDir)"\include\libavformat
 cd ../
 cd $(ProjectDir)
 )</Command>
     </PreBuildEvent>
     <ResourceCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(OutDir)\include\libxml2\;$(ProjectDir)\..\..\prebuilt\include\libxml2\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(OutBaseDir)\include\libxml2\;$(ProjectDir)\..\..\prebuilt\include\libxml2\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>LIBXML_STATIC;_MSC_VER;BUILDING_avformat;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
   </ItemDefinitionGroup>

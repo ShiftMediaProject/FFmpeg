@@ -13,7 +13,7 @@
   </ImportGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugWinRT|Win32'">
     <ClCompile>
-      <PreprocessorDefinitions>_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;DEBUG;BUILDING_swresample;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SUPPRESS_RESTRICT;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;DEBUG;BUILDING_swresample;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="$([System.String]::Copy($(PlatformToolset)).Contains('Intel'))">/Qvec- /Qsimd- %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(AdditionalOptions)' == '' and '$(VisualStudioVersion)' != '12.0'">/utf-8 %(AdditionalOptions)</AdditionalOptions>
@@ -25,13 +25,13 @@
       <AdditionalOptions>/IGNORE:4006,4221,4049,4217,4197,4099,4264 %(AdditionalOptions)</AdditionalOptions>
     </Lib>
     <PostBuildEvent>
-      <Command>mkdir "$(OutDir)"\include
-mkdir "$(OutDir)"\include\libswresample
-copy ..\libswresample\swresample.h "$(OutDir)"\include\libswresample
-copy ..\libswresample\version.h "$(OutDir)"\include\libswresample
-copy ..\libswresample\version_major.h "$(OutDir)"\include\libswresample
-mkdir "$(OutDir)"\licenses
-copy ..\COPYING.GPLv3 "$(OutDir)"\licenses\ffmpeg.txt</Command>
+      <Command>mkdir "$(OutBaseDir)"\include
+mkdir "$(OutBaseDir)"\include\libswresample
+copy ..\libswresample\swresample.h "$(OutBaseDir)"\include\libswresample
+copy ..\libswresample\version.h "$(OutBaseDir)"\include\libswresample
+copy ..\libswresample\version_major.h "$(OutBaseDir)"\include\libswresample
+mkdir "$(OutBaseDir)"\licenses
+copy ..\COPYING.GPLv3 "$(OutBaseDir)"\licenses\ffmpeg.txt</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>if exist ..\config.h (
@@ -52,8 +52,8 @@ del ..\libavutil\avconfig.h
 if exist ..\libavutil\ffversion.h (
 del ..\libavutil\ffversion.h
 )
-if exist "$(OutDir)"\include\libswresample (
-rd /s /q "$(OutDir)"\include\libswresample
+if exist "$(OutBaseDir)"\include\libswresample (
+rd /s /q "$(OutBaseDir)"\include\libswresample
 cd ../
 cd $(ProjectDir)
 )</Command>
@@ -70,7 +70,7 @@ cd $(ProjectDir)
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugWinRT|x64'">
     <ClCompile>
-      <PreprocessorDefinitions>_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;DEBUG;BUILDING_swresample;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SUPPRESS_RESTRICT;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;DEBUG;BUILDING_swresample;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="$([System.String]::Copy($(PlatformToolset)).Contains('Intel'))">/Qvec- /Qsimd- %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(AdditionalOptions)' == '' and '$(VisualStudioVersion)' != '12.0'">/utf-8 %(AdditionalOptions)</AdditionalOptions>
@@ -82,13 +82,13 @@ cd $(ProjectDir)
       <AdditionalOptions>/IGNORE:4006,4221,4049,4217,4197,4099,4264 %(AdditionalOptions)</AdditionalOptions>
     </Lib>
     <PostBuildEvent>
-      <Command>mkdir "$(OutDir)"\include
-mkdir "$(OutDir)"\include\libswresample
-copy ..\libswresample\swresample.h "$(OutDir)"\include\libswresample
-copy ..\libswresample\version.h "$(OutDir)"\include\libswresample
-copy ..\libswresample\version_major.h "$(OutDir)"\include\libswresample
-mkdir "$(OutDir)"\licenses
-copy ..\COPYING.GPLv3 "$(OutDir)"\licenses\ffmpeg.txt</Command>
+      <Command>mkdir "$(OutBaseDir)"\include
+mkdir "$(OutBaseDir)"\include\libswresample
+copy ..\libswresample\swresample.h "$(OutBaseDir)"\include\libswresample
+copy ..\libswresample\version.h "$(OutBaseDir)"\include\libswresample
+copy ..\libswresample\version_major.h "$(OutBaseDir)"\include\libswresample
+mkdir "$(OutBaseDir)"\licenses
+copy ..\COPYING.GPLv3 "$(OutBaseDir)"\licenses\ffmpeg.txt</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>if exist ..\config.h (
@@ -109,8 +109,8 @@ del ..\libavutil\avconfig.h
 if exist ..\libavutil\ffversion.h (
 del ..\libavutil\ffversion.h
 )
-if exist "$(OutDir)"\include\libswresample (
-rd /s /q "$(OutDir)"\include\libswresample
+if exist "$(OutBaseDir)"\include\libswresample (
+rd /s /q "$(OutBaseDir)"\include\libswresample
 cd ../
 cd $(ProjectDir)
 )</Command>
@@ -127,7 +127,7 @@ cd $(ProjectDir)
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugDLLWinRT|Win32'">
     <ClCompile>
-      <PreprocessorDefinitions>_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;DEBUG;BUILDING_swresample;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SUPPRESS_RESTRICT;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;DEBUG;BUILDING_swresample;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="$([System.String]::Copy($(PlatformToolset)).Contains('Intel'))">/Qvec- /Qsimd- %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(AdditionalOptions)' == '' and '$(VisualStudioVersion)' != '12.0'">/utf-8 %(AdditionalOptions)</AdditionalOptions>
@@ -140,13 +140,13 @@ cd $(ProjectDir)
       <AdditionalOptions>/IGNORE:4006,4221,4049,4217,4197,4099,4264 %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <PostBuildEvent>
-      <Command>mkdir "$(OutDir)"\include
-mkdir "$(OutDir)"\include\libswresample
-copy ..\libswresample\swresample.h "$(OutDir)"\include\libswresample
-copy ..\libswresample\version.h "$(OutDir)"\include\libswresample
-copy ..\libswresample\version_major.h "$(OutDir)"\include\libswresample
-mkdir "$(OutDir)"\licenses
-copy ..\COPYING.GPLv3 "$(OutDir)"\licenses\ffmpeg.txt</Command>
+      <Command>mkdir "$(OutBaseDir)"\include
+mkdir "$(OutBaseDir)"\include\libswresample
+copy ..\libswresample\swresample.h "$(OutBaseDir)"\include\libswresample
+copy ..\libswresample\version.h "$(OutBaseDir)"\include\libswresample
+copy ..\libswresample\version_major.h "$(OutBaseDir)"\include\libswresample
+mkdir "$(OutBaseDir)"\licenses
+copy ..\COPYING.GPLv3 "$(OutBaseDir)"\licenses\ffmpeg.txt</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>if exist ..\config.h (
@@ -167,8 +167,8 @@ del ..\libavutil\avconfig.h
 if exist ..\libavutil\ffversion.h (
 del ..\libavutil\ffversion.h
 )
-if exist "$(OutDir)"\include\libswresample (
-rd /s /q "$(OutDir)"\include\libswresample
+if exist "$(OutBaseDir)"\include\libswresample (
+rd /s /q "$(OutBaseDir)"\include\libswresample
 cd ../
 cd $(ProjectDir)
 )</Command>
@@ -185,7 +185,7 @@ cd $(ProjectDir)
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugDLLWinRT|x64'">
     <ClCompile>
-      <PreprocessorDefinitions>_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;DEBUG;BUILDING_swresample;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SUPPRESS_RESTRICT;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;DEBUG;BUILDING_swresample;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="$([System.String]::Copy($(PlatformToolset)).Contains('Intel'))">/Qvec- /Qsimd- %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(AdditionalOptions)' == '' and '$(VisualStudioVersion)' != '12.0'">/utf-8 %(AdditionalOptions)</AdditionalOptions>
@@ -198,13 +198,13 @@ cd $(ProjectDir)
       <AdditionalOptions>/IGNORE:4006,4221,4049,4217,4197,4099,4264 %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <PostBuildEvent>
-      <Command>mkdir "$(OutDir)"\include
-mkdir "$(OutDir)"\include\libswresample
-copy ..\libswresample\swresample.h "$(OutDir)"\include\libswresample
-copy ..\libswresample\version.h "$(OutDir)"\include\libswresample
-copy ..\libswresample\version_major.h "$(OutDir)"\include\libswresample
-mkdir "$(OutDir)"\licenses
-copy ..\COPYING.GPLv3 "$(OutDir)"\licenses\ffmpeg.txt</Command>
+      <Command>mkdir "$(OutBaseDir)"\include
+mkdir "$(OutBaseDir)"\include\libswresample
+copy ..\libswresample\swresample.h "$(OutBaseDir)"\include\libswresample
+copy ..\libswresample\version.h "$(OutBaseDir)"\include\libswresample
+copy ..\libswresample\version_major.h "$(OutBaseDir)"\include\libswresample
+mkdir "$(OutBaseDir)"\licenses
+copy ..\COPYING.GPLv3 "$(OutBaseDir)"\licenses\ffmpeg.txt</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>if exist ..\config.h (
@@ -225,8 +225,8 @@ del ..\libavutil\avconfig.h
 if exist ..\libavutil\ffversion.h (
 del ..\libavutil\ffversion.h
 )
-if exist "$(OutDir)"\include\libswresample (
-rd /s /q "$(OutDir)"\include\libswresample
+if exist "$(OutBaseDir)"\include\libswresample (
+rd /s /q "$(OutBaseDir)"\include\libswresample
 cd ../
 cd $(ProjectDir)
 )</Command>
@@ -243,7 +243,7 @@ cd $(ProjectDir)
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseWinRT|Win32'">
     <ClCompile>
-      <PreprocessorDefinitions>_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;BUILDING_swresample;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SUPPRESS_RESTRICT;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;BUILDING_swresample;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="$([System.String]::Copy($(PlatformToolset)).Contains('Intel'))">/Qvec- /Qsimd- %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(AdditionalOptions)' == '' and '$(VisualStudioVersion)' != '12.0'">/utf-8 %(AdditionalOptions)</AdditionalOptions>
@@ -255,13 +255,13 @@ cd $(ProjectDir)
       <AdditionalOptions>/IGNORE:4006,4221,4049,4217,4197,4099,4264 %(AdditionalOptions)</AdditionalOptions>
     </Lib>
     <PostBuildEvent>
-      <Command>mkdir "$(OutDir)"\include
-mkdir "$(OutDir)"\include\libswresample
-copy ..\libswresample\swresample.h "$(OutDir)"\include\libswresample
-copy ..\libswresample\version.h "$(OutDir)"\include\libswresample
-copy ..\libswresample\version_major.h "$(OutDir)"\include\libswresample
-mkdir "$(OutDir)"\licenses
-copy ..\COPYING.GPLv3 "$(OutDir)"\licenses\ffmpeg.txt</Command>
+      <Command>mkdir "$(OutBaseDir)"\include
+mkdir "$(OutBaseDir)"\include\libswresample
+copy ..\libswresample\swresample.h "$(OutBaseDir)"\include\libswresample
+copy ..\libswresample\version.h "$(OutBaseDir)"\include\libswresample
+copy ..\libswresample\version_major.h "$(OutBaseDir)"\include\libswresample
+mkdir "$(OutBaseDir)"\licenses
+copy ..\COPYING.GPLv3 "$(OutBaseDir)"\licenses\ffmpeg.txt</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>if exist ..\config.h (
@@ -282,8 +282,8 @@ del ..\libavutil\avconfig.h
 if exist ..\libavutil\ffversion.h (
 del ..\libavutil\ffversion.h
 )
-if exist "$(OutDir)"\include\libswresample (
-rd /s /q "$(OutDir)"\include\libswresample
+if exist "$(OutBaseDir)"\include\libswresample (
+rd /s /q "$(OutBaseDir)"\include\libswresample
 cd ../
 cd $(ProjectDir)
 )</Command>
@@ -300,7 +300,7 @@ cd $(ProjectDir)
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseWinRT|x64'">
     <ClCompile>
-      <PreprocessorDefinitions>_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;BUILDING_swresample;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SUPPRESS_RESTRICT;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;BUILDING_swresample;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="$([System.String]::Copy($(PlatformToolset)).Contains('Intel'))">/Qvec- /Qsimd- %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(AdditionalOptions)' == '' and '$(VisualStudioVersion)' != '12.0'">/utf-8 %(AdditionalOptions)</AdditionalOptions>
@@ -312,13 +312,13 @@ cd $(ProjectDir)
       <AdditionalOptions>/IGNORE:4006,4221,4049,4217,4197,4099,4264 %(AdditionalOptions)</AdditionalOptions>
     </Lib>
     <PostBuildEvent>
-      <Command>mkdir "$(OutDir)"\include
-mkdir "$(OutDir)"\include\libswresample
-copy ..\libswresample\swresample.h "$(OutDir)"\include\libswresample
-copy ..\libswresample\version.h "$(OutDir)"\include\libswresample
-copy ..\libswresample\version_major.h "$(OutDir)"\include\libswresample
-mkdir "$(OutDir)"\licenses
-copy ..\COPYING.GPLv3 "$(OutDir)"\licenses\ffmpeg.txt</Command>
+      <Command>mkdir "$(OutBaseDir)"\include
+mkdir "$(OutBaseDir)"\include\libswresample
+copy ..\libswresample\swresample.h "$(OutBaseDir)"\include\libswresample
+copy ..\libswresample\version.h "$(OutBaseDir)"\include\libswresample
+copy ..\libswresample\version_major.h "$(OutBaseDir)"\include\libswresample
+mkdir "$(OutBaseDir)"\licenses
+copy ..\COPYING.GPLv3 "$(OutBaseDir)"\licenses\ffmpeg.txt</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>if exist ..\config.h (
@@ -339,8 +339,8 @@ del ..\libavutil\avconfig.h
 if exist ..\libavutil\ffversion.h (
 del ..\libavutil\ffversion.h
 )
-if exist "$(OutDir)"\include\libswresample (
-rd /s /q "$(OutDir)"\include\libswresample
+if exist "$(OutBaseDir)"\include\libswresample (
+rd /s /q "$(OutBaseDir)"\include\libswresample
 cd ../
 cd $(ProjectDir)
 )</Command>
@@ -357,7 +357,7 @@ cd $(ProjectDir)
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseDLLWinRT|Win32'">
     <ClCompile>
-      <PreprocessorDefinitions>_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;BUILDING_swresample;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SUPPRESS_RESTRICT;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;BUILDING_swresample;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="$([System.String]::Copy($(PlatformToolset)).Contains('Intel'))">/Qvec- /Qsimd- %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(AdditionalOptions)' == '' and '$(VisualStudioVersion)' != '12.0'">/utf-8 %(AdditionalOptions)</AdditionalOptions>
@@ -370,13 +370,13 @@ cd $(ProjectDir)
       <AdditionalOptions>/IGNORE:4006,4221,4049,4217,4197,4099,4264 %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <PostBuildEvent>
-      <Command>mkdir "$(OutDir)"\include
-mkdir "$(OutDir)"\include\libswresample
-copy ..\libswresample\swresample.h "$(OutDir)"\include\libswresample
-copy ..\libswresample\version.h "$(OutDir)"\include\libswresample
-copy ..\libswresample\version_major.h "$(OutDir)"\include\libswresample
-mkdir "$(OutDir)"\licenses
-copy ..\COPYING.GPLv3 "$(OutDir)"\licenses\ffmpeg.txt</Command>
+      <Command>mkdir "$(OutBaseDir)"\include
+mkdir "$(OutBaseDir)"\include\libswresample
+copy ..\libswresample\swresample.h "$(OutBaseDir)"\include\libswresample
+copy ..\libswresample\version.h "$(OutBaseDir)"\include\libswresample
+copy ..\libswresample\version_major.h "$(OutBaseDir)"\include\libswresample
+mkdir "$(OutBaseDir)"\licenses
+copy ..\COPYING.GPLv3 "$(OutBaseDir)"\licenses\ffmpeg.txt</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>if exist ..\config.h (
@@ -397,8 +397,8 @@ del ..\libavutil\avconfig.h
 if exist ..\libavutil\ffversion.h (
 del ..\libavutil\ffversion.h
 )
-if exist "$(OutDir)"\include\libswresample (
-rd /s /q "$(OutDir)"\include\libswresample
+if exist "$(OutBaseDir)"\include\libswresample (
+rd /s /q "$(OutBaseDir)"\include\libswresample
 cd ../
 cd $(ProjectDir)
 )</Command>
@@ -415,7 +415,7 @@ cd $(ProjectDir)
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseDLLWinRT|x64'">
     <ClCompile>
-      <PreprocessorDefinitions>_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;BUILDING_swresample;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SUPPRESS_RESTRICT;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;BUILDING_swresample;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="$([System.String]::Copy($(PlatformToolset)).Contains('Intel'))">/Qvec- /Qsimd- %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(AdditionalOptions)' == '' and '$(VisualStudioVersion)' != '12.0'">/utf-8 %(AdditionalOptions)</AdditionalOptions>
@@ -428,13 +428,13 @@ cd $(ProjectDir)
       <AdditionalOptions>/IGNORE:4006,4221,4049,4217,4197,4099,4264 %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <PostBuildEvent>
-      <Command>mkdir "$(OutDir)"\include
-mkdir "$(OutDir)"\include\libswresample
-copy ..\libswresample\swresample.h "$(OutDir)"\include\libswresample
-copy ..\libswresample\version.h "$(OutDir)"\include\libswresample
-copy ..\libswresample\version_major.h "$(OutDir)"\include\libswresample
-mkdir "$(OutDir)"\licenses
-copy ..\COPYING.GPLv3 "$(OutDir)"\licenses\ffmpeg.txt</Command>
+      <Command>mkdir "$(OutBaseDir)"\include
+mkdir "$(OutBaseDir)"\include\libswresample
+copy ..\libswresample\swresample.h "$(OutBaseDir)"\include\libswresample
+copy ..\libswresample\version.h "$(OutBaseDir)"\include\libswresample
+copy ..\libswresample\version_major.h "$(OutBaseDir)"\include\libswresample
+mkdir "$(OutBaseDir)"\licenses
+copy ..\COPYING.GPLv3 "$(OutBaseDir)"\licenses\ffmpeg.txt</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>if exist ..\config.h (
@@ -455,8 +455,8 @@ del ..\libavutil\avconfig.h
 if exist ..\libavutil\ffversion.h (
 del ..\libavutil\ffversion.h
 )
-if exist "$(OutDir)"\include\libswresample (
-rd /s /q "$(OutDir)"\include\libswresample
+if exist "$(OutBaseDir)"\include\libswresample (
+rd /s /q "$(OutBaseDir)"\include\libswresample
 cd ../
 cd $(ProjectDir)
 )</Command>
@@ -473,7 +473,7 @@ cd $(ProjectDir)
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseDLLWinRTStaticDeps|Win32'">
     <ClCompile>
-      <PreprocessorDefinitions>_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;BUILDING_swresample;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SUPPRESS_RESTRICT;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;BUILDING_swresample;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="$([System.String]::Copy($(PlatformToolset)).Contains('Intel'))">/Qvec- /Qsimd- %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(AdditionalOptions)' == '' and '$(VisualStudioVersion)' != '12.0'">/utf-8 %(AdditionalOptions)</AdditionalOptions>
@@ -486,13 +486,13 @@ cd $(ProjectDir)
       <AdditionalOptions>/IGNORE:4006,4221,4049,4217,4197,4099,4264 %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <PostBuildEvent>
-      <Command>mkdir "$(OutDir)"\include
-mkdir "$(OutDir)"\include\libswresample
-copy ..\libswresample\swresample.h "$(OutDir)"\include\libswresample
-copy ..\libswresample\version.h "$(OutDir)"\include\libswresample
-copy ..\libswresample\version_major.h "$(OutDir)"\include\libswresample
-mkdir "$(OutDir)"\licenses
-copy ..\COPYING.GPLv3 "$(OutDir)"\licenses\ffmpeg.txt</Command>
+      <Command>mkdir "$(OutBaseDir)"\include
+mkdir "$(OutBaseDir)"\include\libswresample
+copy ..\libswresample\swresample.h "$(OutBaseDir)"\include\libswresample
+copy ..\libswresample\version.h "$(OutBaseDir)"\include\libswresample
+copy ..\libswresample\version_major.h "$(OutBaseDir)"\include\libswresample
+mkdir "$(OutBaseDir)"\licenses
+copy ..\COPYING.GPLv3 "$(OutBaseDir)"\licenses\ffmpeg.txt</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>if exist ..\config.h (
@@ -513,8 +513,8 @@ del ..\libavutil\avconfig.h
 if exist ..\libavutil\ffversion.h (
 del ..\libavutil\ffversion.h
 )
-if exist "$(OutDir)"\include\libswresample (
-rd /s /q "$(OutDir)"\include\libswresample
+if exist "$(OutBaseDir)"\include\libswresample (
+rd /s /q "$(OutBaseDir)"\include\libswresample
 cd ../
 cd $(ProjectDir)
 )</Command>
@@ -531,7 +531,7 @@ cd $(ProjectDir)
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseDLLWinRTStaticDeps|x64'">
     <ClCompile>
-      <PreprocessorDefinitions>_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;BUILDING_swresample;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SUPPRESS_RESTRICT;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;BUILDING_swresample;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="$([System.String]::Copy($(PlatformToolset)).Contains('Intel'))">/Qvec- /Qsimd- %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(AdditionalOptions)' == '' and '$(VisualStudioVersion)' != '12.0'">/utf-8 %(AdditionalOptions)</AdditionalOptions>
@@ -544,13 +544,13 @@ cd $(ProjectDir)
       <AdditionalOptions>/IGNORE:4006,4221,4049,4217,4197,4099,4264 %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <PostBuildEvent>
-      <Command>mkdir "$(OutDir)"\include
-mkdir "$(OutDir)"\include\libswresample
-copy ..\libswresample\swresample.h "$(OutDir)"\include\libswresample
-copy ..\libswresample\version.h "$(OutDir)"\include\libswresample
-copy ..\libswresample\version_major.h "$(OutDir)"\include\libswresample
-mkdir "$(OutDir)"\licenses
-copy ..\COPYING.GPLv3 "$(OutDir)"\licenses\ffmpeg.txt</Command>
+      <Command>mkdir "$(OutBaseDir)"\include
+mkdir "$(OutBaseDir)"\include\libswresample
+copy ..\libswresample\swresample.h "$(OutBaseDir)"\include\libswresample
+copy ..\libswresample\version.h "$(OutBaseDir)"\include\libswresample
+copy ..\libswresample\version_major.h "$(OutBaseDir)"\include\libswresample
+mkdir "$(OutBaseDir)"\licenses
+copy ..\COPYING.GPLv3 "$(OutBaseDir)"\licenses\ffmpeg.txt</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>if exist ..\config.h (
@@ -571,8 +571,8 @@ del ..\libavutil\avconfig.h
 if exist ..\libavutil\ffversion.h (
 del ..\libavutil\ffversion.h
 )
-if exist "$(OutDir)"\include\libswresample (
-rd /s /q "$(OutDir)"\include\libswresample
+if exist "$(OutBaseDir)"\include\libswresample (
+rd /s /q "$(OutBaseDir)"\include\libswresample
 cd ../
 cd $(ProjectDir)
 )</Command>

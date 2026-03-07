@@ -26,9 +26,9 @@
 #   include <sdkddkver.h>
 #   include <winapifamily.h>
 #endif
-#define FFMPEG_CONFIGURATION "--enable-gpl --enable-version3 --enable-bzlib --enable-iconv --enable-lzma --enable-sdl2 --enable-zlib --enable-libmp3lame --enable-libvorbis --enable-libspeex --enable-libopus --enable-libilbc --enable-libtheora --enable-libx264 --enable-libx265 --enable-libxvid --enable-libvpx --enable-libgme --enable-libmodplug --enable-libsoxr --enable-libfreetype --enable-fontconfig --enable-libfribidi --enable-libharfbuzz --enable-libass --enable-libxml2 --enable-gnutls --disable-schannel --enable-gcrypt --enable-libssh --enable-libcdio --enable-libbluray --enable-libdvdread --enable-libdvdnav --enable-opengl --enable-libmfx --enable-ffnvcodec --enable-cuda --enable-amf"
+#define FFMPEG_CONFIGURATION "--enable-gpl --enable-version3 --enable-bzlib --enable-iconv --enable-lzma --enable-sdl2 --enable-zlib --enable-libmp3lame --enable-libvorbis --enable-libspeex --enable-libopus --enable-libilbc --enable-libtheora --enable-libx264 --enable-libx265 --enable-libxvid --enable-libvpx --enable-libgme --enable-libmodplug --enable-libsoxr --enable-libfreetype --enable-fontconfig --enable-libfribidi --enable-libharfbuzz --enable-libass --enable-libxml2 --enable-gnutls --disable-schannel --enable-gcrypt --enable-libssh --enable-libcdio --enable-libbluray --enable-libdvdread --enable-libdvdnav --enable-opengl --enable-libmfx --enable-ffnvcodec --enable-cuda --enable-amf --enable-vulkan"
 #define FFMPEG_LICENSE "GPL version 3 or later"
-#define CONFIG_THIS_YEAR 2024
+#define CONFIG_THIS_YEAR 2025
 #define FFMPEG_DATADIR "."
 #define AVCONV_DATADIR "."
 #if defined(__INTEL_COMPILER)

@@ -47,89 +47,65 @@
     <ClCompile Include="..\fftools\opt_common.c" />
     <ClCompile Include="..\fftools\ffprobe.c" />
   </ItemGroup>
+  <PropertyGroup>
+    <OutBaseDir>$(ProjectDir)..\..\..\msvc\</OutBaseDir>
+    <OutDir>$(OutBaseDir)bin\$(Platform)\</OutDir>
+    <IntDir>$(ProjectDir)obj\$(Configuration)\$(Platform)\$(MSBuildProjectName)\</IntDir>
+    <TargetName>ffprobe</TargetName>
+    <TargetName Condition="'$(Configuration)'=='Debug'">ffprobed</TargetName>
+    <TargetName Condition="'$(Configuration)'=='DebugDLL'">ffprobed</TargetName>
+    <LocalDebuggerWorkingDirectory>$(OutDir)</LocalDebuggerWorkingDirectory>
+  </PropertyGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{147A422A-FA63-4724-A5D9-08B1CAFDAB59}</ProjectGuid>
     <RootNamespace>ffprobe</RootNamespace>
+    <MSBuildWarningsAsMessages>MSB8012</MSBuildWarningsAsMessages>
+    <EmbedManifest>false</EmbedManifest>
+    <PlatformToolset Condition="'$(VisualStudioVersion)'=='12.0'">v120</PlatformToolset>
+    <PlatformToolset Condition="'$(VisualStudioVersion)'=='14.0'">v140</PlatformToolset>
+    <PlatformToolset Condition="'$(VisualStudioVersion)'=='15.0'">v141</PlatformToolset>
+    <PlatformToolset Condition="'$(VisualStudioVersion)'=='16.0'">v142</PlatformToolset>
+    <PlatformToolset Condition="'$(VisualStudioVersion)'=='17.0'">v143</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset Condition="'$(VisualStudioVersion)'=='12.0'">v120</PlatformToolset>
-    <PlatformToolset Condition="'$(VisualStudioVersion)'=='14.0'">v140</PlatformToolset>
-    <PlatformToolset Condition="'$(VisualStudioVersion)'=='15.0'">v141</PlatformToolset>
-    <PlatformToolset Condition="'$(VisualStudioVersion)'=='16.0'">v142</PlatformToolset>
-    <PlatformToolset Condition="'$(VisualStudioVersion)'=='17.0'">v143</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset Condition="'$(VisualStudioVersion)'=='12.0'">v120</PlatformToolset>
-    <PlatformToolset Condition="'$(VisualStudioVersion)'=='14.0'">v140</PlatformToolset>
-    <PlatformToolset Condition="'$(VisualStudioVersion)'=='15.0'">v141</PlatformToolset>
-    <PlatformToolset Condition="'$(VisualStudioVersion)'=='16.0'">v142</PlatformToolset>
-    <PlatformToolset Condition="'$(VisualStudioVersion)'=='17.0'">v143</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugDLL|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset Condition="'$(VisualStudioVersion)'=='12.0'">v120</PlatformToolset>
-    <PlatformToolset Condition="'$(VisualStudioVersion)'=='14.0'">v140</PlatformToolset>
-    <PlatformToolset Condition="'$(VisualStudioVersion)'=='15.0'">v141</PlatformToolset>
-    <PlatformToolset Condition="'$(VisualStudioVersion)'=='16.0'">v142</PlatformToolset>
-    <PlatformToolset Condition="'$(VisualStudioVersion)'=='17.0'">v143</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugDLL|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset Condition="'$(VisualStudioVersion)'=='12.0'">v120</PlatformToolset>
-    <PlatformToolset Condition="'$(VisualStudioVersion)'=='14.0'">v140</PlatformToolset>
-    <PlatformToolset Condition="'$(VisualStudioVersion)'=='15.0'">v141</PlatformToolset>
-    <PlatformToolset Condition="'$(VisualStudioVersion)'=='16.0'">v142</PlatformToolset>
-    <PlatformToolset Condition="'$(VisualStudioVersion)'=='17.0'">v143</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset Condition="'$(VisualStudioVersion)'=='12.0'">v120</PlatformToolset>
-    <PlatformToolset Condition="'$(VisualStudioVersion)'=='14.0'">v140</PlatformToolset>
-    <PlatformToolset Condition="'$(VisualStudioVersion)'=='15.0'">v141</PlatformToolset>
-    <PlatformToolset Condition="'$(VisualStudioVersion)'=='16.0'">v142</PlatformToolset>
-    <PlatformToolset Condition="'$(VisualStudioVersion)'=='17.0'">v143</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset Condition="'$(VisualStudioVersion)'=='12.0'">v120</PlatformToolset>
-    <PlatformToolset Condition="'$(VisualStudioVersion)'=='14.0'">v140</PlatformToolset>
-    <PlatformToolset Condition="'$(VisualStudioVersion)'=='15.0'">v141</PlatformToolset>
-    <PlatformToolset Condition="'$(VisualStudioVersion)'=='16.0'">v142</PlatformToolset>
-    <PlatformToolset Condition="'$(VisualStudioVersion)'=='17.0'">v143</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseDLL|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset Condition="'$(VisualStudioVersion)'=='12.0'">v120</PlatformToolset>
-    <PlatformToolset Condition="'$(VisualStudioVersion)'=='14.0'">v140</PlatformToolset>
-    <PlatformToolset Condition="'$(VisualStudioVersion)'=='15.0'">v141</PlatformToolset>
-    <PlatformToolset Condition="'$(VisualStudioVersion)'=='16.0'">v142</PlatformToolset>
-    <PlatformToolset Condition="'$(VisualStudioVersion)'=='17.0'">v143</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseDLL|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset Condition="'$(VisualStudioVersion)'=='12.0'">v120</PlatformToolset>
-    <PlatformToolset Condition="'$(VisualStudioVersion)'=='14.0'">v140</PlatformToolset>
-    <PlatformToolset Condition="'$(VisualStudioVersion)'=='15.0'">v141</PlatformToolset>
-    <PlatformToolset Condition="'$(VisualStudioVersion)'=='16.0'">v142</PlatformToolset>
-    <PlatformToolset Condition="'$(VisualStudioVersion)'=='17.0'">v143</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
@@ -160,83 +136,12 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <TargetName>ffprobed</TargetName>
-    <OutDir>$(ProjectDir)..\..\..\msvc\</OutDir>
-    <IntDir>$(SolutionDir)obj\$(Configuration)\$(Platform)\ffprobe\</IntDir>
-    <LocalDebuggerWorkingDirectory>$(OutDir)\bin\x86\</LocalDebuggerWorkingDirectory>
-    <LocalDebuggerCommand>$(TargetFileName)</LocalDebuggerCommand>
-    <MSBuildWarningsAsMessages>MSB8012</MSBuildWarningsAsMessages>
-    <EmbedManifest>false</EmbedManifest>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <TargetName>ffprobed</TargetName>
-    <IntDir>$(SolutionDir)obj\$(Configuration)\$(Platform)\ffprobe\</IntDir>
-    <OutDir>$(ProjectDir)..\..\..\msvc\</OutDir>
-    <LocalDebuggerWorkingDirectory>$(OutDir)\bin\x64\</LocalDebuggerWorkingDirectory>
-    <LocalDebuggerCommand>$(TargetFileName)</LocalDebuggerCommand>
-    <MSBuildWarningsAsMessages>MSB8012</MSBuildWarningsAsMessages>
-    <EmbedManifest>false</EmbedManifest>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugDLL|Win32'">
-    <TargetName>ffprobed</TargetName>
-    <OutDir>$(ProjectDir)..\..\..\msvc\</OutDir>
-    <IntDir>$(SolutionDir)obj\$(Configuration)\$(Platform)\ffprobe\</IntDir>
-    <LocalDebuggerWorkingDirectory>$(OutDir)\bin\x86\</LocalDebuggerWorkingDirectory>
-    <LocalDebuggerCommand>$(TargetFileName)</LocalDebuggerCommand>
-    <MSBuildWarningsAsMessages>MSB8012</MSBuildWarningsAsMessages>
-    <EmbedManifest>false</EmbedManifest>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugDLL|x64'">
-    <TargetName>ffprobed</TargetName>
-    <IntDir>$(SolutionDir)obj\$(Configuration)\$(Platform)\ffprobe\</IntDir>
-    <OutDir>$(ProjectDir)..\..\..\msvc\</OutDir>
-    <LocalDebuggerWorkingDirectory>$(OutDir)\bin\x64\</LocalDebuggerWorkingDirectory>
-    <LocalDebuggerCommand>$(TargetFileName)</LocalDebuggerCommand>
-    <MSBuildWarningsAsMessages>MSB8012</MSBuildWarningsAsMessages>
-    <EmbedManifest>false</EmbedManifest>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <TargetName>ffprobe</TargetName>
-    <OutDir>$(ProjectDir)..\..\..\msvc\</OutDir>
-    <IntDir>$(SolutionDir)obj\$(Configuration)\$(Platform)\ffprobe\</IntDir>
-    <LocalDebuggerWorkingDirectory>$(OutDir)\bin\x86\</LocalDebuggerWorkingDirectory>
-    <LocalDebuggerCommand>$(TargetFileName)</LocalDebuggerCommand>
-    <MSBuildWarningsAsMessages>MSB8012</MSBuildWarningsAsMessages>
-    <EmbedManifest>false</EmbedManifest>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <TargetName>ffprobe</TargetName>
-    <OutDir>$(ProjectDir)..\..\..\msvc\</OutDir>
-    <IntDir>$(SolutionDir)obj\$(Configuration)\$(Platform)\ffprobe\</IntDir>
-    <LocalDebuggerWorkingDirectory>$(OutDir)\bin\x64\</LocalDebuggerWorkingDirectory>
-    <LocalDebuggerCommand>$(TargetFileName)</LocalDebuggerCommand>
-    <MSBuildWarningsAsMessages>MSB8012</MSBuildWarningsAsMessages>
-    <EmbedManifest>false</EmbedManifest>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseDLL|Win32'">
-    <TargetName>ffprobe</TargetName>
-    <OutDir>$(ProjectDir)..\..\..\msvc\</OutDir>
-    <IntDir>$(SolutionDir)obj\$(Configuration)\$(Platform)\ffprobe\</IntDir>
-    <LocalDebuggerWorkingDirectory>$(OutDir)\bin\x86\</LocalDebuggerWorkingDirectory>
-    <LocalDebuggerCommand>$(TargetFileName)</LocalDebuggerCommand>
-    <MSBuildWarningsAsMessages>MSB8012</MSBuildWarningsAsMessages>
-    <EmbedManifest>false</EmbedManifest>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseDLL|x64'">
-    <TargetName>ffprobe</TargetName>
-    <OutDir>$(ProjectDir)..\..\..\msvc\</OutDir>
-    <IntDir>$(SolutionDir)obj\$(Configuration)\$(Platform)\ffprobe\</IntDir>
-    <LocalDebuggerWorkingDirectory>$(OutDir)\bin\x64\</LocalDebuggerWorkingDirectory>
-    <LocalDebuggerCommand>$(TargetFileName)</LocalDebuggerCommand>
-    <MSBuildWarningsAsMessages>MSB8012</MSBuildWarningsAsMessages>
-    <EmbedManifest>false</EmbedManifest>
-  </PropertyGroup>
+
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>WIN32;_WINDOWS;_USE_MATH_DEFINES;_CRT_SECURE_NO_WARNINGS;_WIN32_WINNT=0x0601;_LIB;_DEBUG;DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;.\;..\;$(OutDir)\include;$(ProjectDir)\..\..\prebuilt\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;.\;..\;$(OutBaseDir)\include;$(ProjectDir)\..\..\prebuilt\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <C99Support>true</C99Support>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <OmitFramePointers>false</OmitFramePointers>
@@ -253,9 +158,7 @@
       <AdditionalDependencies>libavdeviced.lib;libavfilterd.lib;libavformatd.lib;libavcodecd.lib;libpostprocd.lib;libswresampled.lib;libswscaled.lib;libavutild.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
       <ProfileGuidedDatabase>$(IntDir)\$(TargetName).pgd</ProfileGuidedDatabase>
-      <AdditionalLibraryDirectories>$(OutDir)\lib\x86\;$(ProjectDir)\..\..\prebuilt\lib\x86\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <OutputFile>$(OutDir)\bin\x86\$(TargetName)$(TargetExt)</OutputFile>
-      <ProgramDatabaseFile>$(OutDir)\bin\x86\$(TargetName).pdb</ProgramDatabaseFile>
+      <AdditionalLibraryDirectories>$(OutBaseDir)\lib\x86\;$(ProjectDir)\..\..\prebuilt\lib\x86\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>LIBCMT.lib;LIBCPMT.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <LargeAddressAware>true</LargeAddressAware>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -265,8 +168,8 @@
     </Link>
     <PostBuildEvent>
       <Command>
-mkdir "$(OutDir)"\licenses
-copy ..\COPYING.GPLv3 "$(OutDir)"\licenses\ffmpeg.txt</Command>
+mkdir "$(OutBaseDir)"\licenses
+copy ..\COPYING.GPLv3 "$(OutBaseDir)"\licenses\ffmpeg.txt</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>if exist ..\config.h (
@@ -293,7 +196,7 @@ del ..\libavutil\ffversion.h
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>WIN32;_WINDOWS;_USE_MATH_DEFINES;_CRT_SECURE_NO_WARNINGS;_WIN32_WINNT=0x0601;_LIB;_DEBUG;DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;.\;..\;$(OutDir)\include;$(ProjectDir)\..\..\prebuilt\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;.\;..\;$(OutBaseDir)\include;$(ProjectDir)\..\..\prebuilt\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <C99Support>true</C99Support>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <AdditionalOptions Condition="$([System.String]::Copy($(PlatformToolset)).Contains('Intel'))">/Qvec- /Qsimd- %(AdditionalOptions)</AdditionalOptions>
@@ -309,9 +212,7 @@ del ..\libavutil\ffversion.h
       <AdditionalDependencies>libavdeviced.lib;libavfilterd.lib;libavformatd.lib;libavcodecd.lib;libpostprocd.lib;libswresampled.lib;libswscaled.lib;libavutild.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
       <ProfileGuidedDatabase>$(IntDir)\$(TargetName).pgd</ProfileGuidedDatabase>
-      <AdditionalLibraryDirectories>$(OutDir)\lib\x64\;$(ProjectDir)\..\..\prebuilt\lib\x64\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <OutputFile>$(OutDir)\bin\x64\$(TargetName)$(TargetExt)</OutputFile>
-      <ProgramDatabaseFile>$(OutDir)\bin\x64\$(TargetName).pdb</ProgramDatabaseFile>
+      <AdditionalLibraryDirectories>$(OutBaseDir)\lib\x64\;$(ProjectDir)\..\..\prebuilt\lib\x64\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>LIBCMT.lib;LIBCPMT.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalOptions>/IGNORE:4006,4221,4049,4217,4197,4099 %(AdditionalOptions)</AdditionalOptions>
@@ -320,8 +221,8 @@ del ..\libavutil\ffversion.h
     </Link>
     <PostBuildEvent>
       <Command>
-mkdir "$(OutDir)"\licenses
-copy ..\COPYING.GPLv3 "$(OutDir)"\licenses\ffmpeg.txt</Command>
+mkdir "$(OutBaseDir)"\licenses
+copy ..\COPYING.GPLv3 "$(OutBaseDir)"\licenses\ffmpeg.txt</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>if exist ..\config.h (
@@ -348,7 +249,7 @@ del ..\libavutil\ffversion.h
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>WIN32;_WINDOWS;_USE_MATH_DEFINES;_CRT_SECURE_NO_WARNINGS;_WIN32_WINNT=0x0601;_DEBUG;DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;.\;..\;$(OutDir)\include;$(ProjectDir)\..\..\prebuilt\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;.\;..\;$(OutBaseDir)\include;$(ProjectDir)\..\..\prebuilt\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <C99Support>true</C99Support>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <OmitFramePointers>false</OmitFramePointers>
@@ -365,9 +266,7 @@ del ..\libavutil\ffversion.h
       <AdditionalDependencies>avdeviced.lib;avfilterd.lib;avformatd.lib;avcodecd.lib;postprocd.lib;swresampled.lib;swscaled.lib;avutild.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
       <ProfileGuidedDatabase>$(IntDir)\$(TargetName).pgd</ProfileGuidedDatabase>
-      <AdditionalLibraryDirectories>$(OutDir)\lib\x86\;$(ProjectDir)\..\..\prebuilt\lib\x86\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <OutputFile>$(OutDir)\bin\x86\$(TargetName)$(TargetExt)</OutputFile>
-      <ProgramDatabaseFile>$(OutDir)\bin\x86\$(TargetName).pdb</ProgramDatabaseFile>
+      <AdditionalLibraryDirectories>$(OutBaseDir)\lib\x86\;$(ProjectDir)\..\..\prebuilt\lib\x86\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>LIBCMT.lib;LIBCPMT.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <LargeAddressAware>true</LargeAddressAware>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -377,8 +276,8 @@ del ..\libavutil\ffversion.h
     </Link>
     <PostBuildEvent>
       <Command>
-mkdir "$(OutDir)"\licenses
-copy ..\COPYING.GPLv3 "$(OutDir)"\licenses\ffmpeg.txt</Command>
+mkdir "$(OutBaseDir)"\licenses
+copy ..\COPYING.GPLv3 "$(OutBaseDir)"\licenses\ffmpeg.txt</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>if exist ..\config.h (
@@ -405,7 +304,7 @@ del ..\libavutil\ffversion.h
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>WIN32;_WINDOWS;_USE_MATH_DEFINES;_CRT_SECURE_NO_WARNINGS;_WIN32_WINNT=0x0601;_DEBUG;DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;.\;..\;$(OutDir)\include;$(ProjectDir)\..\..\prebuilt\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;.\;..\;$(OutBaseDir)\include;$(ProjectDir)\..\..\prebuilt\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <C99Support>true</C99Support>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <AdditionalOptions Condition="$([System.String]::Copy($(PlatformToolset)).Contains('Intel'))">/Qvec- /Qsimd- %(AdditionalOptions)</AdditionalOptions>
@@ -421,9 +320,7 @@ del ..\libavutil\ffversion.h
       <AdditionalDependencies>avdeviced.lib;avfilterd.lib;avformatd.lib;avcodecd.lib;postprocd.lib;swresampled.lib;swscaled.lib;avutild.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
       <ProfileGuidedDatabase>$(IntDir)\$(TargetName).pgd</ProfileGuidedDatabase>
-      <AdditionalLibraryDirectories>$(OutDir)\lib\x64\;$(ProjectDir)\..\..\prebuilt\lib\x64\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <OutputFile>$(OutDir)\bin\x64\$(TargetName)$(TargetExt)</OutputFile>
-      <ProgramDatabaseFile>$(OutDir)\bin\x64\$(TargetName).pdb</ProgramDatabaseFile>
+      <AdditionalLibraryDirectories>$(OutBaseDir)\lib\x64\;$(ProjectDir)\..\..\prebuilt\lib\x64\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>LIBCMT.lib;LIBCPMT.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalOptions>/IGNORE:4006,4221,4049,4217,4197,4099 %(AdditionalOptions)</AdditionalOptions>
@@ -432,8 +329,8 @@ del ..\libavutil\ffversion.h
     </Link>
     <PostBuildEvent>
       <Command>
-mkdir "$(OutDir)"\licenses
-copy ..\COPYING.GPLv3 "$(OutDir)"\licenses\ffmpeg.txt</Command>
+mkdir "$(OutBaseDir)"\licenses
+copy ..\COPYING.GPLv3 "$(OutBaseDir)"\licenses\ffmpeg.txt</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>if exist ..\config.h (
@@ -463,7 +360,7 @@ del ..\libavutil\ffversion.h
       <OmitFramePointers>true</OmitFramePointers>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
       <PreprocessorDefinitions>WIN32;_WINDOWS;_USE_MATH_DEFINES;_CRT_SECURE_NO_WARNINGS;_WIN32_WINNT=0x0601;_LIB;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;.\;..\;$(OutDir)\include;$(ProjectDir)\..\..\prebuilt\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;.\;..\;$(OutBaseDir)\include;$(ProjectDir)\..\..\prebuilt\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <StringPooling>true</StringPooling>
       <C99Support>true</C99Support>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -483,9 +380,7 @@ del ..\libavutil\ffversion.h
       <OptimizeReferences>true</OptimizeReferences>
       <SubSystem>Console</SubSystem>
       <ProfileGuidedDatabase>$(IntDir)\$(TargetName).pgd</ProfileGuidedDatabase>
-      <AdditionalLibraryDirectories>$(OutDir)\lib\x86\;$(ProjectDir)\..\..\prebuilt\lib\x86\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <OutputFile>$(OutDir)\bin\x86\$(TargetName)$(TargetExt)</OutputFile>
-      <ProgramDatabaseFile>$(OutDir)\bin\x86\$(TargetName).pdb</ProgramDatabaseFile>
+      <AdditionalLibraryDirectories>$(OutBaseDir)\lib\x86\;$(ProjectDir)\..\..\prebuilt\lib\x86\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <LargeAddressAware>true</LargeAddressAware>
       <AdditionalOptions>/IGNORE:4006,4221,4049,4217,4197,4099 %(AdditionalOptions)</AdditionalOptions>
       <MinimumRequiredVersion>6.1</MinimumRequiredVersion>
@@ -493,8 +388,8 @@ del ..\libavutil\ffversion.h
     </Link>
     <PostBuildEvent>
       <Command>
-mkdir "$(OutDir)"\licenses
-copy ..\COPYING.GPLv3 "$(OutDir)"\licenses\ffmpeg.txt</Command>
+mkdir "$(OutBaseDir)"\licenses
+copy ..\COPYING.GPLv3 "$(OutBaseDir)"\licenses\ffmpeg.txt</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>if exist ..\config.h (
@@ -524,7 +419,7 @@ del ..\libavutil\ffversion.h
       <OmitFramePointers>true</OmitFramePointers>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
       <PreprocessorDefinitions>WIN32;_WINDOWS;_USE_MATH_DEFINES;_CRT_SECURE_NO_WARNINGS;_WIN32_WINNT=0x0601;_LIB;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;.\;..\;$(OutDir)\include;$(ProjectDir)\..\..\prebuilt\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;.\;..\;$(OutBaseDir)\include;$(ProjectDir)\..\..\prebuilt\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <StringPooling>true</StringPooling>
       <C99Support>true</C99Support>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -544,17 +439,15 @@ del ..\libavutil\ffversion.h
       <OptimizeReferences>true</OptimizeReferences>
       <SubSystem>Console</SubSystem>
       <ProfileGuidedDatabase>$(IntDir)\$(TargetName).pgd</ProfileGuidedDatabase>
-      <AdditionalLibraryDirectories>$(OutDir)\lib\x64\;$(ProjectDir)\..\..\prebuilt\lib\x64\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <OutputFile>$(OutDir)\bin\x64\$(TargetName)$(TargetExt)</OutputFile>
-      <ProgramDatabaseFile>$(OutDir)\bin\x64\$(TargetName).pdb</ProgramDatabaseFile>
+      <AdditionalLibraryDirectories>$(OutBaseDir)\lib\x64\;$(ProjectDir)\..\..\prebuilt\lib\x64\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>/IGNORE:4006,4221,4049,4217,4197,4099 %(AdditionalOptions)</AdditionalOptions>
       <MinimumRequiredVersion>6.1</MinimumRequiredVersion>
       <ImportLibrary>$(IntDir)\$(TargetName).lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
       <Command>
-mkdir "$(OutDir)"\licenses
-copy ..\COPYING.GPLv3 "$(OutDir)"\licenses\ffmpeg.txt</Command>
+mkdir "$(OutBaseDir)"\licenses
+copy ..\COPYING.GPLv3 "$(OutBaseDir)"\licenses\ffmpeg.txt</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>if exist ..\config.h (
@@ -583,7 +476,7 @@ del ..\libavutil\ffversion.h
       <OmitFramePointers>true</OmitFramePointers>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
       <PreprocessorDefinitions>WIN32;_WINDOWS;_USE_MATH_DEFINES;_CRT_SECURE_NO_WARNINGS;_WIN32_WINNT=0x0601;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;.\;..\;$(OutDir)\include;$(ProjectDir)\..\..\prebuilt\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;.\;..\;$(OutBaseDir)\include;$(ProjectDir)\..\..\prebuilt\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <StringPooling>true</StringPooling>
       <C99Support>true</C99Support>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -604,9 +497,7 @@ del ..\libavutil\ffversion.h
       <OptimizeReferences>true</OptimizeReferences>
       <SubSystem>Console</SubSystem>
       <ProfileGuidedDatabase>$(IntDir)\$(TargetName).pgd</ProfileGuidedDatabase>
-      <AdditionalLibraryDirectories>$(OutDir)\lib\x86\;$(ProjectDir)\..\..\prebuilt\lib\x86\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <OutputFile>$(OutDir)\bin\x86\$(TargetName)$(TargetExt)</OutputFile>
-      <ProgramDatabaseFile>$(OutDir)\bin\x86\$(TargetName).pdb</ProgramDatabaseFile>
+      <AdditionalLibraryDirectories>$(OutBaseDir)\lib\x86\;$(ProjectDir)\..\..\prebuilt\lib\x86\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <LargeAddressAware>true</LargeAddressAware>
       <AdditionalOptions>/IGNORE:4006,4221,4049,4217,4197,4099 %(AdditionalOptions)</AdditionalOptions>
       <MinimumRequiredVersion>6.1</MinimumRequiredVersion>
@@ -614,8 +505,8 @@ del ..\libavutil\ffversion.h
     </Link>
     <PostBuildEvent>
       <Command>
-mkdir "$(OutDir)"\licenses
-copy ..\COPYING.GPLv3 "$(OutDir)"\licenses\ffmpeg.txt</Command>
+mkdir "$(OutBaseDir)"\licenses
+copy ..\COPYING.GPLv3 "$(OutBaseDir)"\licenses\ffmpeg.txt</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>if exist ..\config.h (
@@ -644,7 +535,7 @@ del ..\libavutil\ffversion.h
       <OmitFramePointers>true</OmitFramePointers>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
       <PreprocessorDefinitions>WIN32;_WINDOWS;_USE_MATH_DEFINES;_CRT_SECURE_NO_WARNINGS;_WIN32_WINNT=0x0601;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;.\;..\;$(OutDir)\include;$(ProjectDir)\..\..\prebuilt\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;.\;..\;$(OutBaseDir)\include;$(ProjectDir)\..\..\prebuilt\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <StringPooling>true</StringPooling>
       <C99Support>true</C99Support>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -665,17 +556,15 @@ del ..\libavutil\ffversion.h
       <OptimizeReferences>true</OptimizeReferences>
       <SubSystem>Console</SubSystem>
       <ProfileGuidedDatabase>$(IntDir)\$(TargetName).pgd</ProfileGuidedDatabase>
-      <AdditionalLibraryDirectories>$(OutDir)\lib\x64\;$(ProjectDir)\..\..\prebuilt\lib\x64\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <OutputFile>$(OutDir)\bin\x64\$(TargetName)$(TargetExt)</OutputFile>
-      <ProgramDatabaseFile>$(OutDir)\bin\x64\$(TargetName).pdb</ProgramDatabaseFile>
+      <AdditionalLibraryDirectories>$(OutBaseDir)\lib\x64\;$(ProjectDir)\..\..\prebuilt\lib\x64\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>/IGNORE:4006,4221,4049,4217,4197,4099 %(AdditionalOptions)</AdditionalOptions>
       <MinimumRequiredVersion>6.1</MinimumRequiredVersion>
       <ImportLibrary>$(IntDir)\$(TargetName).lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
       <Command>
-mkdir "$(OutDir)"\licenses
-copy ..\COPYING.GPLv3 "$(OutDir)"\licenses\ffmpeg.txt</Command>
+mkdir "$(OutBaseDir)"\licenses
+copy ..\COPYING.GPLv3 "$(OutBaseDir)"\licenses\ffmpeg.txt</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>if exist ..\config.h (

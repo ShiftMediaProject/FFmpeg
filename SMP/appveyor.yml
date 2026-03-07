@@ -129,10 +129,10 @@ before_build:
 
 # Download required glext headers
 - cmd: mkdir %APPVEYOR_BUILD_FOLDER%\..\prebuilt\include\gl >NUL 2>&1
-- ps: (New-Object Net.WebClient).DownloadFile('https://www.opengl.org/registry/api/GL/glext.h', "$env:APPVEYOR_BUILD_FOLDER\..\prebuilt\include\gl\glext.h")
-- ps: (New-Object Net.WebClient).DownloadFile('https://www.opengl.org/registry/api/GL/wglext.h', "$env:APPVEYOR_BUILD_FOLDER\..\prebuilt\include\gl\wglext.h")
+- ps: (New-Object Net.WebClient).DownloadFile('https://registry.khronos.org/OpenGL/api/GL/glext.h', "$env:APPVEYOR_BUILD_FOLDER\..\prebuilt\include\gl\glext.h")
+- ps: (New-Object Net.WebClient).DownloadFile('https://registry.khronos.org/OpenGL/api/GL/wglext.h', "$env:APPVEYOR_BUILD_FOLDER\..\prebuilt\include\gl\wglext.h")
 - cmd: mkdir %APPVEYOR_BUILD_FOLDER%\..\prebuilt\include\KHR >NUL 2>&1
-- ps: (New-Object Net.WebClient).DownloadFile('https://www.khronos.org/registry/EGL/api/KHR/khrplatform.h', "$env:APPVEYOR_BUILD_FOLDER\..\prebuilt\include\KHR\khrplatform.h")
+- ps: (New-Object Net.WebClient).DownloadFile('https://registry.khronos.org/EGL/api/KHR/khrplatform.h', "$env:APPVEYOR_BUILD_FOLDER\..\prebuilt\include\KHR\khrplatform.h")
 
 # Download required ffnvcodec headers
 - ps: (New-Object Net.WebClient).DownloadFile('https://github.com/FFmpeg/nv-codec-headers/archive/master.zip', "$pwd\ffnvcodec.zip")

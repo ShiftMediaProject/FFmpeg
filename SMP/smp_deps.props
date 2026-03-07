@@ -42,15 +42,24 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <PropertyGroup>
+    <OutBaseDir>$(ProjectDir)..\..\..\msvc\</OutBaseDir>
+    <OutDir>$(OutBaseDir)bin\$(Platform)\</OutDir>
+    <IntDir>$(ProjectDir)obj\$(Configuration)\$(Platform)\$(MSBuildProjectName)\</IntDir>
+    <TargetName>$(RootNamespace)</TargetName>
+    <TargetName Condition="'$(Configuration)'=='Debug'">lib$(RootNamespace)d</TargetName>
+    <TargetName Condition="'$(Configuration)'=='DebugDLL'">$(RootNamespace)d</TargetName>
+    <TargetName Condition="'$(Configuration)'=='Release'">lib$(RootNamespace)</TargetName>
+  </PropertyGroup>
   <PropertyGroup Label="Globals">
-    <PlatformToolset Condition="'$(VisualStudioVersion)' == '17.0'">v143</PlatformToolset>
-    <PlatformToolset Condition="'$(VisualStudioVersion)' == '16.0'">v142</PlatformToolset>
-    <PlatformToolset Condition="'$(VisualStudioVersion)' == '15.0'">v141</PlatformToolset>
-    <PlatformToolset Condition="'$(VisualStudioVersion)' == '14.0'">v140</PlatformToolset>
-    <PlatformToolset Condition="'$(VisualStudioVersion)' == '12.0'">v120</PlatformToolset>
-    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset Condition="'$(VisualStudioVersion)'=='12.0'">v120</PlatformToolset>
+    <PlatformToolset Condition="'$(VisualStudioVersion)'=='14.0'">v140</PlatformToolset>
+    <PlatformToolset Condition="'$(VisualStudioVersion)'=='15.0'">v141</PlatformToolset>
+    <PlatformToolset Condition="'$(VisualStudioVersion)'=='16.0'">v142</PlatformToolset>
+    <PlatformToolset Condition="'$(VisualStudioVersion)'=='17.0'">v143</PlatformToolset>
     <WindowsTargetPlatformVersion Condition="'$(WindowsTargetPlatformVersion)' != ''">$(WindowsTargetPlatformVersion)</WindowsTargetPlatformVersion>
     <WindowsTargetPlatformVersion Condition="'$(VisualStudioVersion)'&gt;= '16.0'">10.0</WindowsTargetPlatformVersion>
+    <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />  
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -105,83 +114,43 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <TargetName>lib$(RootNamespace)d</TargetName>
-    <OutDir>$(ProjectDir)..\..\..\msvc\</OutDir>
-    <IntDir>$(ProjectDir)obj\$(Configuration)\$(Platform)\$(ProjectName)\</IntDir>
     <GeneratedFilesDir>$(ProjectDir)obj\Generated</GeneratedFilesDir>
-    <CustomBuildAfterTargets>Clean</CustomBuildAfterTargets>
     <MSBuildWarningsAsMessages>MSB8012</MSBuildWarningsAsMessages>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <TargetName>lib$(RootNamespace)d</TargetName>
-    <OutDir>$(ProjectDir)..\..\..\msvc\</OutDir>
-    <IntDir>$(ProjectDir)obj\$(Configuration)\$(Platform)\$(ProjectName)\</IntDir>
     <GeneratedFilesDir>$(ProjectDir)obj\Generated</GeneratedFilesDir>
-    <CustomBuildAfterTargets>Clean</CustomBuildAfterTargets>
     <MSBuildWarningsAsMessages>MSB8012</MSBuildWarningsAsMessages>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugDLL|Win32'">
-    <TargetName>$(RootNamespace)d</TargetName>
-    <OutDir>$(ProjectDir)..\..\..\msvc\</OutDir>
-    <IntDir>$(ProjectDir)obj\$(Configuration)\$(Platform)\$(ProjectName)\</IntDir>
     <GeneratedFilesDir>$(ProjectDir)obj\Generated</GeneratedFilesDir>
-    <CustomBuildAfterTargets>Clean</CustomBuildAfterTargets>
     <MSBuildWarningsAsMessages>MSB8012</MSBuildWarningsAsMessages>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugDLL|x64'">
-    <TargetName>$(RootNamespace)d</TargetName>
-    <OutDir>$(ProjectDir)..\..\..\msvc\</OutDir>
-    <IntDir>$(ProjectDir)obj\$(Configuration)\$(Platform)\$(ProjectName)\</IntDir>
     <GeneratedFilesDir>$(ProjectDir)obj\Generated</GeneratedFilesDir>
-    <CustomBuildAfterTargets>Clean</CustomBuildAfterTargets>
     <MSBuildWarningsAsMessages>MSB8012</MSBuildWarningsAsMessages>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <TargetName>lib$(RootNamespace)</TargetName>
-    <OutDir>$(ProjectDir)..\..\..\msvc\</OutDir>
-    <IntDir>$(ProjectDir)obj\$(Configuration)\$(Platform)\$(ProjectName)\</IntDir>
     <GeneratedFilesDir>$(ProjectDir)obj\Generated</GeneratedFilesDir>
-    <CustomBuildAfterTargets>Clean</CustomBuildAfterTargets>
     <MSBuildWarningsAsMessages>MSB8012</MSBuildWarningsAsMessages>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <TargetName>lib$(RootNamespace)</TargetName>
-    <OutDir>$(ProjectDir)..\..\..\msvc\</OutDir>
-    <IntDir>$(ProjectDir)obj\$(Configuration)\$(Platform)\$(ProjectName)\</IntDir>
     <GeneratedFilesDir>$(ProjectDir)obj\Generated</GeneratedFilesDir>
-    <CustomBuildAfterTargets>Clean</CustomBuildAfterTargets>
     <MSBuildWarningsAsMessages>MSB8012</MSBuildWarningsAsMessages>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseDLL|Win32'">
-    <TargetName>$(RootNamespace)</TargetName>
-    <OutDir>$(ProjectDir)..\..\..\msvc\</OutDir>
-    <IntDir>$(ProjectDir)obj\$(Configuration)\$(Platform)\$(ProjectName)\</IntDir>
     <GeneratedFilesDir>$(ProjectDir)obj\Generated</GeneratedFilesDir>
-    <CustomBuildAfterTargets>Clean</CustomBuildAfterTargets>
     <MSBuildWarningsAsMessages>MSB8012</MSBuildWarningsAsMessages>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseDLL|x64'">
-    <TargetName>$(RootNamespace)</TargetName>
-    <OutDir>$(ProjectDir)..\..\..\msvc\</OutDir>
-    <IntDir>$(ProjectDir)obj\$(Configuration)\$(Platform)\$(ProjectName)\</IntDir>
     <GeneratedFilesDir>$(ProjectDir)obj\Generated</GeneratedFilesDir>
-    <CustomBuildAfterTargets>Clean</CustomBuildAfterTargets>
     <MSBuildWarningsAsMessages>MSB8012</MSBuildWarningsAsMessages>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseDLLStaticDeps|Win32'">
-    <TargetName>$(RootNamespace)</TargetName>
-    <OutDir>$(ProjectDir)..\..\..\msvc\</OutDir>
-    <IntDir>$(ProjectDir)obj\$(Configuration)\$(Platform)\$(ProjectName)\</IntDir>
     <GeneratedFilesDir>$(ProjectDir)obj\Generated</GeneratedFilesDir>
-    <CustomBuildAfterTargets>Clean</CustomBuildAfterTargets>
     <MSBuildWarningsAsMessages>MSB8012</MSBuildWarningsAsMessages>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseDLLStaticDeps|x64'">
-    <TargetName>$(RootNamespace)</TargetName>
-    <OutDir>$(ProjectDir)..\..\..\msvc\</OutDir>
-    <IntDir>$(ProjectDir)obj\$(Configuration)\$(Platform)\$(ProjectName)\</IntDir>
     <GeneratedFilesDir>$(ProjectDir)obj\Generated</GeneratedFilesDir>
-    <CustomBuildAfterTargets>Clean</CustomBuildAfterTargets>
     <MSBuildWarningsAsMessages>MSB8012</MSBuildWarningsAsMessages>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -189,16 +158,16 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <PreprocessorDefinitions>_WINDOWS;WIN32;_WIN32_WINNT=0x0601;_DEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(OutDir)\include;$(ProjectDir)\..\..\prebuilt\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <ProgramDataBaseFileName>$(OutDir)\lib\x86\$(TargetName).pdb</ProgramDataBaseFileName>
+      <PreprocessorDefinitions>_CRT_SUPPRESS_RESTRICT;_WINDOWS;WIN32;_WIN32_WINNT=0x0601;_DEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(OutBaseDir)\include;$(ProjectDir)\..\..\prebuilt\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <ProgramDataBaseFileName>$(OutBaseDir)\lib\x86\$(TargetName).pdb</ProgramDataBaseFileName>
       <MinimalRebuild>false</MinimalRebuild>
     </ClCompile>
     <Lib>
-      <OutputFile>$(OutDir)\lib\x86\$(TargetName)$(TargetExt)</OutputFile>
+      <OutputFile>$(OutBaseDir)\lib\x86\$(TargetName)$(TargetExt)</OutputFile>
       <TargetMachine>MachineX86</TargetMachine>
       <SubSystem>Console</SubSystem>
-      <AdditionalLibraryDirectories>$(OutDir)\lib\x86\;$(ProjectDir)\..\..\prebuilt\lib\x86\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(OutBaseDir)\lib\x86\;$(ProjectDir)\..\..\prebuilt\lib\x86\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -206,16 +175,16 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <PreprocessorDefinitions>_WINDOWS;WIN32;_WIN32_WINNT=0x0601;_DEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(OutDir)\include;$(ProjectDir)\..\..\prebuilt\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <ProgramDataBaseFileName>$(OutDir)\lib\x64\$(TargetName).pdb</ProgramDataBaseFileName>
+      <PreprocessorDefinitions>_CRT_SUPPRESS_RESTRICT;_WINDOWS;WIN32;_WIN32_WINNT=0x0601;_DEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(OutBaseDir)\include;$(ProjectDir)\..\..\prebuilt\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <ProgramDataBaseFileName>$(OutBaseDir)\lib\x64\$(TargetName).pdb</ProgramDataBaseFileName>
       <MinimalRebuild>false</MinimalRebuild>
     </ClCompile>
     <Lib>
-      <OutputFile>$(OutDir)\lib\x64\$(TargetName)$(TargetExt)</OutputFile>
+      <OutputFile>$(OutBaseDir)\lib\x64\$(TargetName)$(TargetExt)</OutputFile>
       <TargetMachine>MachineX64</TargetMachine>
       <SubSystem>Console</SubSystem>
-      <AdditionalLibraryDirectories>$(OutDir)\lib\x64\;$(ProjectDir)\..\..\prebuilt\lib\x64\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(OutBaseDir)\lib\x64\;$(ProjectDir)\..\..\prebuilt\lib\x64\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugDLL|Win32'">
@@ -223,20 +192,20 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <PreprocessorDefinitions>_WINDOWS;WIN32;_WIN32_WINNT=0x0601;_DEBUG;_USRDLL;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(OutDir)\include;$(ProjectDir)\..\..\prebuilt\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_SUPPRESS_RESTRICT;_WINDOWS;WIN32;_WIN32_WINNT=0x0601;_DEBUG;_USRDLL;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(OutBaseDir)\include;$(ProjectDir)\..\..\prebuilt\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <BufferSecurityCheck>true</BufferSecurityCheck>
       <ProgramDataBaseFileName>$(IntDir)$(TargetName).pdb</ProgramDataBaseFileName>
       <MinimalRebuild>false</MinimalRebuild>
     </ClCompile>
     <Link>
-      <OutputFile>$(OutDir)\bin\x86\$(TargetName)$(TargetExt)</OutputFile>
-      <ProgramDatabaseFile>$(OutDir)\lib\x86\$(TargetName).pdb</ProgramDatabaseFile>
+      <OutputFile>$(OutBaseDir)\bin\x86\$(TargetName)$(TargetExt)</OutputFile>
+      <ProgramDatabaseFile>$(OutBaseDir)\lib\x86\$(TargetName).pdb</ProgramDatabaseFile>
       <SubSystem>Console</SubSystem>
-      <ImportLibrary>$(OutDir)\lib\x86\$(TargetName).lib</ImportLibrary>
+      <ImportLibrary>$(OutBaseDir)\lib\x86\$(TargetName).lib</ImportLibrary>
       <ProfileGuidedDatabase>$(IntDir)\$(TargetName).pgd</ProfileGuidedDatabase>
       <LargeAddressAware>true</LargeAddressAware>
-      <AdditionalLibraryDirectories>$(OutDir)\lib\x86\;$(ProjectDir)\..\..\prebuilt\lib\x86\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(OutBaseDir)\lib\x86\;$(ProjectDir)\..\..\prebuilt\lib\x86\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <MinimumRequiredVersion>6.1</MinimumRequiredVersion>
     </Link>
@@ -246,18 +215,18 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <PreprocessorDefinitions>_WINDOWS;WIN32;_WIN32_WINNT=0x0601;_DEBUG;_USRDLL;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(OutDir)\include;$(ProjectDir)\..\..\prebuilt\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_SUPPRESS_RESTRICT;_WINDOWS;WIN32;_WIN32_WINNT=0x0601;_DEBUG;_USRDLL;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(OutBaseDir)\include;$(ProjectDir)\..\..\prebuilt\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ProgramDataBaseFileName>$(IntDir)$(TargetName).pdb</ProgramDataBaseFileName>
       <MinimalRebuild>false</MinimalRebuild>
     </ClCompile>
     <Link>
-      <OutputFile>$(OutDir)\bin\x64\$(TargetName)$(TargetExt)</OutputFile>
-      <ProgramDatabaseFile>$(OutDir)\lib\x64\$(TargetName).pdb</ProgramDatabaseFile>
+      <OutputFile>$(OutBaseDir)\bin\x64\$(TargetName)$(TargetExt)</OutputFile>
+      <ProgramDatabaseFile>$(OutBaseDir)\lib\x64\$(TargetName).pdb</ProgramDatabaseFile>
       <SubSystem>Console</SubSystem>
-      <ImportLibrary>$(OutDir)\lib\x64\$(TargetName).lib</ImportLibrary>
+      <ImportLibrary>$(OutBaseDir)\lib\x64\$(TargetName).lib</ImportLibrary>
       <ProfileGuidedDatabase>$(IntDir)\$(TargetName).pgd</ProfileGuidedDatabase>
-      <AdditionalLibraryDirectories>$(OutDir)\lib\x64\;$(ProjectDir)\..\..\prebuilt\lib\x64\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(OutBaseDir)\lib\x64\;$(ProjectDir)\..\..\prebuilt\lib\x64\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <MinimumRequiredVersion>6.1</MinimumRequiredVersion>
     </Link>
@@ -274,16 +243,16 @@
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
       <OmitFramePointers>true</OmitFramePointers>
       <StringPooling>true</StringPooling>
-      <PreprocessorDefinitions>_WINDOWS;WIN32;_WIN32_WINNT=0x0601;NDEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(OutDir)\include;$(ProjectDir)\..\..\prebuilt\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_SUPPRESS_RESTRICT;_WINDOWS;WIN32;_WIN32_WINNT=0x0601;NDEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(OutBaseDir)\include;$(ProjectDir)\..\..\prebuilt\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <InterproceduralOptimization>SingleFile</InterproceduralOptimization>
-      <ProgramDataBaseFileName>$(OutDir)\lib\x86\$(TargetName).pdb</ProgramDataBaseFileName>
+      <ProgramDataBaseFileName>$(OutBaseDir)\lib\x86\$(TargetName).pdb</ProgramDataBaseFileName>
     </ClCompile>
     <Lib>
-      <OutputFile>$(OutDir)\lib\x86\$(TargetName)$(TargetExt)</OutputFile>
+      <OutputFile>$(OutBaseDir)\lib\x86\$(TargetName)$(TargetExt)</OutputFile>
       <TargetMachine>MachineX86</TargetMachine>
       <SubSystem>Console</SubSystem>
-      <AdditionalLibraryDirectories>$(OutDir)\lib\x86\;$(ProjectDir)\..\..\prebuilt\lib\x86\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(OutBaseDir)\lib\x86\;$(ProjectDir)\..\..\prebuilt\lib\x86\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -298,16 +267,16 @@
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
       <OmitFramePointers>true</OmitFramePointers>
       <StringPooling>true</StringPooling>
-      <PreprocessorDefinitions>_WINDOWS;WIN32;_WIN32_WINNT=0x0601;NDEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(OutDir)\include;$(ProjectDir)\..\..\prebuilt\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_SUPPRESS_RESTRICT;_WINDOWS;WIN32;_WIN32_WINNT=0x0601;NDEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(OutBaseDir)\include;$(ProjectDir)\..\..\prebuilt\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <InterproceduralOptimization>SingleFile</InterproceduralOptimization>
-      <ProgramDataBaseFileName>$(OutDir)\lib\x64\$(TargetName).pdb</ProgramDataBaseFileName>
+      <ProgramDataBaseFileName>$(OutBaseDir)\lib\x64\$(TargetName).pdb</ProgramDataBaseFileName>
     </ClCompile>
     <Lib>
-      <OutputFile>$(OutDir)\lib\x64\$(TargetName)$(TargetExt)</OutputFile>
+      <OutputFile>$(OutBaseDir)\lib\x64\$(TargetName)$(TargetExt)</OutputFile>
       <TargetMachine>MachineX64</TargetMachine>
       <SubSystem>Console</SubSystem>
-      <AdditionalLibraryDirectories>$(OutDir)\lib\x64\;$(ProjectDir)\..\..\prebuilt\lib\x64\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(OutBaseDir)\lib\x64\;$(ProjectDir)\..\..\prebuilt\lib\x64\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseDLL|Win32'">
@@ -322,20 +291,20 @@
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
       <OmitFramePointers>true</OmitFramePointers>
       <StringPooling>true</StringPooling>
-      <PreprocessorDefinitions>_WINDOWS;WIN32;_WIN32_WINNT=0x0601;NDEBUG;_USRDLL;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(OutDir)\include;$(ProjectDir)\..\..\prebuilt\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_SUPPRESS_RESTRICT;_WINDOWS;WIN32;_WIN32_WINNT=0x0601;NDEBUG;_USRDLL;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(OutBaseDir)\include;$(ProjectDir)\..\..\prebuilt\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ProgramDataBaseFileName>$(IntDir)$(TargetName).pdb</ProgramDataBaseFileName>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <OutputFile>$(OutDir)\bin\x86\$(TargetName)$(TargetExt)</OutputFile>
-      <ProgramDatabaseFile>$(OutDir)\lib\x86\$(TargetName).pdb</ProgramDatabaseFile>
+      <OutputFile>$(OutBaseDir)\bin\x86\$(TargetName)$(TargetExt)</OutputFile>
+      <ProgramDatabaseFile>$(OutBaseDir)\lib\x86\$(TargetName).pdb</ProgramDatabaseFile>
       <SubSystem>Console</SubSystem>
-      <ImportLibrary>$(OutDir)\lib\x86\$(TargetName).lib</ImportLibrary>
+      <ImportLibrary>$(OutBaseDir)\lib\x86\$(TargetName).lib</ImportLibrary>
       <ProfileGuidedDatabase>$(IntDir)\$(TargetName).pgd</ProfileGuidedDatabase>
       <LargeAddressAware>true</LargeAddressAware>
-      <AdditionalLibraryDirectories>$(OutDir)\lib\x86\;$(ProjectDir)\..\..\prebuilt\lib\x86\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(OutBaseDir)\lib\x86\;$(ProjectDir)\..\..\prebuilt\lib\x86\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <MinimumRequiredVersion>6.1</MinimumRequiredVersion>
     </Link>
@@ -352,19 +321,19 @@
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
       <OmitFramePointers>true</OmitFramePointers>
       <StringPooling>true</StringPooling>
-      <PreprocessorDefinitions>_WINDOWS;WIN32;_WIN32_WINNT=0x0601;NDEBUG;_USRDLL;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(OutDir)\include;$(ProjectDir)\..\..\prebuilt\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_SUPPRESS_RESTRICT;_WINDOWS;WIN32;_WIN32_WINNT=0x0601;NDEBUG;_USRDLL;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(OutBaseDir)\include;$(ProjectDir)\..\..\prebuilt\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ProgramDataBaseFileName>$(IntDir)$(TargetName).pdb</ProgramDataBaseFileName>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <OutputFile>$(OutDir)\bin\x64\$(TargetName)$(TargetExt)</OutputFile>
-      <ProgramDatabaseFile>$(OutDir)\lib\x64\$(TargetName).pdb</ProgramDatabaseFile>
+      <OutputFile>$(OutBaseDir)\bin\x64\$(TargetName)$(TargetExt)</OutputFile>
+      <ProgramDatabaseFile>$(OutBaseDir)\lib\x64\$(TargetName).pdb</ProgramDatabaseFile>
       <SubSystem>Console</SubSystem>
-      <ImportLibrary>$(OutDir)\lib\x64\$(TargetName).lib</ImportLibrary>
+      <ImportLibrary>$(OutBaseDir)\lib\x64\$(TargetName).lib</ImportLibrary>
       <ProfileGuidedDatabase>$(IntDir)\$(TargetName).pgd</ProfileGuidedDatabase>
-      <AdditionalLibraryDirectories>$(OutDir)\lib\x64\;$(ProjectDir)\..\..\prebuilt\lib\x64\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(OutBaseDir)\lib\x64\;$(ProjectDir)\..\..\prebuilt\lib\x64\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <MinimumRequiredVersion>6.1</MinimumRequiredVersion>
     </Link>
@@ -381,20 +350,20 @@
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
       <OmitFramePointers>true</OmitFramePointers>
       <StringPooling>true</StringPooling>
-      <PreprocessorDefinitions>_WINDOWS;WIN32;_WIN32_WINNT=0x0601;NDEBUG;_USRDLL;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(OutDir)\include;$(ProjectDir)\..\..\prebuilt\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_SUPPRESS_RESTRICT;_WINDOWS;WIN32;_WIN32_WINNT=0x0601;NDEBUG;_USRDLL;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(OutBaseDir)\include;$(ProjectDir)\..\..\prebuilt\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ProgramDataBaseFileName>$(IntDir)$(TargetName).pdb</ProgramDataBaseFileName>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <OutputFile>$(OutDir)\bin\x86\$(TargetName)$(TargetExt)</OutputFile>
-      <ProgramDatabaseFile>$(OutDir)\lib\x86\$(TargetName).pdb</ProgramDatabaseFile>
+      <OutputFile>$(OutBaseDir)\bin\x86\$(TargetName)$(TargetExt)</OutputFile>
+      <ProgramDatabaseFile>$(OutBaseDir)\lib\x86\$(TargetName).pdb</ProgramDatabaseFile>
       <SubSystem>Console</SubSystem>
-      <ImportLibrary>$(OutDir)\lib\x86\$(TargetName).lib</ImportLibrary>
+      <ImportLibrary>$(OutBaseDir)\lib\x86\$(TargetName).lib</ImportLibrary>
       <ProfileGuidedDatabase>$(IntDir)\$(TargetName).pgd</ProfileGuidedDatabase>
       <LargeAddressAware>true</LargeAddressAware>
-      <AdditionalLibraryDirectories>$(OutDir)\lib\x86\;$(ProjectDir)\..\..\prebuilt\lib\x86\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(OutBaseDir)\lib\x86\;$(ProjectDir)\..\..\prebuilt\lib\x86\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <MinimumRequiredVersion>6.1</MinimumRequiredVersion>
     </Link>
@@ -411,19 +380,19 @@
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
       <OmitFramePointers>true</OmitFramePointers>
       <StringPooling>true</StringPooling>
-      <PreprocessorDefinitions>_WINDOWS;WIN32;_WIN32_WINNT=0x0601;NDEBUG;_USRDLL;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(OutDir)\include;$(ProjectDir)\..\..\prebuilt\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_SUPPRESS_RESTRICT;_WINDOWS;WIN32;_WIN32_WINNT=0x0601;NDEBUG;_USRDLL;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(OutBaseDir)\include;$(ProjectDir)\..\..\prebuilt\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ProgramDataBaseFileName>$(IntDir)$(TargetName).pdb</ProgramDataBaseFileName>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <OutputFile>$(OutDir)\bin\x64\$(TargetName)$(TargetExt)</OutputFile>
-      <ProgramDatabaseFile>$(OutDir)\lib\x64\$(TargetName).pdb</ProgramDatabaseFile>
+      <OutputFile>$(OutBaseDir)\bin\x64\$(TargetName)$(TargetExt)</OutputFile>
+      <ProgramDatabaseFile>$(OutBaseDir)\lib\x64\$(TargetName).pdb</ProgramDatabaseFile>
       <SubSystem>Console</SubSystem>
-      <ImportLibrary>$(OutDir)\lib\x64\$(TargetName).lib</ImportLibrary>
+      <ImportLibrary>$(OutBaseDir)\lib\x64\$(TargetName).lib</ImportLibrary>
       <ProfileGuidedDatabase>$(IntDir)\$(TargetName).pgd</ProfileGuidedDatabase>
-      <AdditionalLibraryDirectories>$(OutDir)\lib\x64\;$(ProjectDir)\..\..\prebuilt\lib\x64\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(OutBaseDir)\lib\x64\;$(ProjectDir)\..\..\prebuilt\lib\x64\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <MinimumRequiredVersion>6.1</MinimumRequiredVersion>
     </Link>

@@ -1117,7 +1117,7 @@
     <ClCompile Include="libavcodec\dxva2_mpeg2_wrap.c" />
     <ClCompile Include="libavcodec\dxva2_vc1_wrap.c" />
     <ClCompile Include="libavcodec\dxva2_vp9_wrap.c" />
-    <ClCompile Include="libavcodec\hevc\ps_enc_wrap.c" />
+    <ClCompile Include="libavcodec\ps_enc_wrap.c" />
     <ClCompile Include="libavcodec\hw_base_encode_wrap.c" />
     <ClCompile Include="libavcodec\hw_base_encode_h264_wrap.c" />
     <ClCompile Include="libavcodec\hw_base_encode_h265_wrap.c" />

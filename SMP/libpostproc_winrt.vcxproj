@@ -10,7 +10,7 @@
   </ImportGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugWinRT|Win32'">
     <ClCompile>
-      <PreprocessorDefinitions>_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;DEBUG;BUILDING_postproc;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SUPPRESS_RESTRICT;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;DEBUG;BUILDING_postproc;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="$([System.String]::Copy($(PlatformToolset)).Contains('Intel'))">/Qvec- /Qsimd- %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(AdditionalOptions)' == '' and '$(VisualStudioVersion)' != '12.0'">/utf-8 %(AdditionalOptions)</AdditionalOptions>
@@ -22,13 +22,13 @@
       <AdditionalOptions>/IGNORE:4006,4221,4049,4217,4197,4099,4264 %(AdditionalOptions)</AdditionalOptions>
     </Lib>
     <PostBuildEvent>
-      <Command>mkdir "$(OutDir)"\include
-mkdir "$(OutDir)"\include\libpostproc
-copy ..\libpostproc\postprocess.h "$(OutDir)"\include\libpostproc
-copy ..\libpostproc\version.h "$(OutDir)"\include\libpostproc
-copy ..\libpostproc\version_major.h "$(OutDir)"\include\libpostproc
-mkdir "$(OutDir)"\licenses
-copy ..\COPYING.GPLv3 "$(OutDir)"\licenses\ffmpeg.txt</Command>
+      <Command>mkdir "$(OutBaseDir)"\include
+mkdir "$(OutBaseDir)"\include\libpostproc
+copy ..\libpostproc\postprocess.h "$(OutBaseDir)"\include\libpostproc
+copy ..\libpostproc\version.h "$(OutBaseDir)"\include\libpostproc
+copy ..\libpostproc\version_major.h "$(OutBaseDir)"\include\libpostproc
+mkdir "$(OutBaseDir)"\licenses
+copy ..\COPYING.GPLv3 "$(OutBaseDir)"\licenses\ffmpeg.txt</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>if exist ..\config.h (
@@ -49,8 +49,8 @@ del ..\libavutil\avconfig.h
 if exist ..\libavutil\ffversion.h (
 del ..\libavutil\ffversion.h
 )
-if exist "$(OutDir)"\include\libpostproc (
-rd /s /q "$(OutDir)"\include\libpostproc
+if exist "$(OutBaseDir)"\include\libpostproc (
+rd /s /q "$(OutBaseDir)"\include\libpostproc
 cd ../
 cd $(ProjectDir)
 )</Command>
@@ -62,7 +62,7 @@ cd $(ProjectDir)
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugWinRT|x64'">
     <ClCompile>
-      <PreprocessorDefinitions>_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;DEBUG;BUILDING_postproc;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SUPPRESS_RESTRICT;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;DEBUG;BUILDING_postproc;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="$([System.String]::Copy($(PlatformToolset)).Contains('Intel'))">/Qvec- /Qsimd- %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(AdditionalOptions)' == '' and '$(VisualStudioVersion)' != '12.0'">/utf-8 %(AdditionalOptions)</AdditionalOptions>
@@ -74,13 +74,13 @@ cd $(ProjectDir)
       <AdditionalOptions>/IGNORE:4006,4221,4049,4217,4197,4099,4264 %(AdditionalOptions)</AdditionalOptions>
     </Lib>
     <PostBuildEvent>
-      <Command>mkdir "$(OutDir)"\include
-mkdir "$(OutDir)"\include\libpostproc
-copy ..\libpostproc\postprocess.h "$(OutDir)"\include\libpostproc
-copy ..\libpostproc\version.h "$(OutDir)"\include\libpostproc
-copy ..\libpostproc\version_major.h "$(OutDir)"\include\libpostproc
-mkdir "$(OutDir)"\licenses
-copy ..\COPYING.GPLv3 "$(OutDir)"\licenses\ffmpeg.txt</Command>
+      <Command>mkdir "$(OutBaseDir)"\include
+mkdir "$(OutBaseDir)"\include\libpostproc
+copy ..\libpostproc\postprocess.h "$(OutBaseDir)"\include\libpostproc
+copy ..\libpostproc\version.h "$(OutBaseDir)"\include\libpostproc
+copy ..\libpostproc\version_major.h "$(OutBaseDir)"\include\libpostproc
+mkdir "$(OutBaseDir)"\licenses
+copy ..\COPYING.GPLv3 "$(OutBaseDir)"\licenses\ffmpeg.txt</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>if exist ..\config.h (
@@ -101,8 +101,8 @@ del ..\libavutil\avconfig.h
 if exist ..\libavutil\ffversion.h (
 del ..\libavutil\ffversion.h
 )
-if exist "$(OutDir)"\include\libpostproc (
-rd /s /q "$(OutDir)"\include\libpostproc
+if exist "$(OutBaseDir)"\include\libpostproc (
+rd /s /q "$(OutBaseDir)"\include\libpostproc
 cd ../
 cd $(ProjectDir)
 )</Command>
@@ -114,7 +114,7 @@ cd $(ProjectDir)
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugDLLWinRT|Win32'">
     <ClCompile>
-      <PreprocessorDefinitions>_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;DEBUG;BUILDING_postproc;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SUPPRESS_RESTRICT;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;DEBUG;BUILDING_postproc;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="$([System.String]::Copy($(PlatformToolset)).Contains('Intel'))">/Qvec- /Qsimd- %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(AdditionalOptions)' == '' and '$(VisualStudioVersion)' != '12.0'">/utf-8 %(AdditionalOptions)</AdditionalOptions>
@@ -127,13 +127,13 @@ cd $(ProjectDir)
       <AdditionalOptions>/IGNORE:4006,4221,4049,4217,4197,4099,4264 %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <PostBuildEvent>
-      <Command>mkdir "$(OutDir)"\include
-mkdir "$(OutDir)"\include\libpostproc
-copy ..\libpostproc\postprocess.h "$(OutDir)"\include\libpostproc
-copy ..\libpostproc\version.h "$(OutDir)"\include\libpostproc
-copy ..\libpostproc\version_major.h "$(OutDir)"\include\libpostproc
-mkdir "$(OutDir)"\licenses
-copy ..\COPYING.GPLv3 "$(OutDir)"\licenses\ffmpeg.txt</Command>
+      <Command>mkdir "$(OutBaseDir)"\include
+mkdir "$(OutBaseDir)"\include\libpostproc
+copy ..\libpostproc\postprocess.h "$(OutBaseDir)"\include\libpostproc
+copy ..\libpostproc\version.h "$(OutBaseDir)"\include\libpostproc
+copy ..\libpostproc\version_major.h "$(OutBaseDir)"\include\libpostproc
+mkdir "$(OutBaseDir)"\licenses
+copy ..\COPYING.GPLv3 "$(OutBaseDir)"\licenses\ffmpeg.txt</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>if exist ..\config.h (
@@ -154,8 +154,8 @@ del ..\libavutil\avconfig.h
 if exist ..\libavutil\ffversion.h (
 del ..\libavutil\ffversion.h
 )
-if exist "$(OutDir)"\include\libpostproc (
-rd /s /q "$(OutDir)"\include\libpostproc
+if exist "$(OutBaseDir)"\include\libpostproc (
+rd /s /q "$(OutBaseDir)"\include\libpostproc
 cd ../
 cd $(ProjectDir)
 )</Command>
@@ -167,7 +167,7 @@ cd $(ProjectDir)
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugDLLWinRT|x64'">
     <ClCompile>
-      <PreprocessorDefinitions>_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;DEBUG;BUILDING_postproc;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SUPPRESS_RESTRICT;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;DEBUG;BUILDING_postproc;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="$([System.String]::Copy($(PlatformToolset)).Contains('Intel'))">/Qvec- /Qsimd- %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(AdditionalOptions)' == '' and '$(VisualStudioVersion)' != '12.0'">/utf-8 %(AdditionalOptions)</AdditionalOptions>
@@ -180,13 +180,13 @@ cd $(ProjectDir)
       <AdditionalOptions>/IGNORE:4006,4221,4049,4217,4197,4099,4264 %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <PostBuildEvent>
-      <Command>mkdir "$(OutDir)"\include
-mkdir "$(OutDir)"\include\libpostproc
-copy ..\libpostproc\postprocess.h "$(OutDir)"\include\libpostproc
-copy ..\libpostproc\version.h "$(OutDir)"\include\libpostproc
-copy ..\libpostproc\version_major.h "$(OutDir)"\include\libpostproc
-mkdir "$(OutDir)"\licenses
-copy ..\COPYING.GPLv3 "$(OutDir)"\licenses\ffmpeg.txt</Command>
+      <Command>mkdir "$(OutBaseDir)"\include
+mkdir "$(OutBaseDir)"\include\libpostproc
+copy ..\libpostproc\postprocess.h "$(OutBaseDir)"\include\libpostproc
+copy ..\libpostproc\version.h "$(OutBaseDir)"\include\libpostproc
+copy ..\libpostproc\version_major.h "$(OutBaseDir)"\include\libpostproc
+mkdir "$(OutBaseDir)"\licenses
+copy ..\COPYING.GPLv3 "$(OutBaseDir)"\licenses\ffmpeg.txt</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>if exist ..\config.h (
@@ -207,8 +207,8 @@ del ..\libavutil\avconfig.h
 if exist ..\libavutil\ffversion.h (
 del ..\libavutil\ffversion.h
 )
-if exist "$(OutDir)"\include\libpostproc (
-rd /s /q "$(OutDir)"\include\libpostproc
+if exist "$(OutBaseDir)"\include\libpostproc (
+rd /s /q "$(OutBaseDir)"\include\libpostproc
 cd ../
 cd $(ProjectDir)
 )</Command>
@@ -220,7 +220,7 @@ cd $(ProjectDir)
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseWinRT|Win32'">
     <ClCompile>
-      <PreprocessorDefinitions>_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;BUILDING_postproc;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SUPPRESS_RESTRICT;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;BUILDING_postproc;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="$([System.String]::Copy($(PlatformToolset)).Contains('Intel'))">/Qvec- /Qsimd- %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(AdditionalOptions)' == '' and '$(VisualStudioVersion)' != '12.0'">/utf-8 %(AdditionalOptions)</AdditionalOptions>
@@ -232,13 +232,13 @@ cd $(ProjectDir)
       <AdditionalOptions>/IGNORE:4006,4221,4049,4217,4197,4099,4264 %(AdditionalOptions)</AdditionalOptions>
     </Lib>
     <PostBuildEvent>
-      <Command>mkdir "$(OutDir)"\include
-mkdir "$(OutDir)"\include\libpostproc
-copy ..\libpostproc\postprocess.h "$(OutDir)"\include\libpostproc
-copy ..\libpostproc\version.h "$(OutDir)"\include\libpostproc
-copy ..\libpostproc\version_major.h "$(OutDir)"\include\libpostproc
-mkdir "$(OutDir)"\licenses
-copy ..\COPYING.GPLv3 "$(OutDir)"\licenses\ffmpeg.txt</Command>
+      <Command>mkdir "$(OutBaseDir)"\include
+mkdir "$(OutBaseDir)"\include\libpostproc
+copy ..\libpostproc\postprocess.h "$(OutBaseDir)"\include\libpostproc
+copy ..\libpostproc\version.h "$(OutBaseDir)"\include\libpostproc
+copy ..\libpostproc\version_major.h "$(OutBaseDir)"\include\libpostproc
+mkdir "$(OutBaseDir)"\licenses
+copy ..\COPYING.GPLv3 "$(OutBaseDir)"\licenses\ffmpeg.txt</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>if exist ..\config.h (
@@ -259,8 +259,8 @@ del ..\libavutil\avconfig.h
 if exist ..\libavutil\ffversion.h (
 del ..\libavutil\ffversion.h
 )
-if exist "$(OutDir)"\include\libpostproc (
-rd /s /q "$(OutDir)"\include\libpostproc
+if exist "$(OutBaseDir)"\include\libpostproc (
+rd /s /q "$(OutBaseDir)"\include\libpostproc
 cd ../
 cd $(ProjectDir)
 )</Command>
@@ -272,7 +272,7 @@ cd $(ProjectDir)
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseWinRT|x64'">
     <ClCompile>
-      <PreprocessorDefinitions>_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;BUILDING_postproc;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SUPPRESS_RESTRICT;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;BUILDING_postproc;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="$([System.String]::Copy($(PlatformToolset)).Contains('Intel'))">/Qvec- /Qsimd- %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(AdditionalOptions)' == '' and '$(VisualStudioVersion)' != '12.0'">/utf-8 %(AdditionalOptions)</AdditionalOptions>
@@ -284,13 +284,13 @@ cd $(ProjectDir)
       <AdditionalOptions>/IGNORE:4006,4221,4049,4217,4197,4099,4264 %(AdditionalOptions)</AdditionalOptions>
     </Lib>
     <PostBuildEvent>
-      <Command>mkdir "$(OutDir)"\include
-mkdir "$(OutDir)"\include\libpostproc
-copy ..\libpostproc\postprocess.h "$(OutDir)"\include\libpostproc
-copy ..\libpostproc\version.h "$(OutDir)"\include\libpostproc
-copy ..\libpostproc\version_major.h "$(OutDir)"\include\libpostproc
-mkdir "$(OutDir)"\licenses
-copy ..\COPYING.GPLv3 "$(OutDir)"\licenses\ffmpeg.txt</Command>
+      <Command>mkdir "$(OutBaseDir)"\include
+mkdir "$(OutBaseDir)"\include\libpostproc
+copy ..\libpostproc\postprocess.h "$(OutBaseDir)"\include\libpostproc
+copy ..\libpostproc\version.h "$(OutBaseDir)"\include\libpostproc
+copy ..\libpostproc\version_major.h "$(OutBaseDir)"\include\libpostproc
+mkdir "$(OutBaseDir)"\licenses
+copy ..\COPYING.GPLv3 "$(OutBaseDir)"\licenses\ffmpeg.txt</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>if exist ..\config.h (
@@ -311,8 +311,8 @@ del ..\libavutil\avconfig.h
 if exist ..\libavutil\ffversion.h (
 del ..\libavutil\ffversion.h
 )
-if exist "$(OutDir)"\include\libpostproc (
-rd /s /q "$(OutDir)"\include\libpostproc
+if exist "$(OutBaseDir)"\include\libpostproc (
+rd /s /q "$(OutBaseDir)"\include\libpostproc
 cd ../
 cd $(ProjectDir)
 )</Command>
@@ -324,7 +324,7 @@ cd $(ProjectDir)
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseDLLWinRT|Win32'">
     <ClCompile>
-      <PreprocessorDefinitions>_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;BUILDING_postproc;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SUPPRESS_RESTRICT;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;BUILDING_postproc;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="$([System.String]::Copy($(PlatformToolset)).Contains('Intel'))">/Qvec- /Qsimd- %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(AdditionalOptions)' == '' and '$(VisualStudioVersion)' != '12.0'">/utf-8 %(AdditionalOptions)</AdditionalOptions>
@@ -337,13 +337,13 @@ cd $(ProjectDir)
       <AdditionalOptions>/IGNORE:4006,4221,4049,4217,4197,4099,4264 %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <PostBuildEvent>
-      <Command>mkdir "$(OutDir)"\include
-mkdir "$(OutDir)"\include\libpostproc
-copy ..\libpostproc\postprocess.h "$(OutDir)"\include\libpostproc
-copy ..\libpostproc\version.h "$(OutDir)"\include\libpostproc
-copy ..\libpostproc\version_major.h "$(OutDir)"\include\libpostproc
-mkdir "$(OutDir)"\licenses
-copy ..\COPYING.GPLv3 "$(OutDir)"\licenses\ffmpeg.txt</Command>
+      <Command>mkdir "$(OutBaseDir)"\include
+mkdir "$(OutBaseDir)"\include\libpostproc
+copy ..\libpostproc\postprocess.h "$(OutBaseDir)"\include\libpostproc
+copy ..\libpostproc\version.h "$(OutBaseDir)"\include\libpostproc
+copy ..\libpostproc\version_major.h "$(OutBaseDir)"\include\libpostproc
+mkdir "$(OutBaseDir)"\licenses
+copy ..\COPYING.GPLv3 "$(OutBaseDir)"\licenses\ffmpeg.txt</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>if exist ..\config.h (
@@ -364,8 +364,8 @@ del ..\libavutil\avconfig.h
 if exist ..\libavutil\ffversion.h (
 del ..\libavutil\ffversion.h
 )
-if exist "$(OutDir)"\include\libpostproc (
-rd /s /q "$(OutDir)"\include\libpostproc
+if exist "$(OutBaseDir)"\include\libpostproc (
+rd /s /q "$(OutBaseDir)"\include\libpostproc
 cd ../
 cd $(ProjectDir)
 )</Command>
@@ -377,7 +377,7 @@ cd $(ProjectDir)
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseDLLWinRT|x64'">
     <ClCompile>
-      <PreprocessorDefinitions>_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;BUILDING_postproc;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SUPPRESS_RESTRICT;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;BUILDING_postproc;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="$([System.String]::Copy($(PlatformToolset)).Contains('Intel'))">/Qvec- /Qsimd- %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(AdditionalOptions)' == '' and '$(VisualStudioVersion)' != '12.0'">/utf-8 %(AdditionalOptions)</AdditionalOptions>
@@ -390,13 +390,13 @@ cd $(ProjectDir)
       <AdditionalOptions>/IGNORE:4006,4221,4049,4217,4197,4099,4264 %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <PostBuildEvent>
-      <Command>mkdir "$(OutDir)"\include
-mkdir "$(OutDir)"\include\libpostproc
-copy ..\libpostproc\postprocess.h "$(OutDir)"\include\libpostproc
-copy ..\libpostproc\version.h "$(OutDir)"\include\libpostproc
-copy ..\libpostproc\version_major.h "$(OutDir)"\include\libpostproc
-mkdir "$(OutDir)"\licenses
-copy ..\COPYING.GPLv3 "$(OutDir)"\licenses\ffmpeg.txt</Command>
+      <Command>mkdir "$(OutBaseDir)"\include
+mkdir "$(OutBaseDir)"\include\libpostproc
+copy ..\libpostproc\postprocess.h "$(OutBaseDir)"\include\libpostproc
+copy ..\libpostproc\version.h "$(OutBaseDir)"\include\libpostproc
+copy ..\libpostproc\version_major.h "$(OutBaseDir)"\include\libpostproc
+mkdir "$(OutBaseDir)"\licenses
+copy ..\COPYING.GPLv3 "$(OutBaseDir)"\licenses\ffmpeg.txt</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>if exist ..\config.h (
@@ -417,8 +417,8 @@ del ..\libavutil\avconfig.h
 if exist ..\libavutil\ffversion.h (
 del ..\libavutil\ffversion.h
 )
-if exist "$(OutDir)"\include\libpostproc (
-rd /s /q "$(OutDir)"\include\libpostproc
+if exist "$(OutBaseDir)"\include\libpostproc (
+rd /s /q "$(OutBaseDir)"\include\libpostproc
 cd ../
 cd $(ProjectDir)
 )</Command>
@@ -430,7 +430,7 @@ cd $(ProjectDir)
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseDLLWinRTStaticDeps|Win32'">
     <ClCompile>
-      <PreprocessorDefinitions>_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;BUILDING_postproc;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SUPPRESS_RESTRICT;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;BUILDING_postproc;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="$([System.String]::Copy($(PlatformToolset)).Contains('Intel'))">/Qvec- /Qsimd- %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(AdditionalOptions)' == '' and '$(VisualStudioVersion)' != '12.0'">/utf-8 %(AdditionalOptions)</AdditionalOptions>
@@ -443,13 +443,13 @@ cd $(ProjectDir)
       <AdditionalOptions>/IGNORE:4006,4221,4049,4217,4197,4099,4264 %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <PostBuildEvent>
-      <Command>mkdir "$(OutDir)"\include
-mkdir "$(OutDir)"\include\libpostproc
-copy ..\libpostproc\postprocess.h "$(OutDir)"\include\libpostproc
-copy ..\libpostproc\version.h "$(OutDir)"\include\libpostproc
-copy ..\libpostproc\version_major.h "$(OutDir)"\include\libpostproc
-mkdir "$(OutDir)"\licenses
-copy ..\COPYING.GPLv3 "$(OutDir)"\licenses\ffmpeg.txt</Command>
+      <Command>mkdir "$(OutBaseDir)"\include
+mkdir "$(OutBaseDir)"\include\libpostproc
+copy ..\libpostproc\postprocess.h "$(OutBaseDir)"\include\libpostproc
+copy ..\libpostproc\version.h "$(OutBaseDir)"\include\libpostproc
+copy ..\libpostproc\version_major.h "$(OutBaseDir)"\include\libpostproc
+mkdir "$(OutBaseDir)"\licenses
+copy ..\COPYING.GPLv3 "$(OutBaseDir)"\licenses\ffmpeg.txt</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>if exist ..\config.h (
@@ -470,8 +470,8 @@ del ..\libavutil\avconfig.h
 if exist ..\libavutil\ffversion.h (
 del ..\libavutil\ffversion.h
 )
-if exist "$(OutDir)"\include\libpostproc (
-rd /s /q "$(OutDir)"\include\libpostproc
+if exist "$(OutBaseDir)"\include\libpostproc (
+rd /s /q "$(OutBaseDir)"\include\libpostproc
 cd ../
 cd $(ProjectDir)
 )</Command>
@@ -483,7 +483,7 @@ cd $(ProjectDir)
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseDLLWinRTStaticDeps|x64'">
     <ClCompile>
-      <PreprocessorDefinitions>_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;BUILDING_postproc;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SUPPRESS_RESTRICT;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;BUILDING_postproc;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="$([System.String]::Copy($(PlatformToolset)).Contains('Intel'))">/Qvec- /Qsimd- %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(AdditionalOptions)' == '' and '$(VisualStudioVersion)' != '12.0'">/utf-8 %(AdditionalOptions)</AdditionalOptions>
@@ -496,13 +496,13 @@ cd $(ProjectDir)
       <AdditionalOptions>/IGNORE:4006,4221,4049,4217,4197,4099,4264 %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <PostBuildEvent>
-      <Command>mkdir "$(OutDir)"\include
-mkdir "$(OutDir)"\include\libpostproc
-copy ..\libpostproc\postprocess.h "$(OutDir)"\include\libpostproc
-copy ..\libpostproc\version.h "$(OutDir)"\include\libpostproc
-copy ..\libpostproc\version_major.h "$(OutDir)"\include\libpostproc
-mkdir "$(OutDir)"\licenses
-copy ..\COPYING.GPLv3 "$(OutDir)"\licenses\ffmpeg.txt</Command>
+      <Command>mkdir "$(OutBaseDir)"\include
+mkdir "$(OutBaseDir)"\include\libpostproc
+copy ..\libpostproc\postprocess.h "$(OutBaseDir)"\include\libpostproc
+copy ..\libpostproc\version.h "$(OutBaseDir)"\include\libpostproc
+copy ..\libpostproc\version_major.h "$(OutBaseDir)"\include\libpostproc
+mkdir "$(OutBaseDir)"\licenses
+copy ..\COPYING.GPLv3 "$(OutBaseDir)"\licenses\ffmpeg.txt</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>if exist ..\config.h (
@@ -523,8 +523,8 @@ del ..\libavutil\avconfig.h
 if exist ..\libavutil\ffversion.h (
 del ..\libavutil\ffversion.h
 )
-if exist "$(OutDir)"\include\libpostproc (
-rd /s /q "$(OutDir)"\include\libpostproc
+if exist "$(OutBaseDir)"\include\libpostproc (
+rd /s /q "$(OutBaseDir)"\include\libpostproc
 cd ../
 cd $(ProjectDir)
 )</Command>

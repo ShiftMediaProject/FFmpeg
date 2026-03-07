@@ -13,8 +13,8 @@
   </ImportGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugWinRT|Win32'">
     <ClCompile>
-      <PreprocessorDefinitions>FRIBIDI_LIB_STATIC;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;DEBUG;BUILDING_avfilter;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(ProjectDir)\..\libavfilter\;$(OutDir)\include\freetype2\;$(ProjectDir)\..\..\prebuilt\include\freetype2\;$(OutDir)\include\fribidi\;$(ProjectDir)\..\..\prebuilt\include\fribidi\;$(OutDir)\include\harfbuzz\;$(ProjectDir)\..\..\prebuilt\include\harfbuzz\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>FRIBIDI_LIB_STATIC;_CRT_SUPPRESS_RESTRICT;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;DEBUG;BUILDING_avfilter;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(ProjectDir)\..\libavfilter\;$(OutBaseDir)\include\freetype2\;$(ProjectDir)\..\..\prebuilt\include\freetype2\;$(OutBaseDir)\include\fribidi\;$(ProjectDir)\..\..\prebuilt\include\fribidi\;$(OutBaseDir)\include\harfbuzz\;$(ProjectDir)\..\..\prebuilt\include\harfbuzz\;$(OutBaseDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="$([System.String]::Copy($(PlatformToolset)).Contains('Intel'))">/Qvec- /Qsimd- %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(AdditionalOptions)' == '' and '$(VisualStudioVersion)' != '12.0'">/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>4244;4267;4018;4146;4028;4996;4090;4114;4308;4305;4005;4101;4554;4307;4273;4133;4544;4334;4293;4047;4703;%(DisableSpecificWarnings)</DisableSpecificWarnings>
@@ -25,15 +25,15 @@
       <AdditionalOptions>/IGNORE:4006,4221,4049,4217,4197,4099,4264 %(AdditionalOptions)</AdditionalOptions>
     </Lib>
     <PostBuildEvent>
-      <Command>mkdir "$(OutDir)"\include
-mkdir "$(OutDir)"\include\libavfilter
-copy ..\libavfilter\avfilter.h "$(OutDir)"\include\libavfilter
-copy ..\libavfilter\buffersink.h "$(OutDir)"\include\libavfilter
-copy ..\libavfilter\buffersrc.h "$(OutDir)"\include\libavfilter
-copy ..\libavfilter\version.h "$(OutDir)"\include\libavfilter
-copy ..\libavfilter\version_major.h "$(OutDir)"\include\libavfilter
-mkdir "$(OutDir)"\licenses
-copy ..\COPYING.GPLv3 "$(OutDir)"\licenses\ffmpeg.txt</Command>
+      <Command>mkdir "$(OutBaseDir)"\include
+mkdir "$(OutBaseDir)"\include\libavfilter
+copy ..\libavfilter\avfilter.h "$(OutBaseDir)"\include\libavfilter
+copy ..\libavfilter\buffersink.h "$(OutBaseDir)"\include\libavfilter
+copy ..\libavfilter\buffersrc.h "$(OutBaseDir)"\include\libavfilter
+copy ..\libavfilter\version.h "$(OutBaseDir)"\include\libavfilter
+copy ..\libavfilter\version_major.h "$(OutBaseDir)"\include\libavfilter
+mkdir "$(OutBaseDir)"\licenses
+copy ..\COPYING.GPLv3 "$(OutBaseDir)"\licenses\ffmpeg.txt</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>if exist ..\config.h (
@@ -54,8 +54,8 @@ del ..\libavutil\avconfig.h
 if exist ..\libavutil\ffversion.h (
 del ..\libavutil\ffversion.h
 )
-if exist "$(OutDir)"\include\libavfilter (
-rd /s /q "$(OutDir)"\include\libavfilter
+if exist "$(OutBaseDir)"\include\libavfilter (
+rd /s /q "$(OutBaseDir)"\include\libavfilter
 cd ../
 cd $(ProjectDir)
 )</Command>
@@ -66,14 +66,14 @@ cd $(ProjectDir)
       <GenerateDebugInformation>false</GenerateDebugInformation>
     </NASM>
     <ResourceCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(ProjectDir)\..\libavfilter\;$(OutDir)\include\freetype2\;$(ProjectDir)\..\..\prebuilt\include\freetype2\;$(OutDir)\include\fribidi\;$(ProjectDir)\..\..\prebuilt\include\fribidi\;$(OutDir)\include\harfbuzz\;$(ProjectDir)\..\..\prebuilt\include\harfbuzz\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(ProjectDir)\..\libavfilter\;$(OutBaseDir)\include\freetype2\;$(ProjectDir)\..\..\prebuilt\include\freetype2\;$(OutBaseDir)\include\fribidi\;$(ProjectDir)\..\..\prebuilt\include\fribidi\;$(OutBaseDir)\include\harfbuzz\;$(ProjectDir)\..\..\prebuilt\include\harfbuzz\;$(OutBaseDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>FRIBIDI_LIB_STATIC;_MSC_VER;BUILDING_avfilter;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugWinRT|x64'">
     <ClCompile>
-      <PreprocessorDefinitions>FRIBIDI_LIB_STATIC;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;DEBUG;BUILDING_avfilter;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(ProjectDir)\..\libavfilter\;$(OutDir)\include\freetype2\;$(ProjectDir)\..\..\prebuilt\include\freetype2\;$(OutDir)\include\fribidi\;$(ProjectDir)\..\..\prebuilt\include\fribidi\;$(OutDir)\include\harfbuzz\;$(ProjectDir)\..\..\prebuilt\include\harfbuzz\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>FRIBIDI_LIB_STATIC;_CRT_SUPPRESS_RESTRICT;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;DEBUG;BUILDING_avfilter;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(ProjectDir)\..\libavfilter\;$(OutBaseDir)\include\freetype2\;$(ProjectDir)\..\..\prebuilt\include\freetype2\;$(OutBaseDir)\include\fribidi\;$(ProjectDir)\..\..\prebuilt\include\fribidi\;$(OutBaseDir)\include\harfbuzz\;$(ProjectDir)\..\..\prebuilt\include\harfbuzz\;$(OutBaseDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="$([System.String]::Copy($(PlatformToolset)).Contains('Intel'))">/Qvec- /Qsimd- %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(AdditionalOptions)' == '' and '$(VisualStudioVersion)' != '12.0'">/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>4244;4267;4018;4146;4028;4996;4090;4114;4308;4305;4005;4101;4554;4307;4273;4133;4544;4334;4293;4047;4703;%(DisableSpecificWarnings)</DisableSpecificWarnings>
@@ -84,15 +84,15 @@ cd $(ProjectDir)
       <AdditionalOptions>/IGNORE:4006,4221,4049,4217,4197,4099,4264 %(AdditionalOptions)</AdditionalOptions>
     </Lib>
     <PostBuildEvent>
-      <Command>mkdir "$(OutDir)"\include
-mkdir "$(OutDir)"\include\libavfilter
-copy ..\libavfilter\avfilter.h "$(OutDir)"\include\libavfilter
-copy ..\libavfilter\buffersink.h "$(OutDir)"\include\libavfilter
-copy ..\libavfilter\buffersrc.h "$(OutDir)"\include\libavfilter
-copy ..\libavfilter\version.h "$(OutDir)"\include\libavfilter
-copy ..\libavfilter\version_major.h "$(OutDir)"\include\libavfilter
-mkdir "$(OutDir)"\licenses
-copy ..\COPYING.GPLv3 "$(OutDir)"\licenses\ffmpeg.txt</Command>
+      <Command>mkdir "$(OutBaseDir)"\include
+mkdir "$(OutBaseDir)"\include\libavfilter
+copy ..\libavfilter\avfilter.h "$(OutBaseDir)"\include\libavfilter
+copy ..\libavfilter\buffersink.h "$(OutBaseDir)"\include\libavfilter
+copy ..\libavfilter\buffersrc.h "$(OutBaseDir)"\include\libavfilter
+copy ..\libavfilter\version.h "$(OutBaseDir)"\include\libavfilter
+copy ..\libavfilter\version_major.h "$(OutBaseDir)"\include\libavfilter
+mkdir "$(OutBaseDir)"\licenses
+copy ..\COPYING.GPLv3 "$(OutBaseDir)"\licenses\ffmpeg.txt</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>if exist ..\config.h (
@@ -113,8 +113,8 @@ del ..\libavutil\avconfig.h
 if exist ..\libavutil\ffversion.h (
 del ..\libavutil\ffversion.h
 )
-if exist "$(OutDir)"\include\libavfilter (
-rd /s /q "$(OutDir)"\include\libavfilter
+if exist "$(OutBaseDir)"\include\libavfilter (
+rd /s /q "$(OutBaseDir)"\include\libavfilter
 cd ../
 cd $(ProjectDir)
 )</Command>
@@ -125,14 +125,14 @@ cd $(ProjectDir)
       <GenerateDebugInformation>false</GenerateDebugInformation>
     </NASM>
     <ResourceCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(ProjectDir)\..\libavfilter\;$(OutDir)\include\freetype2\;$(ProjectDir)\..\..\prebuilt\include\freetype2\;$(OutDir)\include\fribidi\;$(ProjectDir)\..\..\prebuilt\include\fribidi\;$(OutDir)\include\harfbuzz\;$(ProjectDir)\..\..\prebuilt\include\harfbuzz\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(ProjectDir)\..\libavfilter\;$(OutBaseDir)\include\freetype2\;$(ProjectDir)\..\..\prebuilt\include\freetype2\;$(OutBaseDir)\include\fribidi\;$(ProjectDir)\..\..\prebuilt\include\fribidi\;$(OutBaseDir)\include\harfbuzz\;$(ProjectDir)\..\..\prebuilt\include\harfbuzz\;$(OutBaseDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>FRIBIDI_LIB_STATIC;_MSC_VER;BUILDING_avfilter;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugDLLWinRT|Win32'">
     <ClCompile>
-      <PreprocessorDefinitions>_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;DEBUG;BUILDING_avfilter;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(ProjectDir)\..\libavfilter\;$(OutDir)\include\freetype2\;$(ProjectDir)\..\..\prebuilt\include\freetype2\;$(OutDir)\include\fribidi\;$(ProjectDir)\..\..\prebuilt\include\fribidi\;$(OutDir)\include\harfbuzz\;$(ProjectDir)\..\..\prebuilt\include\harfbuzz\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_SUPPRESS_RESTRICT;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;DEBUG;BUILDING_avfilter;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(ProjectDir)\..\libavfilter\;$(OutBaseDir)\include\freetype2\;$(ProjectDir)\..\..\prebuilt\include\freetype2\;$(OutBaseDir)\include\fribidi\;$(ProjectDir)\..\..\prebuilt\include\fribidi\;$(OutBaseDir)\include\harfbuzz\;$(ProjectDir)\..\..\prebuilt\include\harfbuzz\;$(OutBaseDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="$([System.String]::Copy($(PlatformToolset)).Contains('Intel'))">/Qvec- /Qsimd- %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(AdditionalOptions)' == '' and '$(VisualStudioVersion)' != '12.0'">/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>4244;4267;4018;4146;4028;4996;4090;4114;4308;4305;4005;4101;4554;4307;4273;4133;4544;4334;4293;4047;4703;%(DisableSpecificWarnings)</DisableSpecificWarnings>
@@ -144,15 +144,15 @@ cd $(ProjectDir)
       <AdditionalOptions>/IGNORE:4006,4221,4049,4217,4197,4099,4264 %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <PostBuildEvent>
-      <Command>mkdir "$(OutDir)"\include
-mkdir "$(OutDir)"\include\libavfilter
-copy ..\libavfilter\avfilter.h "$(OutDir)"\include\libavfilter
-copy ..\libavfilter\buffersink.h "$(OutDir)"\include\libavfilter
-copy ..\libavfilter\buffersrc.h "$(OutDir)"\include\libavfilter
-copy ..\libavfilter\version.h "$(OutDir)"\include\libavfilter
-copy ..\libavfilter\version_major.h "$(OutDir)"\include\libavfilter
-mkdir "$(OutDir)"\licenses
-copy ..\COPYING.GPLv3 "$(OutDir)"\licenses\ffmpeg.txt</Command>
+      <Command>mkdir "$(OutBaseDir)"\include
+mkdir "$(OutBaseDir)"\include\libavfilter
+copy ..\libavfilter\avfilter.h "$(OutBaseDir)"\include\libavfilter
+copy ..\libavfilter\buffersink.h "$(OutBaseDir)"\include\libavfilter
+copy ..\libavfilter\buffersrc.h "$(OutBaseDir)"\include\libavfilter
+copy ..\libavfilter\version.h "$(OutBaseDir)"\include\libavfilter
+copy ..\libavfilter\version_major.h "$(OutBaseDir)"\include\libavfilter
+mkdir "$(OutBaseDir)"\licenses
+copy ..\COPYING.GPLv3 "$(OutBaseDir)"\licenses\ffmpeg.txt</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>if exist ..\config.h (
@@ -173,8 +173,8 @@ del ..\libavutil\avconfig.h
 if exist ..\libavutil\ffversion.h (
 del ..\libavutil\ffversion.h
 )
-if exist "$(OutDir)"\include\libavfilter (
-rd /s /q "$(OutDir)"\include\libavfilter
+if exist "$(OutBaseDir)"\include\libavfilter (
+rd /s /q "$(OutBaseDir)"\include\libavfilter
 cd ../
 cd $(ProjectDir)
 )</Command>
@@ -185,14 +185,14 @@ cd $(ProjectDir)
       <GenerateDebugInformation>false</GenerateDebugInformation>
     </NASM>
     <ResourceCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(ProjectDir)\..\libavfilter\;$(OutDir)\include\freetype2\;$(ProjectDir)\..\..\prebuilt\include\freetype2\;$(OutDir)\include\fribidi\;$(ProjectDir)\..\..\prebuilt\include\fribidi\;$(OutDir)\include\harfbuzz\;$(ProjectDir)\..\..\prebuilt\include\harfbuzz\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(ProjectDir)\..\libavfilter\;$(OutBaseDir)\include\freetype2\;$(ProjectDir)\..\..\prebuilt\include\freetype2\;$(OutBaseDir)\include\fribidi\;$(ProjectDir)\..\..\prebuilt\include\fribidi\;$(OutBaseDir)\include\harfbuzz\;$(ProjectDir)\..\..\prebuilt\include\harfbuzz\;$(OutBaseDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_MSC_VER;BUILDING_avfilter;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugDLLWinRT|x64'">
     <ClCompile>
-      <PreprocessorDefinitions>_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;DEBUG;BUILDING_avfilter;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(ProjectDir)\..\libavfilter\;$(OutDir)\include\freetype2\;$(ProjectDir)\..\..\prebuilt\include\freetype2\;$(OutDir)\include\fribidi\;$(ProjectDir)\..\..\prebuilt\include\fribidi\;$(OutDir)\include\harfbuzz\;$(ProjectDir)\..\..\prebuilt\include\harfbuzz\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_SUPPRESS_RESTRICT;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;DEBUG;BUILDING_avfilter;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(ProjectDir)\..\libavfilter\;$(OutBaseDir)\include\freetype2\;$(ProjectDir)\..\..\prebuilt\include\freetype2\;$(OutBaseDir)\include\fribidi\;$(ProjectDir)\..\..\prebuilt\include\fribidi\;$(OutBaseDir)\include\harfbuzz\;$(ProjectDir)\..\..\prebuilt\include\harfbuzz\;$(OutBaseDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="$([System.String]::Copy($(PlatformToolset)).Contains('Intel'))">/Qvec- /Qsimd- %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(AdditionalOptions)' == '' and '$(VisualStudioVersion)' != '12.0'">/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>4244;4267;4018;4146;4028;4996;4090;4114;4308;4305;4005;4101;4554;4307;4273;4133;4544;4334;4293;4047;4703;%(DisableSpecificWarnings)</DisableSpecificWarnings>
@@ -204,15 +204,15 @@ cd $(ProjectDir)
       <AdditionalOptions>/IGNORE:4006,4221,4049,4217,4197,4099,4264 %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <PostBuildEvent>
-      <Command>mkdir "$(OutDir)"\include
-mkdir "$(OutDir)"\include\libavfilter
-copy ..\libavfilter\avfilter.h "$(OutDir)"\include\libavfilter
-copy ..\libavfilter\buffersink.h "$(OutDir)"\include\libavfilter
-copy ..\libavfilter\buffersrc.h "$(OutDir)"\include\libavfilter
-copy ..\libavfilter\version.h "$(OutDir)"\include\libavfilter
-copy ..\libavfilter\version_major.h "$(OutDir)"\include\libavfilter
-mkdir "$(OutDir)"\licenses
-copy ..\COPYING.GPLv3 "$(OutDir)"\licenses\ffmpeg.txt</Command>
+      <Command>mkdir "$(OutBaseDir)"\include
+mkdir "$(OutBaseDir)"\include\libavfilter
+copy ..\libavfilter\avfilter.h "$(OutBaseDir)"\include\libavfilter
+copy ..\libavfilter\buffersink.h "$(OutBaseDir)"\include\libavfilter
+copy ..\libavfilter\buffersrc.h "$(OutBaseDir)"\include\libavfilter
+copy ..\libavfilter\version.h "$(OutBaseDir)"\include\libavfilter
+copy ..\libavfilter\version_major.h "$(OutBaseDir)"\include\libavfilter
+mkdir "$(OutBaseDir)"\licenses
+copy ..\COPYING.GPLv3 "$(OutBaseDir)"\licenses\ffmpeg.txt</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>if exist ..\config.h (
@@ -233,8 +233,8 @@ del ..\libavutil\avconfig.h
 if exist ..\libavutil\ffversion.h (
 del ..\libavutil\ffversion.h
 )
-if exist "$(OutDir)"\include\libavfilter (
-rd /s /q "$(OutDir)"\include\libavfilter
+if exist "$(OutBaseDir)"\include\libavfilter (
+rd /s /q "$(OutBaseDir)"\include\libavfilter
 cd ../
 cd $(ProjectDir)
 )</Command>
@@ -245,14 +245,14 @@ cd $(ProjectDir)
       <GenerateDebugInformation>false</GenerateDebugInformation>
     </NASM>
     <ResourceCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(ProjectDir)\..\libavfilter\;$(OutDir)\include\freetype2\;$(ProjectDir)\..\..\prebuilt\include\freetype2\;$(OutDir)\include\fribidi\;$(ProjectDir)\..\..\prebuilt\include\fribidi\;$(OutDir)\include\harfbuzz\;$(ProjectDir)\..\..\prebuilt\include\harfbuzz\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(ProjectDir)\..\libavfilter\;$(OutBaseDir)\include\freetype2\;$(ProjectDir)\..\..\prebuilt\include\freetype2\;$(OutBaseDir)\include\fribidi\;$(ProjectDir)\..\..\prebuilt\include\fribidi\;$(OutBaseDir)\include\harfbuzz\;$(ProjectDir)\..\..\prebuilt\include\harfbuzz\;$(OutBaseDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_MSC_VER;BUILDING_avfilter;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseWinRT|Win32'">
     <ClCompile>
-      <PreprocessorDefinitions>FRIBIDI_LIB_STATIC;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;BUILDING_avfilter;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(ProjectDir)\..\libavfilter\;$(OutDir)\include\freetype2\;$(ProjectDir)\..\..\prebuilt\include\freetype2\;$(OutDir)\include\fribidi\;$(ProjectDir)\..\..\prebuilt\include\fribidi\;$(OutDir)\include\harfbuzz\;$(ProjectDir)\..\..\prebuilt\include\harfbuzz\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>FRIBIDI_LIB_STATIC;_CRT_SUPPRESS_RESTRICT;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;BUILDING_avfilter;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(ProjectDir)\..\libavfilter\;$(OutBaseDir)\include\freetype2\;$(ProjectDir)\..\..\prebuilt\include\freetype2\;$(OutBaseDir)\include\fribidi\;$(ProjectDir)\..\..\prebuilt\include\fribidi\;$(OutBaseDir)\include\harfbuzz\;$(ProjectDir)\..\..\prebuilt\include\harfbuzz\;$(OutBaseDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="$([System.String]::Copy($(PlatformToolset)).Contains('Intel'))">/Qvec- /Qsimd- %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(AdditionalOptions)' == '' and '$(VisualStudioVersion)' != '12.0'">/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>4244;4267;4018;4146;4028;4996;4090;4114;4308;4305;4005;4101;4554;4307;4273;4133;4544;4334;4293;4047;4703;%(DisableSpecificWarnings)</DisableSpecificWarnings>
@@ -263,15 +263,15 @@ cd $(ProjectDir)
       <AdditionalOptions>/IGNORE:4006,4221,4049,4217,4197,4099,4264 %(AdditionalOptions)</AdditionalOptions>
     </Lib>
     <PostBuildEvent>
-      <Command>mkdir "$(OutDir)"\include
-mkdir "$(OutDir)"\include\libavfilter
-copy ..\libavfilter\avfilter.h "$(OutDir)"\include\libavfilter
-copy ..\libavfilter\buffersink.h "$(OutDir)"\include\libavfilter
-copy ..\libavfilter\buffersrc.h "$(OutDir)"\include\libavfilter
-copy ..\libavfilter\version.h "$(OutDir)"\include\libavfilter
-copy ..\libavfilter\version_major.h "$(OutDir)"\include\libavfilter
-mkdir "$(OutDir)"\licenses
-copy ..\COPYING.GPLv3 "$(OutDir)"\licenses\ffmpeg.txt</Command>
+      <Command>mkdir "$(OutBaseDir)"\include
+mkdir "$(OutBaseDir)"\include\libavfilter
+copy ..\libavfilter\avfilter.h "$(OutBaseDir)"\include\libavfilter
+copy ..\libavfilter\buffersink.h "$(OutBaseDir)"\include\libavfilter
+copy ..\libavfilter\buffersrc.h "$(OutBaseDir)"\include\libavfilter
+copy ..\libavfilter\version.h "$(OutBaseDir)"\include\libavfilter
+copy ..\libavfilter\version_major.h "$(OutBaseDir)"\include\libavfilter
+mkdir "$(OutBaseDir)"\licenses
+copy ..\COPYING.GPLv3 "$(OutBaseDir)"\licenses\ffmpeg.txt</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>if exist ..\config.h (
@@ -292,8 +292,8 @@ del ..\libavutil\avconfig.h
 if exist ..\libavutil\ffversion.h (
 del ..\libavutil\ffversion.h
 )
-if exist "$(OutDir)"\include\libavfilter (
-rd /s /q "$(OutDir)"\include\libavfilter
+if exist "$(OutBaseDir)"\include\libavfilter (
+rd /s /q "$(OutBaseDir)"\include\libavfilter
 cd ../
 cd $(ProjectDir)
 )</Command>
@@ -304,14 +304,14 @@ cd $(ProjectDir)
       <GenerateDebugInformation>false</GenerateDebugInformation>
     </NASM>
     <ResourceCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(ProjectDir)\..\libavfilter\;$(OutDir)\include\freetype2\;$(ProjectDir)\..\..\prebuilt\include\freetype2\;$(OutDir)\include\fribidi\;$(ProjectDir)\..\..\prebuilt\include\fribidi\;$(OutDir)\include\harfbuzz\;$(ProjectDir)\..\..\prebuilt\include\harfbuzz\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(ProjectDir)\..\libavfilter\;$(OutBaseDir)\include\freetype2\;$(ProjectDir)\..\..\prebuilt\include\freetype2\;$(OutBaseDir)\include\fribidi\;$(ProjectDir)\..\..\prebuilt\include\fribidi\;$(OutBaseDir)\include\harfbuzz\;$(ProjectDir)\..\..\prebuilt\include\harfbuzz\;$(OutBaseDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>FRIBIDI_LIB_STATIC;_MSC_VER;BUILDING_avfilter;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseWinRT|x64'">
     <ClCompile>
-      <PreprocessorDefinitions>FRIBIDI_LIB_STATIC;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;BUILDING_avfilter;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(ProjectDir)\..\libavfilter\;$(OutDir)\include\freetype2\;$(ProjectDir)\..\..\prebuilt\include\freetype2\;$(OutDir)\include\fribidi\;$(ProjectDir)\..\..\prebuilt\include\fribidi\;$(OutDir)\include\harfbuzz\;$(ProjectDir)\..\..\prebuilt\include\harfbuzz\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>FRIBIDI_LIB_STATIC;_CRT_SUPPRESS_RESTRICT;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;BUILDING_avfilter;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(ProjectDir)\..\libavfilter\;$(OutBaseDir)\include\freetype2\;$(ProjectDir)\..\..\prebuilt\include\freetype2\;$(OutBaseDir)\include\fribidi\;$(ProjectDir)\..\..\prebuilt\include\fribidi\;$(OutBaseDir)\include\harfbuzz\;$(ProjectDir)\..\..\prebuilt\include\harfbuzz\;$(OutBaseDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="$([System.String]::Copy($(PlatformToolset)).Contains('Intel'))">/Qvec- /Qsimd- %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(AdditionalOptions)' == '' and '$(VisualStudioVersion)' != '12.0'">/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>4244;4267;4018;4146;4028;4996;4090;4114;4308;4305;4005;4101;4554;4307;4273;4133;4544;4334;4293;4047;4703;%(DisableSpecificWarnings)</DisableSpecificWarnings>
@@ -322,15 +322,15 @@ cd $(ProjectDir)
       <AdditionalOptions>/IGNORE:4006,4221,4049,4217,4197,4099,4264 %(AdditionalOptions)</AdditionalOptions>
     </Lib>
     <PostBuildEvent>
-      <Command>mkdir "$(OutDir)"\include
-mkdir "$(OutDir)"\include\libavfilter
-copy ..\libavfilter\avfilter.h "$(OutDir)"\include\libavfilter
-copy ..\libavfilter\buffersink.h "$(OutDir)"\include\libavfilter
-copy ..\libavfilter\buffersrc.h "$(OutDir)"\include\libavfilter
-copy ..\libavfilter\version.h "$(OutDir)"\include\libavfilter
-copy ..\libavfilter\version_major.h "$(OutDir)"\include\libavfilter
-mkdir "$(OutDir)"\licenses
-copy ..\COPYING.GPLv3 "$(OutDir)"\licenses\ffmpeg.txt</Command>
+      <Command>mkdir "$(OutBaseDir)"\include
+mkdir "$(OutBaseDir)"\include\libavfilter
+copy ..\libavfilter\avfilter.h "$(OutBaseDir)"\include\libavfilter
+copy ..\libavfilter\buffersink.h "$(OutBaseDir)"\include\libavfilter
+copy ..\libavfilter\buffersrc.h "$(OutBaseDir)"\include\libavfilter
+copy ..\libavfilter\version.h "$(OutBaseDir)"\include\libavfilter
+copy ..\libavfilter\version_major.h "$(OutBaseDir)"\include\libavfilter
+mkdir "$(OutBaseDir)"\licenses
+copy ..\COPYING.GPLv3 "$(OutBaseDir)"\licenses\ffmpeg.txt</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>if exist ..\config.h (
@@ -351,8 +351,8 @@ del ..\libavutil\avconfig.h
 if exist ..\libavutil\ffversion.h (
 del ..\libavutil\ffversion.h
 )
-if exist "$(OutDir)"\include\libavfilter (
-rd /s /q "$(OutDir)"\include\libavfilter
+if exist "$(OutBaseDir)"\include\libavfilter (
+rd /s /q "$(OutBaseDir)"\include\libavfilter
 cd ../
 cd $(ProjectDir)
 )</Command>
@@ -363,14 +363,14 @@ cd $(ProjectDir)
       <GenerateDebugInformation>false</GenerateDebugInformation>
     </NASM>
     <ResourceCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(ProjectDir)\..\libavfilter\;$(OutDir)\include\freetype2\;$(ProjectDir)\..\..\prebuilt\include\freetype2\;$(OutDir)\include\fribidi\;$(ProjectDir)\..\..\prebuilt\include\fribidi\;$(OutDir)\include\harfbuzz\;$(ProjectDir)\..\..\prebuilt\include\harfbuzz\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(ProjectDir)\..\libavfilter\;$(OutBaseDir)\include\freetype2\;$(ProjectDir)\..\..\prebuilt\include\freetype2\;$(OutBaseDir)\include\fribidi\;$(ProjectDir)\..\..\prebuilt\include\fribidi\;$(OutBaseDir)\include\harfbuzz\;$(ProjectDir)\..\..\prebuilt\include\harfbuzz\;$(OutBaseDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>FRIBIDI_LIB_STATIC;_MSC_VER;BUILDING_avfilter;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseDLLWinRT|Win32'">
     <ClCompile>
-      <PreprocessorDefinitions>_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;BUILDING_avfilter;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(ProjectDir)\..\libavfilter\;$(OutDir)\include\freetype2\;$(ProjectDir)\..\..\prebuilt\include\freetype2\;$(OutDir)\include\fribidi\;$(ProjectDir)\..\..\prebuilt\include\fribidi\;$(OutDir)\include\harfbuzz\;$(ProjectDir)\..\..\prebuilt\include\harfbuzz\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_SUPPRESS_RESTRICT;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;BUILDING_avfilter;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(ProjectDir)\..\libavfilter\;$(OutBaseDir)\include\freetype2\;$(ProjectDir)\..\..\prebuilt\include\freetype2\;$(OutBaseDir)\include\fribidi\;$(ProjectDir)\..\..\prebuilt\include\fribidi\;$(OutBaseDir)\include\harfbuzz\;$(ProjectDir)\..\..\prebuilt\include\harfbuzz\;$(OutBaseDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="$([System.String]::Copy($(PlatformToolset)).Contains('Intel'))">/Qvec- /Qsimd- %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(AdditionalOptions)' == '' and '$(VisualStudioVersion)' != '12.0'">/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>4244;4267;4018;4146;4028;4996;4090;4114;4308;4305;4005;4101;4554;4307;4273;4133;4544;4334;4293;4047;4703;%(DisableSpecificWarnings)</DisableSpecificWarnings>
@@ -382,15 +382,15 @@ cd $(ProjectDir)
       <AdditionalOptions>/IGNORE:4006,4221,4049,4217,4197,4099,4264 %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <PostBuildEvent>
-      <Command>mkdir "$(OutDir)"\include
-mkdir "$(OutDir)"\include\libavfilter
-copy ..\libavfilter\avfilter.h "$(OutDir)"\include\libavfilter
-copy ..\libavfilter\buffersink.h "$(OutDir)"\include\libavfilter
-copy ..\libavfilter\buffersrc.h "$(OutDir)"\include\libavfilter
-copy ..\libavfilter\version.h "$(OutDir)"\include\libavfilter
-copy ..\libavfilter\version_major.h "$(OutDir)"\include\libavfilter
-mkdir "$(OutDir)"\licenses
-copy ..\COPYING.GPLv3 "$(OutDir)"\licenses\ffmpeg.txt</Command>
+      <Command>mkdir "$(OutBaseDir)"\include
+mkdir "$(OutBaseDir)"\include\libavfilter
+copy ..\libavfilter\avfilter.h "$(OutBaseDir)"\include\libavfilter
+copy ..\libavfilter\buffersink.h "$(OutBaseDir)"\include\libavfilter
+copy ..\libavfilter\buffersrc.h "$(OutBaseDir)"\include\libavfilter
+copy ..\libavfilter\version.h "$(OutBaseDir)"\include\libavfilter
+copy ..\libavfilter\version_major.h "$(OutBaseDir)"\include\libavfilter
+mkdir "$(OutBaseDir)"\licenses
+copy ..\COPYING.GPLv3 "$(OutBaseDir)"\licenses\ffmpeg.txt</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>if exist ..\config.h (
@@ -411,8 +411,8 @@ del ..\libavutil\avconfig.h
 if exist ..\libavutil\ffversion.h (
 del ..\libavutil\ffversion.h
 )
-if exist "$(OutDir)"\include\libavfilter (
-rd /s /q "$(OutDir)"\include\libavfilter
+if exist "$(OutBaseDir)"\include\libavfilter (
+rd /s /q "$(OutBaseDir)"\include\libavfilter
 cd ../
 cd $(ProjectDir)
 )</Command>
@@ -423,14 +423,14 @@ cd $(ProjectDir)
       <GenerateDebugInformation>false</GenerateDebugInformation>
     </NASM>
     <ResourceCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(ProjectDir)\..\libavfilter\;$(OutDir)\include\freetype2\;$(ProjectDir)\..\..\prebuilt\include\freetype2\;$(OutDir)\include\fribidi\;$(ProjectDir)\..\..\prebuilt\include\fribidi\;$(OutDir)\include\harfbuzz\;$(ProjectDir)\..\..\prebuilt\include\harfbuzz\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(ProjectDir)\..\libavfilter\;$(OutBaseDir)\include\freetype2\;$(ProjectDir)\..\..\prebuilt\include\freetype2\;$(OutBaseDir)\include\fribidi\;$(ProjectDir)\..\..\prebuilt\include\fribidi\;$(OutBaseDir)\include\harfbuzz\;$(ProjectDir)\..\..\prebuilt\include\harfbuzz\;$(OutBaseDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_MSC_VER;BUILDING_avfilter;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseDLLWinRT|x64'">
     <ClCompile>
-      <PreprocessorDefinitions>_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;BUILDING_avfilter;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(ProjectDir)\..\libavfilter\;$(OutDir)\include\freetype2\;$(ProjectDir)\..\..\prebuilt\include\freetype2\;$(OutDir)\include\fribidi\;$(ProjectDir)\..\..\prebuilt\include\fribidi\;$(OutDir)\include\harfbuzz\;$(ProjectDir)\..\..\prebuilt\include\harfbuzz\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_SUPPRESS_RESTRICT;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;BUILDING_avfilter;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(ProjectDir)\..\libavfilter\;$(OutBaseDir)\include\freetype2\;$(ProjectDir)\..\..\prebuilt\include\freetype2\;$(OutBaseDir)\include\fribidi\;$(ProjectDir)\..\..\prebuilt\include\fribidi\;$(OutBaseDir)\include\harfbuzz\;$(ProjectDir)\..\..\prebuilt\include\harfbuzz\;$(OutBaseDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="$([System.String]::Copy($(PlatformToolset)).Contains('Intel'))">/Qvec- /Qsimd- %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(AdditionalOptions)' == '' and '$(VisualStudioVersion)' != '12.0'">/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>4244;4267;4018;4146;4028;4996;4090;4114;4308;4305;4005;4101;4554;4307;4273;4133;4544;4334;4293;4047;4703;%(DisableSpecificWarnings)</DisableSpecificWarnings>
@@ -442,15 +442,15 @@ cd $(ProjectDir)
       <AdditionalOptions>/IGNORE:4006,4221,4049,4217,4197,4099,4264 %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <PostBuildEvent>
-      <Command>mkdir "$(OutDir)"\include
-mkdir "$(OutDir)"\include\libavfilter
-copy ..\libavfilter\avfilter.h "$(OutDir)"\include\libavfilter
-copy ..\libavfilter\buffersink.h "$(OutDir)"\include\libavfilter
-copy ..\libavfilter\buffersrc.h "$(OutDir)"\include\libavfilter
-copy ..\libavfilter\version.h "$(OutDir)"\include\libavfilter
-copy ..\libavfilter\version_major.h "$(OutDir)"\include\libavfilter
-mkdir "$(OutDir)"\licenses
-copy ..\COPYING.GPLv3 "$(OutDir)"\licenses\ffmpeg.txt</Command>
+      <Command>mkdir "$(OutBaseDir)"\include
+mkdir "$(OutBaseDir)"\include\libavfilter
+copy ..\libavfilter\avfilter.h "$(OutBaseDir)"\include\libavfilter
+copy ..\libavfilter\buffersink.h "$(OutBaseDir)"\include\libavfilter
+copy ..\libavfilter\buffersrc.h "$(OutBaseDir)"\include\libavfilter
+copy ..\libavfilter\version.h "$(OutBaseDir)"\include\libavfilter
+copy ..\libavfilter\version_major.h "$(OutBaseDir)"\include\libavfilter
+mkdir "$(OutBaseDir)"\licenses
+copy ..\COPYING.GPLv3 "$(OutBaseDir)"\licenses\ffmpeg.txt</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>if exist ..\config.h (
@@ -471,8 +471,8 @@ del ..\libavutil\avconfig.h
 if exist ..\libavutil\ffversion.h (
 del ..\libavutil\ffversion.h
 )
-if exist "$(OutDir)"\include\libavfilter (
-rd /s /q "$(OutDir)"\include\libavfilter
+if exist "$(OutBaseDir)"\include\libavfilter (
+rd /s /q "$(OutBaseDir)"\include\libavfilter
 cd ../
 cd $(ProjectDir)
 )</Command>
@@ -483,14 +483,14 @@ cd $(ProjectDir)
       <GenerateDebugInformation>false</GenerateDebugInformation>
     </NASM>
     <ResourceCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(ProjectDir)\..\libavfilter\;$(OutDir)\include\freetype2\;$(ProjectDir)\..\..\prebuilt\include\freetype2\;$(OutDir)\include\fribidi\;$(ProjectDir)\..\..\prebuilt\include\fribidi\;$(OutDir)\include\harfbuzz\;$(ProjectDir)\..\..\prebuilt\include\harfbuzz\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(ProjectDir)\..\libavfilter\;$(OutBaseDir)\include\freetype2\;$(ProjectDir)\..\..\prebuilt\include\freetype2\;$(OutBaseDir)\include\fribidi\;$(ProjectDir)\..\..\prebuilt\include\fribidi\;$(OutBaseDir)\include\harfbuzz\;$(ProjectDir)\..\..\prebuilt\include\harfbuzz\;$(OutBaseDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_MSC_VER;BUILDING_avfilter;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseDLLWinRTStaticDeps|Win32'">
     <ClCompile>
-      <PreprocessorDefinitions>FRIBIDI_LIB_STATIC;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;BUILDING_avfilter;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(ProjectDir)\..\libavfilter\;$(OutDir)\include\freetype2\;$(ProjectDir)\..\..\prebuilt\include\freetype2\;$(OutDir)\include\fribidi\;$(ProjectDir)\..\..\prebuilt\include\fribidi\;$(OutDir)\include\harfbuzz\;$(ProjectDir)\..\..\prebuilt\include\harfbuzz\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>FRIBIDI_LIB_STATIC;_CRT_SUPPRESS_RESTRICT;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;BUILDING_avfilter;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(ProjectDir)\..\libavfilter\;$(OutBaseDir)\include\freetype2\;$(ProjectDir)\..\..\prebuilt\include\freetype2\;$(OutBaseDir)\include\fribidi\;$(ProjectDir)\..\..\prebuilt\include\fribidi\;$(OutBaseDir)\include\harfbuzz\;$(ProjectDir)\..\..\prebuilt\include\harfbuzz\;$(OutBaseDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="$([System.String]::Copy($(PlatformToolset)).Contains('Intel'))">/Qvec- /Qsimd- %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(AdditionalOptions)' == '' and '$(VisualStudioVersion)' != '12.0'">/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>4244;4267;4018;4146;4028;4996;4090;4114;4308;4305;4005;4101;4554;4307;4273;4133;4544;4334;4293;4047;4703;%(DisableSpecificWarnings)</DisableSpecificWarnings>
@@ -502,15 +502,15 @@ cd $(ProjectDir)
       <AdditionalOptions>/IGNORE:4006,4221,4049,4217,4197,4099,4264 %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <PostBuildEvent>
-      <Command>mkdir "$(OutDir)"\include
-mkdir "$(OutDir)"\include\libavfilter
-copy ..\libavfilter\avfilter.h "$(OutDir)"\include\libavfilter
-copy ..\libavfilter\buffersink.h "$(OutDir)"\include\libavfilter
-copy ..\libavfilter\buffersrc.h "$(OutDir)"\include\libavfilter
-copy ..\libavfilter\version.h "$(OutDir)"\include\libavfilter
-copy ..\libavfilter\version_major.h "$(OutDir)"\include\libavfilter
-mkdir "$(OutDir)"\licenses
-copy ..\COPYING.GPLv3 "$(OutDir)"\licenses\ffmpeg.txt</Command>
+      <Command>mkdir "$(OutBaseDir)"\include
+mkdir "$(OutBaseDir)"\include\libavfilter
+copy ..\libavfilter\avfilter.h "$(OutBaseDir)"\include\libavfilter
+copy ..\libavfilter\buffersink.h "$(OutBaseDir)"\include\libavfilter
+copy ..\libavfilter\buffersrc.h "$(OutBaseDir)"\include\libavfilter
+copy ..\libavfilter\version.h "$(OutBaseDir)"\include\libavfilter
+copy ..\libavfilter\version_major.h "$(OutBaseDir)"\include\libavfilter
+mkdir "$(OutBaseDir)"\licenses
+copy ..\COPYING.GPLv3 "$(OutBaseDir)"\licenses\ffmpeg.txt</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>if exist ..\config.h (
@@ -531,8 +531,8 @@ del ..\libavutil\avconfig.h
 if exist ..\libavutil\ffversion.h (
 del ..\libavutil\ffversion.h
 )
-if exist "$(OutDir)"\include\libavfilter (
-rd /s /q "$(OutDir)"\include\libavfilter
+if exist "$(OutBaseDir)"\include\libavfilter (
+rd /s /q "$(OutBaseDir)"\include\libavfilter
 cd ../
 cd $(ProjectDir)
 )</Command>
@@ -543,14 +543,14 @@ cd $(ProjectDir)
       <GenerateDebugInformation>false</GenerateDebugInformation>
     </NASM>
     <ResourceCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(ProjectDir)\..\libavfilter\;$(OutDir)\include\freetype2\;$(ProjectDir)\..\..\prebuilt\include\freetype2\;$(OutDir)\include\fribidi\;$(ProjectDir)\..\..\prebuilt\include\fribidi\;$(OutDir)\include\harfbuzz\;$(ProjectDir)\..\..\prebuilt\include\harfbuzz\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(ProjectDir)\..\libavfilter\;$(OutBaseDir)\include\freetype2\;$(ProjectDir)\..\..\prebuilt\include\freetype2\;$(OutBaseDir)\include\fribidi\;$(ProjectDir)\..\..\prebuilt\include\fribidi\;$(OutBaseDir)\include\harfbuzz\;$(ProjectDir)\..\..\prebuilt\include\harfbuzz\;$(OutBaseDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>FRIBIDI_LIB_STATIC;_MSC_VER;BUILDING_avfilter;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseDLLWinRTStaticDeps|x64'">
     <ClCompile>
-      <PreprocessorDefinitions>FRIBIDI_LIB_STATIC;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;BUILDING_avfilter;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(ProjectDir)\..\libavfilter\;$(OutDir)\include\freetype2\;$(ProjectDir)\..\..\prebuilt\include\freetype2\;$(OutDir)\include\fribidi\;$(ProjectDir)\..\..\prebuilt\include\fribidi\;$(OutDir)\include\harfbuzz\;$(ProjectDir)\..\..\prebuilt\include\harfbuzz\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>FRIBIDI_LIB_STATIC;_CRT_SUPPRESS_RESTRICT;_UCRT_NOISY_NAN;restrict=__restrict;HAVE_AV_CONFIG_H;_USE_MATH_DEFINES;BUILDING_avfilter;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(ProjectDir)\..\libavfilter\;$(OutBaseDir)\include\freetype2\;$(ProjectDir)\..\..\prebuilt\include\freetype2\;$(OutBaseDir)\include\fribidi\;$(ProjectDir)\..\..\prebuilt\include\fribidi\;$(OutBaseDir)\include\harfbuzz\;$(ProjectDir)\..\..\prebuilt\include\harfbuzz\;$(OutBaseDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="$([System.String]::Copy($(PlatformToolset)).Contains('Intel'))">/Qvec- /Qsimd- %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(AdditionalOptions)' == '' and '$(VisualStudioVersion)' != '12.0'">/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>4244;4267;4018;4146;4028;4996;4090;4114;4308;4305;4005;4101;4554;4307;4273;4133;4544;4334;4293;4047;4703;%(DisableSpecificWarnings)</DisableSpecificWarnings>
@@ -562,15 +562,15 @@ cd $(ProjectDir)
       <AdditionalOptions>/IGNORE:4006,4221,4049,4217,4197,4099,4264 %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <PostBuildEvent>
-      <Command>mkdir "$(OutDir)"\include
-mkdir "$(OutDir)"\include\libavfilter
-copy ..\libavfilter\avfilter.h "$(OutDir)"\include\libavfilter
-copy ..\libavfilter\buffersink.h "$(OutDir)"\include\libavfilter
-copy ..\libavfilter\buffersrc.h "$(OutDir)"\include\libavfilter
-copy ..\libavfilter\version.h "$(OutDir)"\include\libavfilter
-copy ..\libavfilter\version_major.h "$(OutDir)"\include\libavfilter
-mkdir "$(OutDir)"\licenses
-copy ..\COPYING.GPLv3 "$(OutDir)"\licenses\ffmpeg.txt</Command>
+      <Command>mkdir "$(OutBaseDir)"\include
+mkdir "$(OutBaseDir)"\include\libavfilter
+copy ..\libavfilter\avfilter.h "$(OutBaseDir)"\include\libavfilter
+copy ..\libavfilter\buffersink.h "$(OutBaseDir)"\include\libavfilter
+copy ..\libavfilter\buffersrc.h "$(OutBaseDir)"\include\libavfilter
+copy ..\libavfilter\version.h "$(OutBaseDir)"\include\libavfilter
+copy ..\libavfilter\version_major.h "$(OutBaseDir)"\include\libavfilter
+mkdir "$(OutBaseDir)"\licenses
+copy ..\COPYING.GPLv3 "$(OutBaseDir)"\licenses\ffmpeg.txt</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>if exist ..\config.h (
@@ -591,8 +591,8 @@ del ..\libavutil\avconfig.h
 if exist ..\libavutil\ffversion.h (
 del ..\libavutil\ffversion.h
 )
-if exist "$(OutDir)"\include\libavfilter (
-rd /s /q "$(OutDir)"\include\libavfilter
+if exist "$(OutBaseDir)"\include\libavfilter (
+rd /s /q "$(OutBaseDir)"\include\libavfilter
 cd ../
 cd $(ProjectDir)
 )</Command>
@@ -603,7 +603,7 @@ cd $(ProjectDir)
       <GenerateDebugInformation>false</GenerateDebugInformation>
     </NASM>
     <ResourceCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(ProjectDir)\..\libavfilter\;$(OutDir)\include\freetype2\;$(ProjectDir)\..\..\prebuilt\include\freetype2\;$(OutDir)\include\fribidi\;$(ProjectDir)\..\..\prebuilt\include\fribidi\;$(OutDir)\include\harfbuzz\;$(ProjectDir)\..\..\prebuilt\include\harfbuzz\;$(OutDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\compat\atomics\win32\;$(ProjectDir)\..\compat\stdbit\;$(ProjectDir)\..\;$(ProjectDir)\..\libavfilter\;$(OutBaseDir)\include\freetype2\;$(ProjectDir)\..\..\prebuilt\include\freetype2\;$(OutBaseDir)\include\fribidi\;$(ProjectDir)\..\..\prebuilt\include\fribidi\;$(OutBaseDir)\include\harfbuzz\;$(ProjectDir)\..\..\prebuilt\include\harfbuzz\;$(OutBaseDir)\include\mfx\;$(ProjectDir)\..\..\prebuilt\include\mfx\;.\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>FRIBIDI_LIB_STATIC;_MSC_VER;BUILDING_avfilter;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
   </ItemDefinitionGroup>
